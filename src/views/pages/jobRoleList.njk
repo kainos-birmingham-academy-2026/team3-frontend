@@ -1,5 +1,3 @@
-
-
 {% block content %}
  <h1>Job Roles</h1>
  {% set hasOpenRoles = false %}
@@ -13,11 +11,10 @@
    <table>
      <thead>
        <tr>
-        <th>Job Role ID</th>
         <th>Role Name</th>
         <th>Location</th>
-        <th>Capability ID</th>
-        <th>Band ID</th>
+        <th>Capability</th>
+        <th>Band</th>
         <th>Closing Date</th>
        </tr>
      </thead>
@@ -26,7 +23,6 @@
       {% for jobRole in jobRoles %}
        {% if jobRole.status == "Open" %}
         <tr>
-         <td>{{ jobRole.jobRoleId }}</td>
          <td>{{ jobRole.roleName }}</td>
          <td>{{ jobRole.location }}</td>
          <td>{{ jobRole.capabilityId }}</td>

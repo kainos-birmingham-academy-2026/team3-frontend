@@ -17,7 +17,7 @@ nunjucks.configure(
 	{
 	  autoescape: true,
 	  express: app,
-	  watch: isDev,
+	  watch: false,
 	  noCache: isDev,
 	},
 );

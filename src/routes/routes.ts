@@ -17,6 +17,6 @@ router.get("/health", (req, res) => {
 	});
 });
 
-router.get("/job-roles", (req,res) => controller.getAll(req, res));
+router.get("/job-role-list", (req,res) => controller.getAll(req, res));
 
 export default router;
