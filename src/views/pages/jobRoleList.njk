@@ -1,0 +1,34 @@
+{% block title %}Job Roles{% endblock %}
+
+{% block content %}
+ <h1>Job Roles</h1>
+ {% if jobRoles.status == "Open" %}
+   <table>
+     <thead>
+       <tr>
+        <th>Job Role ID</th>
+        <th>Role Name</th>
+        <th>Location</th>
+        <th>Capability ID</th>
+        <th>Band ID</th>
+        <th>Closing Date</th>
+       </tr>
+     </thead>
+     
+     <tbody>
+      {% for jobRole in jobRoles %}
+       <tr>
+        <td>{{ jobRole.jobRolesId }}</td>
+        <td>{{ jobRole.roleName }}</td>
+        <td>{{ jobRole.location }}</td>
+        <td>{{ jobRole.capabilityId }}</td>
+        <td>{{ jobRole.bandId }}</td>
+        <td>{{ jobRole.closingDate}}</td>
+       </tr>
+     {% endfor %}
+     </tbody>
+   </table>
+ {% else %}
+  <p>No job roles found</p>
+ {% endif %}
+{% endblock %}
