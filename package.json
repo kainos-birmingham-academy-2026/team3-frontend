@@ -1,0 +1,23 @@
+{
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "tsc --noEmit",
+    "test": "echo \"No tests configured\""
+  },
+
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nunjucks": "^3.2.4"
+  },
+
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/nunjucks": "^3.2.6",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
