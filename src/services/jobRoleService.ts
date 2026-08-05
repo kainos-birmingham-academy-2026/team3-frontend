@@ -1,26 +1,30 @@
 export interface JobRole {
     jobRoleId: number,
-    roleName: String,
-    location: String,
-    capabilityId: String,
+  roleName: string,
+  location: string,
+    capabilityId: number,
     bandId: number,
-    closingDate: String,
-    status: String
+  closingDate: Date,
+  status: string
 }
 
 
-export class jobRoleService {
+export class JobRoleService {
   private jobRoles: JobRole[] = [
     {
       jobRoleId: 1,
       roleName: "Software Engineer",
       location: "Birmingham",
-      capabilityId: "Digital Services",
+      capabilityId: 1,
       bandId: 5,
-      closingDate: "2026-08-05",
+      closingDate: new Date("2026-08-05T00:00:00.000Z"),
       status: "Open"
     },
   ];
+
+  async getAll(): Promise<JobRole[]> {
+    return this.jobRoles;
+  }
     
 
 }
