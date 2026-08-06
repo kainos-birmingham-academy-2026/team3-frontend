@@ -1,15 +1,6 @@
 import axios from "axios";
 import apiClient from "../config/apiClient";
-
-export interface JobRole {
-  jobRoleId: number;
-  roleName: string;
-  location: string;
-  capabilityId: number;
-  bandId: number;
-  closingDate: string;
-  status: string;
-}
+import type { JobRole } from "../models/jobRole";
 
 export class JobRoleService {
   async getAll(): Promise<JobRole[]> {
