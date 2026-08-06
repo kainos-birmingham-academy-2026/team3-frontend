@@ -2,7 +2,7 @@
  <h1>Job Roles</h1>
  {% set hasOpenRoles = false %}
  {% for jobRole in jobRoles %}
-  {% if jobRole.status == "Open" %}
+  {% if jobRole.status == "open" %}
    {% set hasOpenRoles = true %}
   {% endif %}
  {% endfor %}
@@ -21,7 +21,7 @@
      
      <tbody>
       {% for jobRole in jobRoles %}
-       {% if jobRole.status == "Open" %}
+       {% if jobRole.status == "open" %}
         <tr>
          <td>{{ jobRole.roleName }}</td>
          <td>{{ jobRole.location }}</td>

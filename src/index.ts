@@ -1,12 +1,12 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import express from "express";
 import nunjucks from "nunjucks";
-import router from "./routes/routes";
-import path, { dirname } from "path";
+import router from "./routes/jobRoleRouter";
+import path from "path";
 
 
 const app = express();
-const port = 3000;
+const port = Number(process.env.PORT) ?? "3000";
 const isDev = process.env.NODE_ENV !== "production";
 
 nunjucks.configure(
@@ -25,5 +25,5 @@ nunjucks.configure(
 app.use(router);
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);  
+	console.log(`Frontend running at http://localhost:${port}`);
 } );

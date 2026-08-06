@@ -17,7 +17,20 @@ A lightweight Express + TypeScript server used for Team 3 frontend coursework.
 npm install
 ```
 
-### 2. Run in development mode
+### 2. Configure environment variables
+
+Create a local environment file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Available variables:
+
+- `PORT` - Port for this Express app (default: `3000`)
+- `API_BASE_URL` - Base URL used for API requests (default: `http://localhost:4000`)
+
+### 3. Run in development mode
 
 Starts the app with file watching via `tsx watch`.
 
@@ -31,13 +44,13 @@ The server runs on:
 http://localhost:3000
 ```
 
-### 3. Build for production
+### 4. Build for production
 
 ```bash
 npm run build
 ```
 
-### 4. Start production build
+### 5. Start production build
 
 ```bash
 npm start

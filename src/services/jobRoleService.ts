@@ -1,30 +1,33 @@
+import axios from "axios";
+import apiClient from "../config/apiClient";
+
 export interface JobRole {
-    jobRoleId: number,
-  roleName: string,
-  location: string,
-    capabilityId: number,
-    bandId: number,
-  closingDate: Date,
-  status: string
+  jobRoleId: number;
+  roleName: string;
+  location: string;
+  capabilityId: number;
+  bandId: number;
+  closingDate: string;
+  status: string;
 }
 
-
 export class JobRoleService {
-  private jobRoles: JobRole[] = [
-    {
-      jobRoleId: 1,
-      roleName: "Software Engineer",
-      location: "Birmingham",
-      capabilityId: 1,
-      bandId: 5,
-      closingDate: new Date("2026-08-05T00:00:00.000Z"),
-      status: "Open"
-    },
-  ];
-
   async getAll(): Promise<JobRole[]> {
-    return this.jobRoles;
-  }
-    
+    try {
+      const response = await apiClient.get<JobRole[]>("/job-roles");
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        if (status === 404) {
+          throw new Error("No job roles found");
+        }
+        if (status === 500) {
+          throw new Error("Backend server error");
+        }
+      }
 
+      throw error;
+    }
+  }
 }

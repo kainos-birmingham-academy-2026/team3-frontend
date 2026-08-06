@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import router from "../../src/routes/routes";
+import router from "../../src/routes/jobRoleRouter";
 
 describe("routes", () => {
   it("registers GET /health", () => {
