@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
 router.get("/health", (req, res) => {
 	res.status(200).send({
 		status: "UP",
-		time: new Date().toString(),
+		time: new Date().toISOString(),
 	});
 });
 
