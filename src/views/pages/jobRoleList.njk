@@ -1,0 +1,39 @@
+{% block content %}
+ <h1>Job Roles</h1>
+ {% set hasOpenRoles = false %}
+ {% for jobRole in jobRoles %}
+  {% if jobRole.status == "open" %}
+   {% set hasOpenRoles = true %}
+  {% endif %}
+ {% endfor %}
+
+ {% if hasOpenRoles %}
+   <table>
+     <thead>
+       <tr>
+        <th>Role Name</th>
+        <th>Location</th>
+        <th>Capability</th>
+        <th>Band</th>
+        <th>Closing Date</th>
+       </tr>
+     </thead>
+     
+     <tbody>
+      {% for jobRole in jobRoles %}
+       {% if jobRole.status == "open" %}
+        <tr>
+         <td>{{ jobRole.roleName }}</td>
+         <td>{{ jobRole.location }}</td>
+         <td>{{ jobRole.capabilityId }}</td>
+         <td>{{ jobRole.bandId }}</td>
+         <td>{{ jobRole.closingDate }}</td>
+        </tr>
+       {% endif %}
+     {% endfor %}
+     </tbody>
+   </table>
+ {% else %}
+  <p>No open job roles found</p>
+ {% endif %}
+{% endblock %}

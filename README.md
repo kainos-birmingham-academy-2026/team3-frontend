@@ -1,6 +1,6 @@
 # Team 3 Frontend
 
-A lightweight Express + TypeScript server used for Team 3 frontend coursework.
+A lightweight Express + TypeScript server used for Team 3 frontend.
 
 ## Tech Stack
 
@@ -17,7 +17,25 @@ A lightweight Express + TypeScript server used for Team 3 frontend coursework.
 npm install
 ```
 
-### 2. Run in development mode
+### 2. Configure environment variables
+
+Create a local environment file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Available variables:
+
+- `PORT` - Port for this Express app (default: `3000`)
+- `API_BASE_URL` - Base URL used for API requests (default: `http://localhost:4000`)
+
+```bash
+PORT=3000
+API_BASE_URL=http://localhost:4000
+```
+
+### 3. Run in development mode
 
 Starts the app with file watching via `tsx watch`.
 
@@ -31,13 +49,13 @@ The server runs on:
 http://localhost:3000
 ```
 
-### 3. Build for production
+### 4. Build for production
 
 ```bash
 npm run build
 ```
 
-### 4. Start production build
+### 5. Start production build
 
 ```bash
 npm start
@@ -79,6 +97,19 @@ Example response:
     "time": "Tue Aug 04 2026 10:00:00 GMT..."
 }
 ```
+
+### `GET /job-role-list`
+
+Clone and open the team3-backend feature/001-view-job-roles branch repo (https://github.com/kainos-birmingham-academy-2026/team3-backend/tree/feature/001-view-job-roles) and follow the readme to migrate and run the prisma database.
+
+Run these commands to check both servers are up, it should return status and time:
+```bash
+curl http://localhost:3000/health
+curl http://localhost:4000/health
+```
+
+Returns list of job roles from local database.
+
 
 ## Quick Check
 
