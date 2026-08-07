@@ -27,5 +27,4 @@ coverage/
 .DS_Store
 Thumbs.db
 
-public/images/examples/
-public/copilot/
+examples/
