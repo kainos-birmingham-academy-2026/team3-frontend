@@ -6,9 +6,15 @@ import type { JobRole } from "../../src/models/jobRole";
 
 const templatePath = path.resolve(process.cwd(), "src/views/pages/jobRoleList.njk");
 const template = fs.readFileSync(templatePath, "utf8");
+const viewsPath = path.resolve(process.cwd(), "src/views");
+const environment = new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsPath));
 
 function renderView(jobRoles: JobRole[]): string {
-  return nunjucks.renderString(template, { jobRoles });
+  if (!template.length) {
+    throw new Error("Template should not be empty");
+  }
+
+  return environment.render("pages/jobRoleList.njk", { jobRoles });
 }
 
 describe("jobRoleList", () => {
