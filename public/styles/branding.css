@@ -257,6 +257,7 @@ a:hover {
   border: 1px solid #d9def0;
   border-top: 6px solid var(--kainos-blue);
   max-width: 34rem;
+  margin: 0 auto;
   padding: 1.5rem;
 }
 
