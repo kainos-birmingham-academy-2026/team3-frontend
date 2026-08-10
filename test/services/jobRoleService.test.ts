@@ -21,11 +21,11 @@ describe("JobRoleService", () => {
         {
           jobRoleId: 1,
           roleName: "Software Engineer",
-          location: "Birmingham",
-          capabilityId: 1,
-          bandId: 5,
+          locationName: "Birmingham",
+          capabilityName: "Software Engineering",
+          bandName: "Engineer",
           closingDate: "2026-08-06T00:00:00.000Z",
-          status: "open",
+          status: "OPEN",
         },
       ],
     });
@@ -34,6 +34,8 @@ describe("JobRoleService", () => {
 
     expect(apiClient.get).toHaveBeenCalledWith("/job-roles");
     expect(result[0]?.closingDate).toBe("2026-08-06");
+    expect(result[0]?.status).toBe("open");
+    expect(result[0]?.capability).toBe("Software Engineering");
   });
 
   it("should keeps role status values from backend for view filtering", async () => {
@@ -42,20 +44,20 @@ describe("JobRoleService", () => {
         {
           jobRoleId: 1,
           roleName: "Software Engineer",
-          location: "Birmingham",
-          capabilityId: 1,
-          bandId: 5,
+          locationName: "Birmingham",
+          capabilityName: "Software Engineering",
+          bandName: "Engineer",
           closingDate: "2026-08-06T00:00:00.000Z",
-          status: "open",
+          status: "OPEN",
         },
         {
           jobRoleId: 2,
           roleName: "Delivery Manager",
-          location: "Leeds",
-          capabilityId: 2,
-          bandId: 6,
+          locationName: "Leeds",
+          capabilityName: "Delivery Management",
+          bandName: "Senior Engineer",
           closingDate: "2026-09-01T00:00:00.000Z",
-          status: "closed",
+          status: "CLOSED",
         },
       ],
     });
