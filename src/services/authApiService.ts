@@ -11,12 +11,12 @@ function extractToken(data: LoginResponse): string | null {
 	return data.token ?? data.jwtToken ?? data.accessToken ?? null;
 }
 
-export async function login(username: string, password: string): Promise<string> {
+export async function login(email: string, password: string): Promise<string> {
 	const loginPath = process.env.AUTH_LOGIN_PATH ?? "/api/login";
 
 	try {
 		const response = await apiClient.post<LoginResponse>(loginPath, {
-			email: username,
+			email,
 			password,
 		});
 
@@ -30,7 +30,7 @@ export async function login(username: string, password: string): Promise<string>
 		if (axios.isAxiosError(error)) {
 			const status = error.response?.status;
 			if (status === 400 || status === 401) {
-				throw new Error("Invalid username or password");
+				throw new Error("Invalid email or password");
 			}
 			if (status === 404) {
 				throw new Error("Login endpoint not found");

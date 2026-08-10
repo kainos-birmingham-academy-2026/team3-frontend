@@ -9,8 +9,9 @@ const viewsPath = path.resolve(process.cwd(), "src/views");
 const environment = new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsPath));
 
 type LoginRenderData = {
-  formValues: { username: string };
+  formValues: { email: string };
   errorMessage?: string;
+  currentPath?: string;
 };
 
 function renderView(data: LoginRenderData): string {
@@ -22,24 +23,31 @@ function renderView(data: LoginRenderData): string {
 }
 
 describe("login", () => {
-  it("should render sign in form with submitted username", () => {
+  it("should render sign in form with submitted email", () => {
     const html = renderView({
-      formValues: { username: "jane.doe" },
+      formValues: { email: "jane.doe@example.com" },
+      currentPath: "/login",
     });
 
-    expect(html).toContain("Sign in to access job role listings");
+    expect(html).toContain("Sign in to view job opportunities");
     expect(html).toContain('action="/login"');
-    expect(html).toContain('value="jane.doe"');
+    expect(html).toContain('name="email"');
+    expect(html).toContain('autocomplete="email"');
+    expect(html).toContain('value="jane.doe@example.com"');
     expect(html).toContain('type="password"');
+    expect(html).not.toContain(">Home<");
+    expect(html).not.toContain(">Job roles<");
+    expect(html).not.toContain("header-cta");
   });
 
   it("should show an error message when provided", () => {
     const html = renderView({
-      formValues: { username: "" },
-      errorMessage: "Enter both username and password",
+      formValues: { email: "" },
+      errorMessage: "Enter both email and password",
+      currentPath: "/login",
     });
 
-    expect(html).toContain("Enter both username and password");
+    expect(html).toContain("Enter both email and password");
     expect(html).toContain('role="alert"');
   });
 });
