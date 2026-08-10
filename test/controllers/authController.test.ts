@@ -7,7 +7,17 @@ vi.mock("../../src/services/authApiService", () => ({
   login: vi.fn(),
 }));
 
-function createReq(partial: Partial<Request> = {}): Request {
+type TestSession = {
+  jwtToken?: string;
+  destroy: (callback: () => void) => void;
+};
+
+type MockRequest = Request & {
+  body: Record<string, unknown>;
+  session: TestSession;
+};
+
+function createReq(partial: Partial<MockRequest> = {}): MockRequest {
   return {
     body: {},
     session: {
@@ -15,7 +25,7 @@ function createReq(partial: Partial<Request> = {}): Request {
       destroy: vi.fn((callback: () => void) => callback()),
     },
     ...partial,
-  } as unknown as Request;
+  } as MockRequest;
 }
 
 function createRes(): Response {
@@ -39,7 +49,10 @@ describe("AuthController", () => {
 
   it("should redirect to home when showing login for authenticated user", () => {
     const req = createReq({
-      session: { jwtToken: "existing-token" } as Request["session"],
+      session: {
+        jwtToken: "existing-token",
+        destroy: vi.fn((callback: () => void) => callback()),
+      },
     });
     const res = createRes();
 
@@ -126,7 +139,7 @@ describe("AuthController", () => {
   it("should destroy session, clear cookie, and redirect on logout", () => {
     const destroy = vi.fn((callback: () => void) => callback());
     const req = createReq({
-      session: { jwtToken: "jwt-token", destroy } as Request["session"],
+      session: { jwtToken: "jwt-token", destroy },
     });
     const res = createRes();
 

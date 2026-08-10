@@ -2,16 +2,22 @@ import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JobRoleController } from "../../src/controllers/jobRoleController";
 
-function createReq(partial: Partial<Request> = {}): Request {
+type TestRequest = {
+  session: {
+    jwtToken?: string;
+  };
+};
+
+function createRequest(partial: Partial<TestRequest> = {}): TestRequest {
   return {
     session: {
       jwtToken: undefined,
     },
     ...partial,
-  } as unknown as Request;
+  };
 }
 
-function createRes(): Response {
+function createResponse(): Response {
   const res = {
     redirect: vi.fn(),
     render: vi.fn(),
@@ -34,10 +40,10 @@ describe("JobRoleController", () => {
   });
 
   it("should call service with JWT token and render job roles", async () => {
-    const req = createReq({
-      session: { jwtToken: "jwt-token" } as Request["session"],
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
     });
-    const res = createRes();
+    const res = createResponse();
     const jobRoles = [
       {
         jobRoleId: 1,
@@ -52,24 +58,24 @@ describe("JobRoleController", () => {
 
     jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
 
-    await controller.getAll(req, res);
+    await controller.getAll(req as unknown as Request, res);
 
     expect(jobRoleService.getAll).toHaveBeenCalledWith("jwt-token");
     expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", { jobRoles });
   });
 
   it("should clear token and redirect to login when backend returns 401", async () => {
-    const req = createReq({
-      session: { jwtToken: "jwt-token" } as Request["session"],
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
     });
-    const res = createRes();
+    const res = createResponse();
 
     jobRoleService.getAll.mockRejectedValueOnce({
       isAxiosError: true,
       response: { status: 401 },
     });
 
-    await controller.getAll(req, res);
+    await controller.getAll(req as unknown as Request, res);
 
     expect(req.session.jwtToken).toBeUndefined();
     expect(res.redirect).toHaveBeenCalledWith("/login");
@@ -77,12 +83,12 @@ describe("JobRoleController", () => {
   });
 
   it("should render 500 with empty list and message when API call fails", async () => {
-    const req = createReq();
-    const res = createRes();
+    const req = createRequest();
+    const res = createResponse();
 
     jobRoleService.getAll.mockRejectedValueOnce(new Error("Backend server error"));
 
-    await controller.getAll(req, res);
+    await controller.getAll(req as unknown as Request, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
