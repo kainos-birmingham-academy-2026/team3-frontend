@@ -1,8 +1,8 @@
 import "dotenv/config";
+import path from "node:path";
 import express from "express";
 import nunjucks from "nunjucks";
 import router from "./routes/jobRoleRouter";
-import path from "path";
 
 
 const app = express();

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import fs from "node:fs";
 import path from "node:path";
 import nunjucks from "nunjucks";
@@ -24,8 +25,8 @@ describe("jobRoleList", () => {
         jobRoleId: 1,
         roleName: "Software Engineer",
         location: "Birmingham",
-        capabilityId: 1,
-        bandId: 5,
+        capability: "Software Engineering",
+        band: "Engineer",
         closingDate: "2026-08-06",
         status: "open",
       },
@@ -33,8 +34,8 @@ describe("jobRoleList", () => {
         jobRoleId: 2,
         roleName: "Delivery Manager",
         location: "Leeds",
-        capabilityId: 2,
-        bandId: 6,
+        capability: "Delivery Management",
+        band: "Senior Engineer",
         closingDate: "2026-09-01",
         status: "closed",
       },
@@ -53,8 +54,8 @@ describe("jobRoleList", () => {
         jobRoleId: 2,
         roleName: "Delivery Manager",
         location: "Leeds",
-        capabilityId: 2,
-        bandId: 6,
+        capability: "Delivery Management",
+        band: "Senior Engineer",
         closingDate: "2026-09-01",
         status: "closed",
       },
