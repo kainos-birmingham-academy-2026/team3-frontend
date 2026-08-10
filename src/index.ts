@@ -22,6 +22,13 @@ nunjucks.configure(
 	},
 );
 
+app.use(express.static(path.join(__dirname, "..", "public")));
+
+app.use((req, res, next) => {
+	res.locals.currentPath = req.path;
+	next();
+});
+
 app.use(router);
 
 app.listen(port, () => {

@@ -7,7 +7,7 @@ const service = new JobRoleService();
 const controller = new JobRoleController(service);
 
 router.get("/", (req, res) => {
-	res.send("Hello, World!");
+	res.render("pages/index.njk");
 });
 
 router.get("/health", (req, res) => {
