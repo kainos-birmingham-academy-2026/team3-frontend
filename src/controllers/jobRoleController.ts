@@ -1,12 +1,44 @@
 import type { Request, Response } from "express";
+import axios from "axios";
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
     constructor(private jobRoleService: JobRoleService) {}
 
-   async getAll(req: Request, res: Response): Promise<void> {
-     const jobRoles = await this.jobRoleService.getAll();
-     res.render("pages/jobRoleList.njk", { jobRoles });
-   }
+    private getJwtToken(req: Request): string {
+		return req.session.jwtToken ?? "";
+	}
+
+    async getAll(req: Request, res: Response): Promise<void> {
+      try {
+        const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
+        res.render("pages/jobRoleList.njk", { jobRoles });
+      } catch (error) {
+        if (this.handleUnauthorized(req, res, error)) {
+          return;
+        }
+        this.renderApiError(res, error);
+      }
+    }
+
+    private handleUnauthorized(req: Request, res: Response, error: unknown): boolean {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        req.session.jwtToken = undefined;
+        res.redirect("/login");
+        return true;
+      }
+
+      return false;
+    }
+
+    private renderApiError(res: Response, error: unknown): void {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unable to load job roles";
+
+      res.status(500).render("pages/jobRoleList.njk", {
+        jobRoles: [],
+        errorMessage,
+      });
+    }
 }
 

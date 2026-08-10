@@ -25,9 +25,11 @@
      <a class="nav-link" href="https://www.kainos.com/workday">Workday</a>
     </nav>
 
-    <a class="button button-outline header-cta" href="https://www.kainos.com/contact-us">
-     Get in touch
-    </a>
+    {% if isAuthenticated %}
+     <a class="button button-outline header-cta" href="/logout">Sign out</a>
+    {% else %}
+     <a class="button button-outline header-cta" href="/login">Sign in</a>
+    {% endif %}
    </div>
   </header>
 

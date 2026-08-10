@@ -238,6 +238,61 @@ a:hover {
   color: var(--kainos-text-muted);
 }
 
+.login-hero {
+  margin-bottom: 1rem;
+}
+
+.login-panel {
+  background: var(--kainos-white);
+  border: 1px solid #d9def0;
+  border-top: 6px solid var(--kainos-blue);
+  max-width: 34rem;
+  padding: 1.5rem;
+}
+
+.login-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.45rem;
+}
+
+.login-form {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.form-field label {
+  font-weight: 600;
+}
+
+.form-field input {
+  width: 100%;
+  border: 1px solid #b8c2e6;
+  padding: 0.68rem 0.75rem;
+  font: inherit;
+  color: var(--kainos-navy);
+  background: #fbfcff;
+}
+
+.form-field input:focus {
+  border-color: var(--kainos-blue);
+  outline: 3px solid rgba(40, 53, 131, 0.2);
+  outline-offset: 1px;
+}
+
+.form-alert {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border-left: 4px solid var(--kainos-orange);
+  background: #fff3ea;
+  color: #7c2d04;
+  font-weight: 600;
+}
+
 .site-footer {
   position: relative;
   overflow: hidden;
@@ -359,5 +414,9 @@ a:hover {
   .home-cards,
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .login-panel {
+    max-width: 100%;
   }
 }
