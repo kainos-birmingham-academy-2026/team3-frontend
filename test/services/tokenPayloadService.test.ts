@@ -14,10 +14,10 @@ describe("getUserRoleFromToken", () => {
 		expect(getUserRoleFromToken(token)).toBe("USER");
 	});
 
-	it("should return RECRUITMENT_ADMIN role from token payload", () => {
-		const token = createTokenWithPayload({ role: "RECRUITMENT_ADMIN" });
+	it("should return ADMIN role from token payload", () => {
+		const token = createTokenWithPayload({ role: "ADMIN" });
 
-		expect(getUserRoleFromToken(token)).toBe("RECRUITMENT_ADMIN");
+		expect(getUserRoleFromToken(token)).toBe("ADMIN");
 	});
 
 	it("should return undefined for invalid token shape", () => {

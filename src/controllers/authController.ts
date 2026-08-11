@@ -39,6 +39,15 @@ export class AuthController {
 		});
 	}
 
+	showRegisterConfirmation(req: Request, res: Response): void {
+		if (req.session.jwtToken) {
+			res.redirect("/");
+			return;
+		}
+
+		res.render("pages/registerConfirmation.njk");
+	}
+
 	async login(req: Request, res: Response): Promise<void> {
 		const email = String(req.body.email ?? "").trim();
 		const password = String(req.body.password ?? "").trim();
@@ -103,7 +112,7 @@ export class AuthController {
 
 		try {
 			await authApiService.register(email, password);
-			res.redirect("/login?registered=1");
+			res.redirect("/register/confirmation");
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Unable to register";

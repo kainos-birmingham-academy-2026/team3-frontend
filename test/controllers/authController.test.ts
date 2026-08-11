@@ -10,7 +10,7 @@ vi.mock("../../src/services/authApiService", () => ({
 
 type TestSession = {
   jwtToken?: string;
-  userRole?: "RECRUITMENT_ADMIN" | "USER";
+  userRole?: "ADMIN" | "USER";
   destroy: (callback: () => void) => void;
 };
 
@@ -42,7 +42,7 @@ function createRes(): Response {
   return res;
 }
 
-function createTokenWithRole(role: "RECRUITMENT_ADMIN" | "USER"): string {
+function createTokenWithRole(role: "ADMIN" | "USER"): string {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
   const payload = Buffer.from(JSON.stringify({ role })).toString("base64url");
   return `${header}.${payload}.signature`;
@@ -116,6 +116,29 @@ describe("AuthController", () => {
     const res = createRes();
 
     controller.showRegister(req, res);
+
+    expect(res.redirect).toHaveBeenCalledWith("/");
+  });
+
+  it("should render register confirmation page for unauthenticated user", () => {
+    const req = createReq();
+    const res = createRes();
+
+    controller.showRegisterConfirmation(req, res);
+
+    expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk");
+  });
+
+  it("should redirect authenticated users away from register confirmation page", () => {
+    const req = createReq({
+      session: {
+        jwtToken: "existing-token",
+        destroy: vi.fn((callback: () => void) => callback()),
+      },
+    });
+    const res = createRes();
+
+    controller.showRegisterConfirmation(req, res);
 
     expect(res.redirect).toHaveBeenCalledWith("/");
   });
@@ -274,7 +297,7 @@ describe("AuthController", () => {
     await controller.register(req, res);
 
     expect(authApiService.register).toHaveBeenCalledWith("new.user", "Password123!");
-    expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
+    expect(res.redirect).toHaveBeenCalledWith("/register/confirmation");
   });
 
   it("should render register page with error when registration fails", async () => {

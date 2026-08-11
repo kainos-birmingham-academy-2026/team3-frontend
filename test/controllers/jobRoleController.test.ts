@@ -5,7 +5,7 @@ import { JobRoleController } from "../../src/controllers/jobRoleController";
 type TestRequest = {
   session: {
     jwtToken?: string;
-		userRole?: "RECRUITMENT_ADMIN" | "USER";
+		userRole?: "ADMIN" | "USER";
   };
 };
 

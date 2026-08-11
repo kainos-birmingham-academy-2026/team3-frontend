@@ -21,8 +21,8 @@ export function getUserRoleFromToken(token: string): UserRole | undefined {
 		const payloadText = decodeBase64Url(parts[1] ?? "");
 		const payload = JSON.parse(payloadText) as JwtPayload;
 
-		if (payload.role === USER_ROLES.RECRUITMENT_ADMIN) {
-			return USER_ROLES.RECRUITMENT_ADMIN;
+		if (payload.role === USER_ROLES.ADMIN) {
+			return USER_ROLES.ADMIN;
 		}
 
 		if (payload.role === USER_ROLES.USER) {
