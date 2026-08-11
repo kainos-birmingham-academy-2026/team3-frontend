@@ -1,5 +1,6 @@
-import type { Request, Response } from "express";
 import axios from "axios";
+import type { Request, Response } from "express";
+
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
@@ -13,6 +14,19 @@ export class JobRoleController {
       try {
         const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
         res.render("pages/jobRoleList.njk", { jobRoles });
+      } catch (error) {
+        if (this.handleUnauthorized(req, res, error)) {
+          return;
+        }
+        this.renderApiError(res, error);
+      }
+    }
+
+    async getById(req: Request, res: Response): Promise<void> {
+      try {
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        const jobRoleId = await this.jobRoleService.getById(id, this.getJwtToken(req));
+        res.render("pages/jobRoleDetail.njk", { jobRoleId });
       } catch (error) {
         if (this.handleUnauthorized(req, res, error)) {
           return;
