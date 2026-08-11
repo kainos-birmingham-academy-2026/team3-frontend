@@ -8,32 +8,7 @@
   <link rel="stylesheet" href="/styles/branding.css" />
  </head>
  <body>
-  <header class="site-header">
-   <div class="container header-inner">
-    <a class="logo-link" href="/" aria-label="Kainos home">
-     <img
-      src="/images/kainos-logo-primary-transparent.png"
-      alt="Kainos logo"
-      class="logo"
-     />
-    </a>
-
-    {% if currentPath != '/login' %}
-     <nav class="site-nav" aria-label="Main navigation">
-      <a class="nav-link {% if currentPath == '/' %}nav-link-active{% endif %}" href="/">Home</a>
-      <a class="nav-link {% if currentPath == '/job-role-list' %}nav-link-active{% endif %}" href="/job-role-list">Job roles</a>
-     </nav>
-    {% endif %}
-
-    {% if currentPath != '/login' %}
-     {% if isAuthenticated %}
-      <a class="button button-outline header-cta header-cta-danger" href="/logout">Sign out</a>
-     {% else %}
-      <a class="button button-outline header-cta" href="/login">Sign in</a>
-     {% endif %}
-    {% endif %}
-   </div>
-  </header>
+  {% include "layouts/header.njk" %}
 
   <main class="site-main">
    <div class="container">
@@ -41,44 +16,6 @@
    </div>
   </main>
 
-  <footer class="site-footer">
-   <div class="footer-brand-strip" aria-hidden="true">
-    <div class="container footer-brand-inner">
-      <img
-        src="/images/kainos-logo-alt-transparent.png"
-        alt="Kainos logo"
-        class="footer-logo"
-      />
-        <p class="footer-tagline">
-         <span>THINKING</span>
-         <span class="footer-tagline-accent">BEYOND</span>
-         <span>LIMITATIONS</span>
-        </p>
-    </div>
-   </div>
-
-   <div class="container footer-grid">
-    <section>
-     <h2>Contact</h2>
-     <p>Email: <a href="mailto:hello@kainos.com">hello@kainos.com</a></p>
-     <p>Phone: <a href="tel:+442890322000">+44 (0) 28 9032 2000</a></p>
-    </section>
-    <section>
-     <h2>Office</h2>
-     <p>Kainos House</p>
-     <p>4-6 Upper Crescent</p>
-     <p>Belfast BT7 1NT</p>
-    </section>
-    <section>
-     <h2>Explore</h2>
-     <p><a href="https://www.kainos.com/about-us">About us</a></p>
-     <p><a href="https://www.kainos.com/insights">Insights</a></p>
-     <p><a href="https://careers.kainos.com/gb/en">Careers</a></p>
-    </section>
-   </div>
-   <div class="container footer-meta">
-    <p>Copyright © 2026 Kainos. All rights reserved.</p>
-   </div>
-  </footer>
+  {% include "layouts/footer.njk" %}
  </body>
 </html>
