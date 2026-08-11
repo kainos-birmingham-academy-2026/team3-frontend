@@ -5,6 +5,7 @@ import { JobRoleController } from "../../src/controllers/jobRoleController";
 type TestRequest = {
   session: {
     jwtToken?: string;
+		userRole?: "RECRUITMENT_ADMIN" | "APPLICANT";
   };
 };
 
@@ -66,7 +67,7 @@ describe("JobRoleController", () => {
 
   it("should clear token and redirect to login when backend returns 401", async () => {
     const req = createRequest({
-      session: { jwtToken: "jwt-token" },
+      session: { jwtToken: "jwt-token", userRole: "APPLICANT" },
     });
     const res = createResponse();
 
@@ -78,6 +79,7 @@ describe("JobRoleController", () => {
     await controller.getAll(req as unknown as Request, res);
 
     expect(req.session.jwtToken).toBeUndefined();
+    expect(req.session.userRole).toBeUndefined();
     expect(res.redirect).toHaveBeenCalledWith("/login");
     expect(res.render).not.toHaveBeenCalled();
   });

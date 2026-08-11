@@ -4,6 +4,7 @@ import nunjucks from "nunjucks";
 import path from "node:path";
 import request from "supertest";
 import { beforeAll, describe, expect, it } from "vitest";
+import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
 
 describe("routes", () => {
@@ -24,6 +25,7 @@ describe("routes", () => {
       }),
     );
 
+		app.use(authRouter);
     app.use(router);
   });
 
@@ -42,6 +44,13 @@ describe("routes", () => {
     expect(response.body.status).toBe("UP");
     expect(typeof response.body.time).toBe("string");
     expect(Number.isNaN(Date.parse(response.body.time))).toBe(false);
+  });
+
+  it("should return 200 for register page", async () => {
+    const response = await request(app).get("/register");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("Create your account");
   });
 
   it("should redirect unauthenticated users from job role list to login", async () => {

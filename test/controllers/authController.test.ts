@@ -5,10 +5,12 @@ import * as authApiService from "../../src/services/authApiService";
 
 vi.mock("../../src/services/authApiService", () => ({
   login: vi.fn(),
+	register: vi.fn(),
 }));
 
 type TestSession = {
   jwtToken?: string;
+  userRole?: "RECRUITMENT_ADMIN" | "APPLICANT";
   destroy: (callback: () => void) => void;
 };
 
@@ -40,6 +42,12 @@ function createRes(): Response {
   return res;
 }
 
+function createTokenWithRole(role: "RECRUITMENT_ADMIN" | "APPLICANT"): string {
+  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({ role })).toString("base64url");
+  return `${header}.${payload}.signature`;
+}
+
 describe("AuthController", () => {
   const controller = new AuthController();
 
@@ -69,7 +77,47 @@ describe("AuthController", () => {
 
     expect(res.render).toHaveBeenCalledWith("pages/login.njk", {
       formValues: { email: "" },
+      successMessage: undefined,
     });
+  });
+
+  it("should render login page with success message when coming from registration", () => {
+    const req = createReq({
+      query: { registered: "1" },
+    } as Partial<MockRequest>);
+    const res = createRes();
+
+    controller.showLogin(req, res);
+
+    expect(res.render).toHaveBeenCalledWith("pages/login.njk", {
+      formValues: { email: "" },
+      successMessage: "Account created. Please sign in.",
+    });
+  });
+
+  it("should render register page for unauthenticated user", () => {
+    const req = createReq();
+    const res = createRes();
+
+    controller.showRegister(req, res);
+
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      formValues: { email: "" },
+    });
+  });
+
+  it("should redirect authenticated users away from register page", () => {
+    const req = createReq({
+      session: {
+        jwtToken: "existing-token",
+        destroy: vi.fn((callback: () => void) => callback()),
+      },
+    });
+    const res = createRes();
+
+    controller.showRegister(req, res);
+
+    expect(res.redirect).toHaveBeenCalledWith("/");
   });
 
   it("should return validation error when email is missing", async () => {
@@ -103,7 +151,9 @@ describe("AuthController", () => {
   });
 
   it("should store token and redirect to home on successful login", async () => {
-    vi.mocked(authApiService.login).mockResolvedValueOnce("jwt-token");
+    vi.mocked(authApiService.login).mockResolvedValueOnce(
+      createTokenWithRole("APPLICANT"),
+    );
 
     const req = createReq({
       body: { email: "jane.doe", password: "password123" },
@@ -113,8 +163,26 @@ describe("AuthController", () => {
     await controller.login(req, res);
 
     expect(authApiService.login).toHaveBeenCalledWith("jane.doe", "password123");
-    expect(req.session.jwtToken).toBe("jwt-token");
+    expect(req.session.jwtToken).toBe(createTokenWithRole("APPLICANT"));
+    expect(req.session.userRole).toBe("APPLICANT");
     expect(res.redirect).toHaveBeenCalledWith("/");
+  });
+
+  it("should return 401 when backend token does not include a valid role", async () => {
+    vi.mocked(authApiService.login).mockResolvedValueOnce("invalid-token");
+
+    const req = createReq({
+      body: { email: "jane.doe", password: "password123" },
+    });
+    const res = createRes();
+
+    await controller.login(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.render).toHaveBeenCalledWith("pages/login.njk", {
+      errorMessage: "Invalid login token",
+      formValues: { email: "jane.doe" },
+    });
   });
 
   it("should render 401 with error message when login fails", async () => {
@@ -133,6 +201,82 @@ describe("AuthController", () => {
     expect(res.render).toHaveBeenCalledWith("pages/login.njk", {
       errorMessage: "Invalid email or password",
       formValues: { email: "jane.doe" },
+    });
+  });
+
+  it("should validate register input", async () => {
+    const req = createReq({
+      body: { email: "", password: "", confirmPassword: "" },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Enter email, password and confirm password",
+      formValues: { email: "" },
+    });
+  });
+
+  it("should validate confirm password mismatch", async () => {
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "password123",
+        confirmPassword: "password456",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Passwords do not match",
+      formValues: { email: "new.user" },
+    });
+  });
+
+  it("should redirect to login after successful registration", async () => {
+    vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
+
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "password123",
+        confirmPassword: "password123",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).toHaveBeenCalledWith("new.user", "password123");
+    expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
+  });
+
+  it("should render register page with error when registration fails", async () => {
+    vi.mocked(authApiService.register).mockRejectedValueOnce(
+      new Error("Email already in use"),
+    );
+
+    const req = createReq({
+      body: {
+        email: "existing.user",
+        password: "password123",
+        confirmPassword: "password123",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Email already in use",
+      formValues: { email: "existing.user" },
     });
   });
 

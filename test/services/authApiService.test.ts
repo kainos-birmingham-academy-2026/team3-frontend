@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import apiClient from "../../src/config/apiClient.js";
-import { login } from "../../src/services/authApiService";
+import { login, register } from "../../src/services/authApiService";
 
 vi.mock("../../src/config/apiClient.js", () => ({
   default: {
@@ -10,6 +10,7 @@ vi.mock("../../src/config/apiClient.js", () => ({
 
 describe("authApiService", () => {
   const originalAuthLoginPath = process.env.AUTH_LOGIN_PATH;
+  const originalAuthRegisterPath = process.env.AUTH_REGISTER_PATH;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -19,6 +20,13 @@ describe("authApiService", () => {
     }
 
     process.env.AUTH_LOGIN_PATH = originalAuthLoginPath;
+
+    if (originalAuthRegisterPath === undefined) {
+      delete process.env.AUTH_REGISTER_PATH;
+      return;
+    }
+
+    process.env.AUTH_REGISTER_PATH = originalAuthRegisterPath;
   });
 
   it("should send login payload with email mapping and return token", async () => {
@@ -124,6 +132,49 @@ describe("authApiService", () => {
 
     await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
       "Something went wrong, please try again later.",
+    );
+  });
+
+  it("should send register payload", async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { message: "User registered" } });
+
+    await expect(register("new.user@example.com", "password123")).resolves.toBeUndefined();
+
+    expect(apiClient.post).toHaveBeenCalledWith("/api/register", {
+      email: "new.user@example.com",
+      password: "password123",
+    });
+  });
+
+  it("should use AUTH_REGISTER_PATH when provided", async () => {
+    process.env.AUTH_REGISTER_PATH = "/auth/register";
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: { message: "User registered" } });
+
+    await register("new.user@example.com", "password123");
+
+    expect(apiClient.post).toHaveBeenCalledWith("/auth/register", {
+      email: "new.user@example.com",
+      password: "password123",
+    });
+  });
+
+  it("should map registration backend errors", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 409 },
+    });
+
+    await expect(register("existing@example.com", "password123")).rejects.toThrow(
+      "Email already in use",
+    );
+
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 500 },
+    });
+
+    await expect(register("existing@example.com", "password123")).rejects.toThrow(
+      "Backend server error during registration",
     );
   });
 });

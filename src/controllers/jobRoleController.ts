@@ -45,6 +45,7 @@ export class JobRoleController {
     private handleUnauthorized(req: Request, res: Response, error: unknown): boolean {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         req.session.jwtToken = undefined;
+			req.session.userRole = undefined;
         res.redirect("/login");
         return true;
       }

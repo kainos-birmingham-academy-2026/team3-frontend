@@ -1,0 +1,58 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Register{% endblock %}
+
+{% block content %}
+ <section class="page-hero login-hero">
+  <p class="eyebrow">Kainos Careers</p>
+  <h1>Create your account</h1>
+ </section>
+
+ <section class="login-panel" aria-labelledby="register-form-title">
+  <h2 id="register-form-title">Get started</h2>
+
+  {% if errorMessage %}
+   <p class="form-alert" role="alert">{{ errorMessage }}</p>
+  {% endif %}
+
+  <form method="post" action="/register" class="login-form" novalidate>
+   <div class="form-field">
+    <label for="email">Email</label>
+    <input
+     id="email"
+     name="email"
+     type="text"
+     autocomplete="email"
+     value="{{ formValues.email | default('', true) }}"
+     required
+    />
+   </div>
+
+   <div class="form-field">
+    <label for="password">Password</label>
+    <input
+     id="password"
+     name="password"
+     type="password"
+     autocomplete="new-password"
+     required
+    />
+   </div>
+
+     <div class="form-field">
+        <label for="confirmPassword">Confirm password</label>
+        <input
+         id="confirmPassword"
+         name="confirmPassword"
+         type="password"
+         autocomplete="new-password"
+         required
+        />
+     </div>
+
+   <button type="submit" class="button button-solid">Create account</button>
+  </form>
+
+  <p class="form-footnote">Already have an account? <a href="/login">Sign in</a></p>
+ </section>
+{% endblock %}
