@@ -44,6 +44,8 @@ describe("jobRoleList", () => {
     const html = renderView(jobRoles);
 
     expect(html).toContain("Software Engineer");
+    expect(html).toContain('data-href="/job-role-list/1"');
+    expect(html).toContain('class="job-role-row-link"');
     expect(html).not.toContain("Delivery Manager");
     expect(html).not.toContain("No open job roles found");
   });

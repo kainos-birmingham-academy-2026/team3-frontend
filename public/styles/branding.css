@@ -240,6 +240,20 @@ a:hover {
   background: #eef1fb;
 }
 
+.job-role-row-link {
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.job-role-row-link:hover {
+  background: #f4f7ff;
+}
+
+.job-role-row-link:focus-visible {
+  outline: 3px solid rgba(40, 53, 131, 0.35);
+  outline-offset: -2px;
+}
+
 .empty-state {
   margin-top: 1rem;
   padding: 1rem;
