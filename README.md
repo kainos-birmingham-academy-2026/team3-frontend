@@ -127,9 +127,9 @@ Destroys session, clears `connect.sid`, and redirects to `/login`.
 
 ## Backend Dependency
 
-Run the backend branch used for this feature and follow its setup instructions:
+Run the backend application used for this feature and follow its setup instructions:
 
-https://github.com/kainos-birmingham-academy-2026/team3-backend/tree/feature/001-view-job-roles
+https://github.com/kainos-birmingham-academy-2026/team3-backend 
 
 Useful checks:
 

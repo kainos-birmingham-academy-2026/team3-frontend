@@ -114,4 +114,16 @@ describe("authApiService", () => {
       "Backend server error during login",
     );
   });
+
+  it("should map backend connection failures to a user friendly message", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ECONNREFUSED",
+      response: undefined,
+    });
+
+    await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
+      "Something went wrong, please try again later.",
+    );
+  });
 });

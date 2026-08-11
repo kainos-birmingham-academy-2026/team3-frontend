@@ -29,6 +29,12 @@ export async function login(email: string, password: string): Promise<string> {
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
 			const status = error.response?.status;
+			const networkErrorCodes = new Set(["ECONNREFUSED", "ENOTFOUND", "ECONNABORTED", "ETIMEDOUT"]);
+
+			if (!status && error.code && networkErrorCodes.has(error.code)) {
+				throw new Error("Something went wrong, please try again later.");
+			}
+
 			if (status === 400 || status === 401) {
 				throw new Error("Invalid email or password");
 			}
