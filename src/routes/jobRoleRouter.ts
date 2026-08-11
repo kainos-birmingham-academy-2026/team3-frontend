@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController";
-import { requireAuth } from "../middleware/authMiddleware";
+import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
 import { JobRoleService } from "../services/jobRoleService";
 
 const router = Router();
@@ -21,5 +21,8 @@ router.get("/health", (_req, res) => {
 router.get("/job-role-list", requireAuth, (req,res) => controller.getAll(req, res));
 router.get("/job-role-list/:id", (req, res) => controller.getById(req, res));
 
+router.get("/job-role-create", requireAuth, requireAdmin, (_req, res) => {
+	res.render("pages/jobRoleCreate.njk");
+});
 
 export default router;

@@ -1,0 +1,19 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Create job role{% endblock %}
+
+{% block content %}
+ <section class="login-panel" aria-labelledby="create-job-role-title">
+  <h2 id="create-job-role-title">Create job role</h2>
+  <p class="form-footnote">This is a mock create page for admin-only access testing.</p>
+
+  <form method="post" action="#" class="login-form" novalidate>
+   <div class="form-field">
+    <label for="roleName">Role name</label>
+    <input id="roleName" name="roleName" type="text" placeholder="e.g. Software Engineer" />
+   </div>
+
+   <button type="submit" class="button button-solid" disabled>Mock create (coming soon)</button>
+  </form>
+ </section>
+{% endblock %}

@@ -6,6 +6,7 @@ import request from "supertest";
 import { beforeAll, describe, expect, it } from "vitest";
 import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
+import type { RequestHandler } from "express";
 
 describe("routes", () => {
   const app = express();
@@ -58,6 +59,44 @@ describe("routes", () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.location).toBe("/login");
+  });
+
+  it("should redirect unauthenticated users from create page to login", async () => {
+    const response = await request(app).get("/job-role-create");
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe("/login");
+  });
+
+  it("should allow ADMIN to access create page", async () => {
+    const adminApp = express();
+
+    nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
+      autoescape: true,
+      express: adminApp,
+      noCache: true,
+    });
+
+    adminApp.use(
+      session({
+        secret: "test-session-secret",
+        resave: false,
+        saveUninitialized: false,
+      }),
+    );
+
+    adminApp.use(((req, _res, next) => {
+      req.session.jwtToken = "admin-token";
+      req.session.userRole = "ADMIN";
+      next();
+    }) as RequestHandler);
+
+    adminApp.use(router);
+
+    const response = await request(adminApp).get("/job-role-create");
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain("Create job role");
   });
 });
 

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { USER_ROLES } from "../types/auth";
 
 export function requireAuth(
 	req: Request,
@@ -9,5 +10,18 @@ export function requireAuth(
 		res.redirect("/login");
 		return;
 	}
+	next();
+}
+
+export function requireAdmin(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+): void {
+	if (req.session.userRole !== USER_ROLES.ADMIN) {
+		res.redirect("/job-role-list");
+		return;
+	}
+
 	next();
 }
