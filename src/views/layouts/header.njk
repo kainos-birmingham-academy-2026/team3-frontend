@@ -1,0 +1,26 @@
+<header class="site-header">
+ <div class="container header-inner">
+  <a class="logo-link" href="/" aria-label="Kainos home">
+   <img
+    src="/images/kainos-logo-primary-transparent.png"
+    alt="Kainos logo"
+    class="logo"
+   />
+  </a>
+
+  {% if currentPath != '/login' %}
+   <nav class="site-nav" aria-label="Main navigation">
+    <a class="nav-link {% if currentPath == '/' %}nav-link-active{% endif %}" href="/">Home</a>
+    <a class="nav-link {% if currentPath == '/job-role-list' %}nav-link-active{% endif %}" href="/job-role-list">Job roles</a>
+   </nav>
+  {% endif %}
+
+  {% if currentPath != '/login' %}
+   {% if isAuthenticated %}
+    <a class="button button-outline header-cta header-cta-danger" href="/logout">Sign out</a>
+   {% else %}
+    <a class="button button-outline header-cta" href="/login">Sign in</a>
+   {% endif %}
+  {% endif %}
+ </div>
+</header>
