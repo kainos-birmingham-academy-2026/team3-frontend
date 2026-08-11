@@ -6,6 +6,9 @@ type TestRequest = {
   session: {
     jwtToken?: string;
   };
+  params?: {
+    id?: string | string[];
+  };
 };
 
 function createRequest(partial: Partial<TestRequest> = {}): TestRequest {
@@ -31,6 +34,7 @@ function createResponse(): Response {
 describe("JobRoleController", () => {
   const jobRoleService = {
     getAll: vi.fn(),
+    getById: vi.fn(),
   };
 
   const controller = new JobRoleController(jobRoleService);
@@ -94,6 +98,75 @@ describe("JobRoleController", () => {
     expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
       jobRoles: [],
       errorMessage: "Backend server error",
+    });
+  });
+
+  it("should render detail page for getById success", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
+      params: { id: "7" },
+    });
+    const res = createResponse();
+    const jobRole = {
+      jobRoleId: 7,
+      roleName: "QA Engineer",
+    };
+
+    jobRoleService.getById.mockResolvedValueOnce(jobRole);
+
+    await controller.getById(req as unknown as Request, res);
+
+    expect(jobRoleService.getById).toHaveBeenCalledWith("7", "jwt-token");
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", { jobRoleId: jobRole });
+  });
+
+  it("should use the first id when params.id is an array", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
+      params: { id: ["12", "13"] },
+    });
+    const res = createResponse();
+
+    jobRoleService.getById.mockResolvedValueOnce({ jobRoleId: 12, roleName: "Analyst" });
+
+    await controller.getById(req as unknown as Request, res);
+
+    expect(jobRoleService.getById).toHaveBeenCalledWith("12", "jwt-token");
+  });
+
+  it("should clear token and redirect to login when getById returns 401", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
+      params: { id: "1" },
+    });
+    const res = createResponse();
+
+    jobRoleService.getById.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 401 },
+    });
+
+    await controller.getById(req as unknown as Request, res);
+
+    expect(req.session.jwtToken).toBeUndefined();
+    expect(res.redirect).toHaveBeenCalledWith("/login");
+    expect(res.render).not.toHaveBeenCalled();
+  });
+
+  it("should render default message when non-Error is thrown", async () => {
+    const req = createRequest({
+      params: { id: "1" },
+    });
+    const res = createResponse();
+
+    jobRoleService.getById.mockRejectedValueOnce("unknown failure");
+
+    await controller.getById(req as unknown as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
+      jobRoles: [],
+      errorMessage: "Unable to load job roles",
     });
   });
 });
