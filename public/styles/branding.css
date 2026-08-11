@@ -618,6 +618,21 @@ a:hover {
   padding: 0;
 }
 
+.spec-link {
+  color: var(--kainos-blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--kainos-blue);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.28em;
+  transition: color 0.2s ease;
+}
+
+.spec-link:hover {
+  color: var(--kainos-blue-dark);
+  text-decoration-color: var(--kainos-blue-dark);
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.4rem 0.85rem;

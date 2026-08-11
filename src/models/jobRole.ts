@@ -7,4 +7,10 @@ export interface JobRole {
   closingDate: string;
   status: string;
   description?: string;
+  responsibilities?: string;
+  jobSpecUrl?: string;
+  openPositions?: number;
+  addressLine1?: string;
+  addressLine2?: string;
+  postcode?: string;
 }

@@ -15,6 +15,14 @@ interface ApiJobRole {
   status?: string;
   statusName?: string;
   description?: string;
+  responsibilities?: string;
+  sharepointUrl?: string;
+  jobSpecUrl?: string;
+  numberOfOpenPositions?: number;
+  openPositions?: number;
+  addressLine1?: string;
+  addressLine2?: string;
+  postcode?: string;
 }
 
 export class JobRoleService {
@@ -46,6 +54,12 @@ export class JobRoleService {
           closingDate,
           status: this.mapStatus(jobRole),
           description: jobRole.description,
+          responsibilities: jobRole.responsibilities,
+          jobSpecUrl: jobRole.sharepointUrl ?? jobRole.jobSpecUrl,
+          openPositions: jobRole.numberOfOpenPositions ?? jobRole.openPositions,
+          addressLine1: jobRole.addressLine1,
+          addressLine2: jobRole.addressLine2,
+          postcode: jobRole.postcode,
         };
       });
     } catch (error) {
@@ -86,6 +100,12 @@ export class JobRoleService {
         closingDate,
         status: this.mapStatus(jobRole),
         description: jobRole.description,
+        responsibilities: jobRole.responsibilities,
+        jobSpecUrl: jobRole.sharepointUrl ?? jobRole.jobSpecUrl,
+        openPositions: jobRole.numberOfOpenPositions ?? jobRole.openPositions,
+        addressLine1: jobRole.addressLine1,
+        addressLine2: jobRole.addressLine2,
+        postcode: jobRole.postcode,
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {

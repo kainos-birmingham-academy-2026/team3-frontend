@@ -24,6 +24,13 @@
         </div>
       {% endif %}
 
+      {% if jobRoleId.responsibilities %}
+        <div class="description-section">
+          <h2>Responsibilities</h2>
+          <p>{{ jobRoleId.responsibilities }}</p>
+        </div>
+      {% endif %}
+
       <div class="detail-grid">
         <div class="detail-section">
           <h2>Job Details</h2>
@@ -34,6 +41,15 @@
             <dt>Location</dt>
             <dd>{{ jobRoleId.location }}</dd>
 
+            {% if jobRoleId.addressLine1 %}
+              <dt>Address</dt>
+              <dd>
+                {{ jobRoleId.addressLine1 }}
+                {% if jobRoleId.addressLine2 %}<br>{{ jobRoleId.addressLine2 }}{% endif %}
+                {% if jobRoleId.postcode %}<br>{{ jobRoleId.postcode }}{% endif %}
+              </dd>
+            {% endif %}
+
             <dt>Band</dt>
             <dd>{{ jobRoleId.band }}</dd>
 
@@ -42,6 +58,20 @@
 
             <dt>Closing Date</dt>
             <dd>{{ jobRoleId.closingDate }}</dd>
+
+            {% if jobRoleId.openPositions %}
+              <dt>Open Positions</dt>
+              <dd>{{ jobRoleId.openPositions }}</dd>
+            {% endif %}
+
+            {% if jobRoleId.jobSpecUrl %}
+              <dt>Job Spec</dt>
+              <dd>
+                <a href="{{ jobRoleId.jobSpecUrl }}" target="_blank" rel="noopener noreferrer" class="spec-link">
+                  View in SharePoint
+                </a>
+              </dd>
+            {% endif %}
           </dl>
         </div>
       </div>
