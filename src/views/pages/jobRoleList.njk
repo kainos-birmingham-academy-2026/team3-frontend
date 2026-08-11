@@ -28,8 +28,8 @@
      <tbody>
       {% for jobRole in jobRoles %}
        {% if jobRole.status == "open" %}
-        <tr>
-         <td>{{ jobRole.roleName }}</td>
+          <tr class="job-role-row-link" data-href="/job-role-list/{{ jobRole.jobRoleId }}" role="link" tabindex="0" aria-label="View details for {{ jobRole.roleName }}">
+          <td>{{ jobRole.roleName }}</td>
          <td>{{ jobRole.location }}</td>
          <td>{{ jobRole.capability }}</td>
          <td>{{ jobRole.band }}</td>
@@ -42,4 +42,25 @@
  {% else %}
   <p class="empty-state">No open job roles found</p>
  {% endif %}
+
+ <script>
+  document.querySelectorAll(".job-role-row-link").forEach((row) => {
+   row.addEventListener("click", () => {
+    const href = row.getAttribute("data-href");
+    if (href) {
+     window.location.href = href;
+    }
+   });
+
+   row.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+     event.preventDefault();
+     const href = row.getAttribute("data-href");
+     if (href) {
+      window.location.href = href;
+     }
+    }
+   });
+  });
+ </script>
 {% endblock %}

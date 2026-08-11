@@ -180,7 +180,7 @@ a:hover {
 
 .home-hero h1,
 .page-hero h1 {
-  margin: 0.4rem 0 0.8rem;
+  margin: 0;
   font-size: clamp(1.8rem, 2.8vw, 3rem);
   line-height: 1.1;
 }
@@ -238,6 +238,20 @@ a:hover {
 
 .job-role-table thead {
   background: #eef1fb;
+}
+
+.job-role-row-link {
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+
+.job-role-row-link:hover {
+  background: #f4f7ff;
+}
+
+.job-role-row-link:focus-visible {
+  outline: 3px solid rgba(40, 53, 131, 0.35);
+  outline-offset: -2px;
 }
 
 .empty-state {
@@ -494,5 +508,331 @@ a:hover {
   .error-image-wrapper {
     margin-top: 0;
     max-width: 100%;
+  }
+}
+
+/* Job Role Detail Page Styling */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--kainos-blue);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.back-link:hover {
+  color: var(--kainos-blue-dark);
+  text-decoration: none;
+  transform: translateX(-4px);
+  background: rgba(40, 53, 131, 0.05);
+}
+
+.back-link:focus-visible {
+  outline: 3px solid var(--kainos-blue);
+  outline-offset: 2px;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-top .eyebrow {
+  margin: 0;
+  line-height: 1;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.job-role-detail {
+  background: var(--kainos-white);
+  border: 1px solid #dde3f5;
+  border-radius: 4px;
+  padding: 2rem;
+  margin-top: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.job-role-detail:focus-visible {
+  outline: 3px solid var(--kainos-blue);
+  outline-offset: 4px;
+  box-shadow: 0 4px 12px rgba(40, 53, 131, 0.15);
+}
+
+.hero-section {
+  margin-bottom: 2rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.detail-section {
+  padding-bottom: 1.5rem;
+}
+
+.detail-section h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--kainos-navy);
+  border-bottom: 3px solid var(--kainos-green);
+  padding-bottom: 0.75rem;
+}
+
+.detail-section dl {
+  margin: 0;
+  display: grid;
+  gap: 1.25rem 0;
+  background: #f7f9ff;
+  padding: 1.5rem;
+  border-radius: 4px;
+  border: 1px solid #e4e8f6;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+}
+
+.detail-section dt {
+  font-weight: 700;
+  color: var(--kainos-blue);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+  padding: 0.5rem 0;
+  background: transparent;
+  border: none;
+  line-height: 1.4;
+}
+
+.detail-section dt::after {
+  content: ":";
+  margin-right: 1rem;
+}
+
+.detail-section dd {
+  margin: 0;
+  color: var(--kainos-navy);
+  font-size: 1.05rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.spec-link {
+  color: var(--kainos-blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--kainos-blue);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.28em;
+  transition: all 0.2s ease;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.spec-link:hover {
+  color: var(--kainos-blue-dark);
+  text-decoration-color: var(--kainos-blue-dark);
+  background: rgba(40, 53, 131, 0.05);
+}
+
+.spec-link:focus-visible {
+  outline: 3px solid var(--kainos-blue);
+  outline-offset: 2px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.status-badge.status-open {
+  background: rgba(97, 168, 63, 0.15);
+  color: #2d5c1f;
+  border: 1px solid var(--kainos-green);
+}
+
+.status-badge.status-closed {
+  background: rgba(198, 40, 40, 0.1);
+  color: #6b2020;
+  border: 1px solid #c62828;
+}
+
+.status-badge.status-on-hold {
+  background: rgba(236, 102, 8, 0.1);
+  color: #654400;
+  border: 1px solid var(--kainos-orange);
+}
+
+.cta-section {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e4e8f6;
+}
+
+.description-section {
+  margin: 0 0 2rem 0;
+  padding: 1.5rem;
+  background: #f7f9ff;
+  border-left: 4px solid var(--kainos-green);
+  border-radius: 4px;
+}
+
+.description-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--kainos-navy);
+}
+
+.description-section p {
+  margin: 0;
+  color: var(--kainos-navy);
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+.button-primary {
+  background: var(--kainos-green);
+  color: var(--kainos-white);
+  border: 2px solid var(--kainos-green);
+  padding: 0.75rem 1.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.button-primary:hover {
+  background: #52932e;
+  border-color: #52932e;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(97, 168, 63, 0.2);
+}
+
+.button-primary:focus-visible {
+  outline: 3px solid var(--kainos-green);
+  outline-offset: 2px;
+}
+
+.info-message {
+  background: linear-gradient(135deg, rgba(65, 103, 159, 0.08) 0%, rgba(97, 168, 63, 0.05) 100%);
+  border-left: 4px solid var(--kainos-blue);
+  border-radius: 4px;
+  padding: 1.2rem;
+  margin-top: 2rem;
+  color: var(--kainos-navy);
+  font-weight: 500;
+}
+
+.info-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Dinosaur Decorations */
+.dino-decoration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 3rem 0 2rem;
+  padding: 2rem;
+}
+
+.dino-image {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  display: block;
+  animation: dino-float 3s ease-in-out infinite;
+}
+
+@keyframes dino-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  min-height: 400px;
+}
+
+.empty-state-dino {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.error-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-left: 4px solid var(--kainos-blue);
+  background: var(--kainos-grey-soft);
+  color: var(--kainos-text-muted);
+}
+
+.error-message p {
+  margin: 0 0 1rem;
+}
+
+.error-message .button {
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .job-role-detail {
+    padding: 1.5rem;
+  }
+
+  .cta-section {
+    flex-direction: column;
+  }
+
+  .button-primary {
+    width: 100%;
+    text-align: center;
   }
 }

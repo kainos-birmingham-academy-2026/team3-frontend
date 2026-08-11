@@ -6,11 +6,11 @@ const router = Router();
 const service = new JobRoleService();
 const controller = new JobRoleController(service);
 
-router.get("/", (req, res) => {
+router.get("/", (_req, res) => {
 	res.render("pages/index.njk");
 });
 
-router.get("/health", (req, res) => {
+router.get("/health", (_req, res) => {
 	res.status(200).send({
 		status: "UP",
 		time: new Date().toISOString(),
@@ -18,5 +18,6 @@ router.get("/health", (req, res) => {
 });
 
 router.get("/job-role-list", (req,res) => controller.getAll(req, res));
+router.get("/job-role-list/:id", (req, res) => controller.getById(req, res));
 
 export default router;

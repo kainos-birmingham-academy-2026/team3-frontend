@@ -1,0 +1,95 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="/job-role-list" class="back-link">← Back to Job Roles</a>
+
+  {% if jobRoleId %}
+    <article class="job-role-detail" tabindex="0">
+      <div class="hero-section">
+        <p class="eyebrow">Job Details</p>
+        <div class="hero-title-row">
+          <h1>{{ jobRoleId.roleName }}</h1>
+          {% if jobRoleId %}
+            <span class="status-badge status-{{ jobRoleId.status | lower }}">
+              {{ jobRoleId.status | capitalize }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if jobRoleId.description %}
+        <div class="description-section">
+          <h2>Job Description</h2>
+          <p>{{ jobRoleId.description }}</p>
+        </div>
+      {% endif %}
+
+      {% if jobRoleId.responsibilities %}
+        <div class="description-section">
+          <h2>Responsibilities</h2>
+          <p>{{ jobRoleId.responsibilities }}</p>
+        </div>
+      {% endif %}
+
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h2>Job Details</h2>
+          <dl>
+            <dt>Role Name</dt>
+            <dd>{{ jobRoleId.roleName }}</dd>
+
+            <dt>Location</dt>
+            <dd>{{ jobRoleId.location }}</dd>
+
+            {% if jobRoleId.addressLine1 %}
+              <dt>Address</dt>
+              <dd>
+                {{ jobRoleId.addressLine1 }}
+                {% if jobRoleId.addressLine2 %}<br>{{ jobRoleId.addressLine2 }}{% endif %}
+                {% if jobRoleId.postcode %}<br>{{ jobRoleId.postcode }}{% endif %}
+              </dd>
+            {% endif %}
+
+            <dt>Band</dt>
+            <dd>{{ jobRoleId.band }}</dd>
+
+            <dt>Capability</dt>
+            <dd>{{ jobRoleId.capability }}</dd>
+
+            <dt>Closing Date</dt>
+            <dd>{{ jobRoleId.closingDate }}</dd>
+
+            {% if jobRoleId.openPositions %}
+              <dt>Open Positions</dt>
+              <dd>{{ jobRoleId.openPositions }}</dd>
+            {% endif %}
+
+            {% if jobRoleId.jobSpecUrl %}
+              <dt>Job Spec</dt>
+              <dd>
+                <a href="{{ jobRoleId.jobSpecUrl }}" target="_blank" rel="noopener noreferrer" class="spec-link">
+                  View in SharePoint
+                </a>
+              </dd>
+            {% endif %}
+          </dl>
+        </div>
+      </div>
+
+      {% if jobRoleId.status == "open" %}
+        <div class="cta-section">
+          <a href="https://www.kainos.com/careers" class="button button-primary">Apply Now</a>
+        </div>
+      {% else %}
+        <div class="info-message">
+          <p>This position is currently closed. Please check back later for more opportunities.</p>
+        </div>
+      {% endif %}
+    </article>
+  {% else %}
+    <div class="error-message">
+      <p>Job role not found.</p>
+      <a href="/job-role-list" class="button button-solid">Back to Job Roles</a>
+    </div>
+  {% endif %}
+{% endblock %}
