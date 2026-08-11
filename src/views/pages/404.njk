@@ -5,16 +5,36 @@
 {% block content %}
  <section class="error-page-container">
   <div class="error-content">
+   <h1>404</h1>
    <h2>Page Not Found</h2>
    <p>Sorry, the page you're looking for doesn't exist.</p>
    <a href="/" class="button button-solid">Back to Home</a>
   </div>
   <div class="error-image-wrapper">
    <img
-    src="/images/kainos-error404.webp"
-    alt="404 Error Illustration"
+    id="error-dino"
+    src="/images/0b4b5776-0987-4994-87a6-e4579ecbb620.webp"
+    alt="Dinosaur lost in time"
     class="error-illustration"
    />
   </div>
+
+ <script>
+  // Array of random dinosaur images
+  const dinosaurs = [
+    '/images/0b4b5776-0987-4994-87a6-e4579ecbb620.webp',
+    '/images/5b7ccc97-6fb1-4674-ac2c-bd55382d550a.webp',
+    '/images/6af47957-8f4c-40e3-bca8-42b960dc6c1d.webp',
+    '/images/b555a143-df55-42b6-8796-11cc98ba0441.webp',
+    '/images/f89cdcd1-d72b-4ba3-9fce-c21e605582fb.webp'
+  ];
+
+  // Select a random dinosaur
+  const randomDino = dinosaurs[Math.floor(Math.random() * dinosaurs.length)];
+  const dinoImage = document.getElementById('error-dino');
+  if (dinoImage) {
+    dinoImage.src = randomDino;
+  }
+ </script>
  </section>
 {% endblock %}

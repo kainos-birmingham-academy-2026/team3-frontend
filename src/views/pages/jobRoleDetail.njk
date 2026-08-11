@@ -4,7 +4,7 @@
   <a href="/job-role-list" class="back-link">← Back to Job Roles</a>
 
   {% if jobRoleId %}
-    <article class="job-role-detail">
+    <article class="job-role-detail" tabindex="0">
       <div class="hero-section">
         <p class="eyebrow">Job Details</p>
         <div class="hero-title-row">
@@ -87,6 +87,9 @@
       {% endif %}
     </article>
   {% else %}
-    <p class="empty-state">Job role not found.</p>
+    <div class="error-message">
+      <p>Job role not found.</p>
+      <a href="/job-role-list" class="button button-solid">Back to Job Roles</a>
+    </div>
   {% endif %}
 {% endblock %}
