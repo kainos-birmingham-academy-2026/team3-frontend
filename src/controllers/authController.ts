@@ -2,6 +2,15 @@ import type { Request, Response } from "express";
 import * as authApiService from "../services/authApiService";
 import { getUserRoleFromToken } from "../services/tokenPayloadService";
 
+function isStrongPassword(password: string): boolean {
+	return (
+		password.length > 8 &&
+		/[a-z]/.test(password) &&
+		/[A-Z]/.test(password) &&
+		/[^A-Za-z0-9]/.test(password)
+	);
+}
+
 export class AuthController {
 	showLogin(req: Request, res: Response): void {
 		if (req.session.jwtToken) {
@@ -79,6 +88,14 @@ export class AuthController {
 		if (password !== confirmPassword) {
 			res.status(400).render("pages/register.njk", {
 				errorMessage: "Passwords do not match",
+				formValues: { email },
+			});
+			return;
+		}
+
+		if (!isStrongPassword(password)) {
+			res.status(400).render("pages/register.njk", {
+				errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
 				formValues: { email },
 			});
 			return;

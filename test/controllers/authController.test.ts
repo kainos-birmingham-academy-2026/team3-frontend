@@ -10,7 +10,7 @@ vi.mock("../../src/services/authApiService", () => ({
 
 type TestSession = {
   jwtToken?: string;
-  userRole?: "RECRUITMENT_ADMIN" | "APPLICANT";
+  userRole?: "RECRUITMENT_ADMIN" | "USER";
   destroy: (callback: () => void) => void;
 };
 
@@ -42,7 +42,7 @@ function createRes(): Response {
   return res;
 }
 
-function createTokenWithRole(role: "RECRUITMENT_ADMIN" | "APPLICANT"): string {
+function createTokenWithRole(role: "RECRUITMENT_ADMIN" | "USER"): string {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
   const payload = Buffer.from(JSON.stringify({ role })).toString("base64url");
   return `${header}.${payload}.signature`;
@@ -152,7 +152,7 @@ describe("AuthController", () => {
 
   it("should store token and redirect to home on successful login", async () => {
     vi.mocked(authApiService.login).mockResolvedValueOnce(
-      createTokenWithRole("APPLICANT"),
+      createTokenWithRole("USER"),
     );
 
     const req = createReq({
@@ -163,8 +163,8 @@ describe("AuthController", () => {
     await controller.login(req, res);
 
     expect(authApiService.login).toHaveBeenCalledWith("jane.doe", "password123");
-    expect(req.session.jwtToken).toBe(createTokenWithRole("APPLICANT"));
-    expect(req.session.userRole).toBe("APPLICANT");
+    expect(req.session.jwtToken).toBe(createTokenWithRole("USER"));
+    expect(req.session.userRole).toBe("USER");
     expect(res.redirect).toHaveBeenCalledWith("/");
   });
 
@@ -239,9 +239,7 @@ describe("AuthController", () => {
     });
   });
 
-  it("should redirect to login after successful registration", async () => {
-    vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
-
+  it("should validate weak registration password", async () => {
     const req = createReq({
       body: {
         email: "new.user",
@@ -253,7 +251,29 @@ describe("AuthController", () => {
 
     await controller.register(req, res);
 
-    expect(authApiService.register).toHaveBeenCalledWith("new.user", "password123");
+    expect(authApiService.register).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
+      formValues: { email: "new.user" },
+    });
+  });
+
+  it("should redirect to login after successful registration", async () => {
+    vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
+
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).toHaveBeenCalledWith("new.user", "Password123!");
     expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
   });
 
@@ -265,8 +285,8 @@ describe("AuthController", () => {
     const req = createReq({
       body: {
         email: "existing.user",
-        password: "password123",
-        confirmPassword: "password123",
+        password: "Password123!",
+        confirmPassword: "Password123!",
       },
     });
     const res = createRes();

@@ -25,8 +25,8 @@ export function getUserRoleFromToken(token: string): UserRole | undefined {
 			return USER_ROLES.RECRUITMENT_ADMIN;
 		}
 
-		if (payload.role === USER_ROLES.APPLICANT) {
-			return USER_ROLES.APPLICANT;
+		if (payload.role === USER_ROLES.USER) {
+			return USER_ROLES.USER;
 		}
 
 		return undefined;

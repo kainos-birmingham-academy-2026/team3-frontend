@@ -8,10 +8,10 @@ function createTokenWithPayload(payload: Record<string, unknown>): string {
 }
 
 describe("getUserRoleFromToken", () => {
-	it("should return APPLICANT role from token payload", () => {
-		const token = createTokenWithPayload({ role: "APPLICANT" });
+	it("should return USER role from token payload", () => {
+		const token = createTokenWithPayload({ role: "USER" });
 
-		expect(getUserRoleFromToken(token)).toBe("APPLICANT");
+		expect(getUserRoleFromToken(token)).toBe("USER");
 	});
 
 	it("should return RECRUITMENT_ADMIN role from token payload", () => {

@@ -5,7 +5,7 @@ import { JobRoleController } from "../../src/controllers/jobRoleController";
 type TestRequest = {
   session: {
     jwtToken?: string;
-		userRole?: "RECRUITMENT_ADMIN" | "APPLICANT";
+		userRole?: "RECRUITMENT_ADMIN" | "USER";
   };
 };
 
@@ -67,7 +67,7 @@ describe("JobRoleController", () => {
 
   it("should clear token and redirect to login when backend returns 401", async () => {
     const req = createRequest({
-      session: { jwtToken: "jwt-token", userRole: "APPLICANT" },
+      session: { jwtToken: "jwt-token", userRole: "USER" },
     });
     const res = createResponse();
 
