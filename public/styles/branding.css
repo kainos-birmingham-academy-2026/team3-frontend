@@ -125,11 +125,11 @@ a:hover {
 }
 
 .header-cta {
-  padding: 0.88rem 1.5rem;
+  padding: 0.72rem 1.15rem;
   border-width: 2px;
   border-color: #1b2db5;
   color: #1b2db5;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1;
   margin-left: 0.55rem;
@@ -138,6 +138,16 @@ a:hover {
 
 .header-cta:hover {
   background: rgba(27, 45, 181, 0.08);
+}
+
+.header-cta-danger {
+  border-color: #c62828;
+  background: #c62828;
+  color: #ffffff;
+}
+
+.header-cta-danger:hover {
+  background: #a61f1f;
 }
 
 .button-solid {
@@ -238,6 +248,62 @@ a:hover {
   color: var(--kainos-text-muted);
 }
 
+.login-hero {
+  margin-bottom: 1rem;
+}
+
+.login-panel {
+  background: var(--kainos-white);
+  border: 1px solid #d9def0;
+  border-top: 6px solid var(--kainos-blue);
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.login-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.45rem;
+}
+
+.login-form {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.form-field label {
+  font-weight: 600;
+}
+
+.form-field input {
+  width: 100%;
+  border: 1px solid #b8c2e6;
+  padding: 0.68rem 0.75rem;
+  font: inherit;
+  color: var(--kainos-navy);
+  background: #fbfcff;
+}
+
+.form-field input:focus {
+  border-color: var(--kainos-blue);
+  outline: 3px solid rgba(40, 53, 131, 0.2);
+  outline-offset: 1px;
+}
+
+.form-alert {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border-left: 4px solid var(--kainos-orange);
+  background: #fff3ea;
+  color: #7c2d04;
+  font-weight: 600;
+}
+
 .site-footer {
   position: relative;
   overflow: hidden;
@@ -327,23 +393,30 @@ a:hover {
 
 @media (max-width: 900px) {
   .header-inner {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "logo . cta"
+      "nav nav nav";
+    column-gap: 0.6rem;
+    row-gap: 0.7rem;
     padding: 0.55rem 0;
   }
 
   .logo-link {
-    order: 1;
+    grid-area: logo;
   }
 
   .header-cta {
-    order: 2;
-    margin-left: auto;
+    grid-area: cta;
+    margin-left: 0;
+    justify-self: end;
     padding: 0.7rem 1.05rem;
     font-size: 0.94rem;
   }
 
   .site-nav {
-    order: 3;
+    grid-area: nav;
     width: 100%;
     justify-content: flex-start;
     margin-left: 0;
@@ -359,5 +432,9 @@ a:hover {
   .home-cards,
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .login-panel {
+    max-width: 100%;
   }
 }

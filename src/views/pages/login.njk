@@ -1,0 +1,45 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Sign in{% endblock %}
+
+{% block content %}
+ <section class="page-hero login-hero">
+  <p class="eyebrow">Kainos Careers</p>
+	<h1>Sign in to view job opportunities</h1>
+ </section>
+
+ <section class="login-panel" aria-labelledby="login-form-title">
+  <h2 id="login-form-title">Welcome back</h2>
+
+  {% if errorMessage %}
+   <p class="form-alert" role="alert">{{ errorMessage }}</p>
+  {% endif %}
+
+  <form method="post" action="/login" class="login-form" novalidate>
+   <div class="form-field">
+	<label for="email">Email</label>
+	<input
+	 id="email"
+	 name="email"
+	 type="text"
+	 autocomplete="email"
+	 value="{{ formValues.email | default('', true) }}"
+	 required
+	/>
+   </div>
+
+   <div class="form-field">
+	<label for="password">Password</label>
+	<input
+	 id="password"
+	 name="password"
+	 type="password"
+	 autocomplete="current-password"
+	 required
+	/>
+   </div>
+
+   <button type="submit" class="button button-solid">Sign in</button>
+  </form>
+ </section>
+{% endblock %}

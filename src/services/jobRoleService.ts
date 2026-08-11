@@ -16,9 +16,13 @@ interface ApiJobRole {
 }
 
 export class JobRoleService {
-  async getAll(): Promise<JobRole[]> {
+  async getAll(jwtToken?: string): Promise<JobRole[]> {
     try {
-      const response = await apiClient.get<ApiJobRole[]>("/job-roles");
+      const response = jwtToken
+        ? await apiClient.get<ApiJobRole[]>("/job-roles", {
+            headers: { Authorization: `Bearer ${jwtToken}` },
+          })
+        : await apiClient.get<ApiJobRole[]>("/job-roles");
 
       return response.data.map((jobRole) => {
         const closingDate = jobRole.closingDate.split("T")[0] ?? jobRole.closingDate;
