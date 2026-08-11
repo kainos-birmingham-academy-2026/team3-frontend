@@ -6,13 +6,20 @@ import type { JobRoleService } from "../services/jobRoleService";
 export class JobRoleController {
     constructor(private jobRoleService: JobRoleService) {}
 
-    private getJwtToken(req: Request): string {
-		return req.session.jwtToken ?? "";
+  private getJwtToken(req: Request): string | undefined {
+    return req.session.jwtToken;
 	}
 
     async getAll(req: Request, res: Response): Promise<void> {
+    const jwtToken = this.getJwtToken(req);
+
+    if (!jwtToken) {
+      res.redirect("/login");
+      return;
+    }
+
       try {
-        const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
+        const jobRoles = await this.jobRoleService.getAll(jwtToken);
         res.render("pages/jobRoleList.njk", { jobRoles });
       } catch (error) {
         if (this.handleUnauthorized(req, res, error)) {

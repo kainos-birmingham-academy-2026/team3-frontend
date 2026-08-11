@@ -1,4 +1,5 @@
 import express from "express";
+import session from "express-session";
 import nunjucks from "nunjucks";
 import path from "node:path";
 import request from "supertest";
@@ -14,6 +15,14 @@ describe("routes", () => {
       express: app,
       noCache: true,
     });
+
+    app.use(
+      session({
+        secret: "test-session-secret",
+        resave: false,
+        saveUninitialized: false,
+      }),
+    );
 
     app.use(router);
   });
@@ -33,6 +42,13 @@ describe("routes", () => {
     expect(response.body.status).toBe("UP");
     expect(typeof response.body.time).toBe("string");
     expect(Number.isNaN(Date.parse(response.body.time))).toBe(false);
+  });
+
+  it("should redirect unauthenticated users from job role list to login", async () => {
+    const response = await request(app).get("/job-role-list");
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe("/login");
   });
 });
 

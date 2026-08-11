@@ -82,8 +82,20 @@ describe("JobRoleController", () => {
     expect(res.render).not.toHaveBeenCalled();
   });
 
-  it("should render 500 with empty list and message when API call fails", async () => {
+  it("should redirect to login when session token is missing", async () => {
     const req = createRequest();
+    const res = createResponse();
+
+    await controller.getAll(req as unknown as Request, res);
+
+    expect(jobRoleService.getAll).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith("/login");
+  });
+
+  it("should render 500 with empty list and message when API call fails", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
+    });
     const res = createResponse();
 
     jobRoleService.getAll.mockRejectedValueOnce(new Error("Backend server error"));
