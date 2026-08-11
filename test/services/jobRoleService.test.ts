@@ -68,6 +68,26 @@ describe("JobRoleService", () => {
     expect(result[1]?.status).toBe("closed");
   });
 
+  it("should read statusName when status is not present", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          jobRoleId: 1,
+          roleName: "Software Engineer",
+          locationName: "Birmingham",
+          capabilityName: "Software Engineering",
+          bandName: "Engineer",
+          closingDate: "2026-08-06T00:00:00.000Z",
+          statusName: "OPEN",
+        },
+      ],
+    });
+
+    const result = await service.getAll();
+
+    expect(result[0]?.status).toBe("open");
+  });
+
   it("should throw a friendly message when backend returns 404", async () => {
     vi.mocked(apiClient.get).mockRejectedValueOnce({
       isAxiosError: true,

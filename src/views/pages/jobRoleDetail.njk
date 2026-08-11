@@ -3,39 +3,40 @@
 {% block content %}
   <a href="/job-role-list" class="back-link">← Back to Job Roles</a>
 
-  <section class="page-hero">
-    <p class="eyebrow">Job Details</p>
-    <h1>{{ jobRoleId.roleName }}</h1>
-    <p>Learn more about this exciting opportunity at Kainos.</p>
-  </section>
-
   {% if jobRoleId %}
     <article class="job-role-detail">
+      <div class="hero-section">
+        <p class="eyebrow">Job Details</p>
+        <div class="hero-title-row">
+          <h1>{{ jobRoleId.roleName }}</h1>
+          {% if jobRoleId %}
+            <span class="status-badge status-{{ jobRoleId.status | lower }}">
+              {{ jobRoleId.status | capitalize }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if jobRoleId.description %}
+        <div class="description-section">
+          <h2>Job Description</h2>
+          <p>{{ jobRoleId.description }}</p>
+        </div>
+      {% endif %}
+
       <div class="detail-grid">
         <div class="detail-section">
-          <h2>Position Information</h2>
+          <h2>Job Details</h2>
           <dl>
             <dt>Role Name</dt>
             <dd>{{ jobRoleId.roleName }}</dd>
-
-            <dt>Status</dt>
-            <dd>
-              <span class="status-badge status-{{ jobRoleId.status | lower }}">
-                {{ jobRoleId.status | capitalize }}
-              </span>
-            </dd>
 
             <dt>Location</dt>
             <dd>{{ jobRoleId.location }}</dd>
 
             <dt>Band</dt>
             <dd>{{ jobRoleId.band }}</dd>
-          </dl>
-        </div>
 
-        <div class="detail-section">
-          <h2>Career Details</h2>
-          <dl>
             <dt>Capability</dt>
             <dd>{{ jobRoleId.capability }}</dd>
 

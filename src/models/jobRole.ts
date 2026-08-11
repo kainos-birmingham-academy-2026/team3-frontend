@@ -6,4 +6,5 @@ export interface JobRole {
   band: string;
   closingDate: string;
   status: string;
+  description?: string;
 }

@@ -180,7 +180,7 @@ a:hover {
 
 .home-hero h1,
 .page-hero h1 {
-  margin: 0.4rem 0 0.8rem;
+  margin: 0;
   font-size: clamp(1.8rem, 2.8vw, 3rem);
   line-height: 1.1;
 }
@@ -508,5 +508,221 @@ a:hover {
   .error-image-wrapper {
     margin-top: 0;
     max-width: 100%;
+  }
+}
+
+/* Job Role Detail Page Styling */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--kainos-blue);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--kainos-blue-dark);
+  text-decoration: none;
+  transform: translateX(-4px);
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-top .eyebrow {
+  margin: 0;
+  line-height: 1;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.job-role-detail {
+  background: var(--kainos-white);
+  border: 1px solid #dde3f5;
+  border-radius: 4px;
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.hero-section {
+  margin-bottom: 2rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.detail-section {
+  padding-bottom: 1.5rem;
+}
+
+.detail-section h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--kainos-navy);
+  border-bottom: 3px solid var(--kainos-green);
+  padding-bottom: 0.75rem;
+}
+
+.detail-section dl {
+  margin: 0;
+  display: grid;
+  gap: 1rem 0;
+  background: #f7f9ff;
+  padding: 1.25rem;
+  border-radius: 4px;
+  border: 1px solid #e4e8f6;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.detail-section dt {
+  font-weight: 600;
+  color: var(--kainos-blue);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.detail-section dt::after {
+  content: ":";
+  margin-right: 0.75rem;
+}
+
+.detail-section dd {
+  margin: 0;
+  color: var(--kainos-navy);
+  font-size: 1.05rem;
+  font-weight: 500;
+  padding: 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.status-badge.status-open {
+  background: rgba(97, 168, 63, 0.15);
+  color: #2d5c1f;
+  border: 1px solid var(--kainos-green);
+}
+
+.status-badge.status-closed {
+  background: rgba(198, 40, 40, 0.1);
+  color: #6b2020;
+  border: 1px solid #c62828;
+}
+
+.status-badge.status-on-hold {
+  background: rgba(236, 102, 8, 0.1);
+  color: #654400;
+  border: 1px solid var(--kainos-orange);
+}
+
+.cta-section {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e4e8f6;
+}
+
+.description-section {
+  margin: 0 0 2rem 0;
+  padding: 1.5rem;
+  background: #f7f9ff;
+  border-left: 4px solid var(--kainos-green);
+  border-radius: 4px;
+}
+
+.description-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--kainos-navy);
+}
+
+.description-section p {
+  margin: 0;
+  color: var(--kainos-navy);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.button-primary {
+  background: var(--kainos-green);
+  color: var(--kainos-white);
+  border: 2px solid var(--kainos-green);
+  padding: 0.75rem 1.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.button-primary:hover {
+  background: #52932e;
+  border-color: #52932e;
+  text-decoration: none;
+}
+
+.info-message {
+  background: linear-gradient(135deg, rgba(65, 103, 159, 0.08) 0%, rgba(97, 168, 63, 0.05) 100%);
+  border-left: 4px solid var(--kainos-blue);
+  border-radius: 4px;
+  padding: 1.2rem;
+  margin-top: 2rem;
+  color: var(--kainos-navy);
+  font-weight: 500;
+}
+
+.info-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+@media (max-width: 900px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .job-role-detail {
+    padding: 1.5rem;
+  }
+
+  .cta-section {
+    flex-direction: column;
+  }
+
+  .button-primary {
+    width: 100%;
+    text-align: center;
   }
 }

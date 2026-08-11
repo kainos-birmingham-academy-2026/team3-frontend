@@ -12,10 +12,17 @@ interface ApiJobRole {
   bandName?: string;
   bandId?: number;
   closingDate: string;
-  status: string;
+  status?: string;
+  statusName?: string;
+  description?: string;
 }
 
 export class JobRoleService {
+  private mapStatus(jobRole: ApiJobRole): string {
+    const status = jobRole.status ?? jobRole.statusName;
+    return status ? status.toLowerCase() : "unknown";
+  }
+
   async getAll(jwtToken?: string): Promise<JobRole[]> {
     try {
       const response = jwtToken
@@ -37,7 +44,8 @@ export class JobRoleService {
           band:
             jobRole.bandName ?? (jobRole.bandId !== undefined ? String(jobRole.bandId) : "Unknown"),
           closingDate,
-          status: jobRole.status.toLowerCase(),
+          status: this.mapStatus(jobRole),
+          description: jobRole.description,
         };
       });
     } catch (error) {
@@ -76,7 +84,8 @@ export class JobRoleService {
         band:
           jobRole.bandName ?? (jobRole.bandId !== undefined ? String(jobRole.bandId) : "Unknown"),
         closingDate,
-        status: jobRole.status.toLowerCase(),
+        status: this.mapStatus(jobRole),
+        description: jobRole.description,
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
