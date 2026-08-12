@@ -303,24 +303,7 @@ a:hover {
   background: #fbfcff;
 }
 
-.form-field textarea,
-.form-field select {
-  width: 100%;
-  border: 1px solid #b8c2e6;
-  padding: 0.68rem 0.75rem;
-  font: inherit;
-  color: var(--kainos-navy);
-  background: #fbfcff;
-}
-
 .form-field input:focus {
-  border-color: var(--kainos-blue);
-  outline: 3px solid rgba(40, 53, 131, 0.2);
-  outline-offset: 1px;
-}
-
-.form-field textarea:focus,
-.form-field select:focus {
   border-color: var(--kainos-blue);
   outline: 3px solid rgba(40, 53, 131, 0.2);
   outline-offset: 1px;
@@ -528,7 +511,6 @@ a:hover {
   }
 }
 
-<<<<<<< HEAD
 /* Job Role Detail Page Styling */
 .back-link {
   display: inline-flex;
@@ -854,7 +836,6 @@ a:hover {
     text-align: center;
   }
 }
-=======
 .restricted-page {
   min-height: 62vh;
   display: grid;
@@ -880,4 +861,3 @@ a:hover {
   margin: 0 0 1.2rem;
   color: var(--kainos-text-muted);
 }
->>>>>>> 4c15260 (added access restricted page and more unit tests)
