@@ -13,8 +13,6 @@ A lightweight Express + TypeScript server used for Team 3 frontend.
 
 ### Docker development mode (recommended for full stack)
 
-Prerequisite for corporate networks with TLS inspection: run the certificate export step once in the backend repository before first startup (see the Docker section in the backend README).
-
 Clone both repositories as sibling folders under the same parent directory:
 
 ```text
@@ -34,6 +32,8 @@ Services:
 
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:4000`
+
+Dependencies are installed at image build time for both services, so container startup does not run `npm install`.
 
 Stop and remove containers:
 
