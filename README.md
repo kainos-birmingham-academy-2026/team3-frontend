@@ -30,7 +30,7 @@ Available variables:
 - `SESSION_SECRET` - Secret used to sign the session cookie (required)
 - `AUTH_LOGIN_PATH` - Backend login endpoint path used by the frontend auth service (default: `/api/login`)
 - `AUTH_REGISTER_PATH` - Backend register endpoint path used by the frontend auth service (default: `/api/register`)
-- `APPLICATION_SUBMIT_PATH` - Backend endpoint path used to submit applicant CV and application status (default: `/applications`)
+- `APPLICATION_SUBMIT_PATH` - Backend endpoint path used to submit applicant CV and application status (default: `/api/applications`)
 - `API_BASE_URL` - Base URL used for API requests (default: `http://localhost:4000`)
 - `NODE_ENV` - Runtime environment (`development` or `production`)
 - `PORT` - Port for this Express app (default: `3000`)
@@ -41,7 +41,7 @@ Example:
 SESSION_SECRET=replace-with-a-long-random-secret
 AUTH_LOGIN_PATH=/api/login
 AUTH_REGISTER_PATH=/api/register
-APPLICATION_SUBMIT_PATH=/applications
+APPLICATION_SUBMIT_PATH=/api/applications
 API_BASE_URL=http://localhost:4000
 NODE_ENV=development
 PORT=3000

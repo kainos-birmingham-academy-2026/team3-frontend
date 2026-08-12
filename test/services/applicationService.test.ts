@@ -48,7 +48,7 @@ describe("ApplicationService", () => {
     });
 
     expect(apiClient.post).toHaveBeenCalledWith(
-      "/applications",
+      "/api/applications",
       expect.any(FormData),
       {
         headers: {
@@ -109,6 +109,6 @@ describe("ApplicationService", () => {
         cvMimeType: "application/pdf",
         status: "in progress",
       }),
-    ).rejects.toThrow("Application endpoint not found");
+    ).rejects.toThrow("Applications are currently unavailable. Please try again later.");
   });
 });

@@ -16,7 +16,7 @@ export class ApplicationService {
       throw new Error("Not authenticated");
     }
 
-    const submitPath = process.env.APPLICATION_SUBMIT_PATH ?? "/applications";
+    const submitPath = process.env.APPLICATION_SUBMIT_PATH ?? "/api/applications";
     const formData = new FormData();
 
     formData.append("jobRoleId", params.jobRoleId);
@@ -44,7 +44,9 @@ export class ApplicationService {
         }
 
         if (status === 404) {
-          throw new Error("Application endpoint not found");
+          throw new Error(
+            "Applications are currently unavailable. Please try again later.",
+          );
         }
 
         if (status === 500) {
