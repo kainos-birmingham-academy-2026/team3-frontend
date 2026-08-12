@@ -12,8 +12,8 @@ const isDev = process.env.NODE_ENV !== "production";
 
 nunjucks.configure(
 	[
-		path.join(__dirname, "views"),
-		path.join(__dirname, "..", "node_modules", "dist"),
+		path.join(process.cwd(), "src", "views"),
+		path.join(process.cwd(), "node_modules", "dist"),
 	],
 	{
 	  autoescape: true,
@@ -26,7 +26,7 @@ nunjucks.configure(
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(process.cwd(), "public")));
 
 // Persist login state across requests so protected routes can read req.session.jwtToken.
 app.use(
