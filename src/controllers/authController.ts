@@ -70,6 +70,18 @@ export class AuthController {
 
 			req.session.jwtToken = jwtToken;
 			req.session.userRole = userRole;
+			
+			// Decode JWT to check for admin role
+			const tokenParts = jwtToken.split(".");
+			if (tokenParts.length === 3) {
+				try {
+					const payload = JSON.parse(Buffer.from(tokenParts[1], "base64").toString());
+					req.session.isAdmin = payload.role === "admin" || payload.isAdmin === true;
+				} catch {
+					req.session.isAdmin = false;
+				}
+			}
+			
 			res.redirect("/");
 		} catch (error) {
 			const message =

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
 import { JobRoleService } from "../services/jobRoleService";
+import { requireAdmin } from "../middleware/adminMiddleware";
 
 const router = Router();
 const service = new JobRoleService();
@@ -10,6 +11,8 @@ const controller = new JobRoleController(service);
 router.get("/", (_req, res) => {
 	res.render("pages/index.njk");
 });
+
+router.get("/job-applications/admin", requireAdmin, (req, res) => controller.getApplications(req, res));
 
 router.get("/health", (_req, res) => {
 	res.status(200).send({

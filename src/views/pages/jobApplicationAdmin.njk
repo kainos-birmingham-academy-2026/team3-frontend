@@ -1,0 +1,617 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Job Applications Admin{% endblock %}
+
+{% block content %}
+ <section class="page-hero">
+  <p class="eyebrow">Admin Panel</p>
+  <h1>Application Review</h1>
+  <p>Review and manage all submitted job applications.</p>
+ </section>
+
+ <section class="admin-controls" aria-label="Application filters and search">
+  <div class="search-group">
+   <input 
+    type="text" 
+    id="search-input" 
+    class="search-input" 
+    placeholder="Search by applicant name or email..."
+    aria-label="Search applications"
+   />
+  </div>
+
+  <div class="filter-controls">
+   <div class="filter-group">
+    <label for="status-filter">Status:</label>
+    <select id="status-filter" class="status-filter">
+     <option value="">All Statuses</option>
+     <option value="pending">Pending Review</option>
+     <option value="approved">Approved</option>
+     <option value="rejected">Rejected</option>
+    </select>
+   </div>
+
+   <div class="filter-group">
+    <label for="role-filter">Job Role:</label>
+    <select id="role-filter" class="role-filter">
+     <option value="">All Roles</option>
+     {% for jobRole in jobRoles %}
+      <option value="{{ jobRole.roleName }}">{{ jobRole.roleName }}</option>
+     {% endfor %}
+    </select>
+   </div>
+  </div>
+ </section>
+
+ {% if applications and applications.length > 0 %}
+  <div class="applications-summary">
+   <div class="summary-card">
+    <span class="summary-label">Total Applications</span>
+    <span class="summary-value">{{ applications.length }}</span>
+   </div>
+   <div class="summary-card pending">
+    <span class="summary-label">Pending Review</span>
+    <span class="summary-value">{{ applications | selectattr('status', 'equalto', 'pending') | list | length }}</span>
+   </div>
+   <div class="summary-card approved">
+    <span class="summary-label">Approved</span>
+    <span class="summary-value">{{ applications | selectattr('status', 'equalto', 'approved') | list | length }}</span>
+   </div>
+   <div class="summary-card rejected">
+    <span class="summary-label">Rejected</span>
+    <span class="summary-value">{{ applications | selectattr('status', 'equalto', 'rejected') | list | length }}</span>
+   </div>
+  </div>
+
+  <div class="applications-container">
+   <table class="applications-table" role="grid">
+    <thead>
+     <tr>
+      <th>Applicant</th>
+      <th>Email</th>
+      <th>Applied Role</th>
+      <th>Application Date</th>
+      <th>Status</th>
+      <th>Actions</th>
+     </tr>
+    </thead>
+    <tbody>
+     {% for application in applications %}
+      <tr class="application-row" data-application-id="{{ application.applicationId }}">
+       <td class="applicant-cell">{{ application.applicantName }}</td>
+       <td class="email-cell">{{ application.applicantEmail }}</td>
+       <td class="role-cell">{{ application.roleName }}</td>
+       <td class="date-cell">{{ application.applicationDate }}</td>
+       <td class="status-cell">
+        <span class="status-badge status-{{ application.status | lower }}">
+         {{ application.status | capitalize }}
+        </span>
+       </td>
+       <td class="actions-cell">
+        <button 
+         class="btn-view" 
+         data-href="/job-applications/{{ application.applicationId }}"
+         aria-label="View full application details for {{ application.applicantName }}"
+        >
+         View Details
+        </button>
+        {% if application.status == 'pending' %}
+         <div class="inline-actions">
+          <button 
+           class="btn-approve" 
+           data-application-id="{{ application.applicationId }}"
+           aria-label="Approve {{ application.applicantName }}'s application"
+          >
+           Approve
+          </button>
+          <button 
+           class="btn-reject" 
+           data-application-id="{{ application.applicationId }}"
+           aria-label="Reject {{ application.applicantName }}'s application"
+          >
+           Reject
+          </button>
+         </div>
+        {% endif %}
+       </td>
+      </tr>
+     {% endfor %}
+    </tbody>
+   </table>
+  </div>
+ {% else %}
+  <div class="empty-state">
+   <p>No job applications found.</p>
+  </div>
+ {% endif %}
+
+ <style>
+  .admin-controls {
+   display: flex;
+   flex-direction: column;
+   gap: 1.5rem;
+   margin: 2rem 0;
+   background: #f9f9f9;
+   padding: 1.5rem;
+   border-radius: 8px;
+  }
+
+  .search-group {
+   display: flex;
+   gap: 0.5rem;
+  }
+
+  .search-input {
+   flex: 1;
+   padding: 0.75rem;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-size: 0.95rem;
+  }
+
+  .search-input:focus {
+   outline: 2px solid #0066cc;
+   outline-offset: -1px;
+  }
+
+  .filter-controls {
+   display: flex;
+   gap: 1.5rem;
+   flex-wrap: wrap;
+  }
+
+  .filter-group {
+   display: flex;
+   flex-direction: column;
+   gap: 0.5rem;
+   flex: 1;
+   min-width: 200px;
+  }
+
+  .filter-group label {
+   font-weight: 600;
+   font-size: 0.9rem;
+   color: #333;
+  }
+
+  .filter-group select {
+   padding: 0.5rem 0.75rem;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-size: 0.9rem;
+  }
+
+  .filter-group select:focus {
+   outline: 2px solid #0066cc;
+   outline-offset: -1px;
+  }
+
+  .applications-summary {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+   gap: 1.5rem;
+   margin: 2rem 0;
+  }
+
+  .summary-card {
+   padding: 1.5rem;
+   background: #f5f5f5;
+   border-radius: 8px;
+   border-left: 4px solid #0066cc;
+   display: flex;
+   flex-direction: column;
+   gap: 0.5rem;
+  }
+
+  .summary-card.pending {
+   border-left-color: #ff9800;
+  }
+
+  .summary-card.approved {
+   border-left-color: #4caf50;
+  }
+
+  .summary-card.rejected {
+   border-left-color: #f44336;
+  }
+
+  .summary-label {
+   font-size: 0.8rem;
+   color: #666;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   font-weight: 600;
+  }
+
+  .summary-value {
+   font-size: 2.5rem;
+   font-weight: bold;
+   color: #333;
+  }
+
+  .applications-container {
+   overflow-x: auto;
+   margin: 2rem 0;
+  }
+
+  .applications-table {
+   width: 100%;
+   border-collapse: collapse;
+   background: white;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+   border-radius: 8px;
+   overflow: hidden;
+  }
+
+  .applications-table thead {
+   background: #f5f5f5;
+   border-bottom: 2px solid #e0e0e0;
+  }
+
+  .applications-table th {
+   padding: 1rem;
+   text-align: left;
+   font-weight: 600;
+   color: #333;
+   font-size: 0.9rem;
+   white-space: nowrap;
+  }
+
+  .applications-table td {
+   padding: 1rem;
+   border-bottom: 1px solid #e0e0e0;
+   font-size: 0.9rem;
+  }
+
+  .application-row {
+   transition: background 0.15s;
+  }
+
+  .application-row:hover {
+   background: #f9f9f9;
+  }
+
+  .applicant-cell {
+   font-weight: 600;
+   color: #333;
+  }
+
+  .email-cell {
+   color: #666;
+   word-break: break-all;
+  }
+
+  .status-badge {
+   display: inline-block;
+   padding: 0.35rem 0.75rem;
+   border-radius: 20px;
+   font-size: 0.8rem;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.3px;
+  }
+
+  .status-pending {
+   background: #fff3e0;
+   color: #e65100;
+  }
+
+  .status-approved {
+   background: #e8f5e9;
+   color: #2e7d32;
+  }
+
+  .status-rejected {
+   background: #ffebee;
+   color: #c62828;
+  }
+
+  .actions-cell {
+   display: flex;
+   gap: 0.5rem;
+   flex-wrap: wrap;
+  }
+
+  .btn-view {
+   padding: 0.5rem 1rem;
+   background: #0066cc;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 0.9rem;
+   transition: background 0.2s, transform 0.1s;
+   white-space: nowrap;
+  }
+
+  .btn-view:hover {
+   background: #0052a3;
+   transform: translateY(-1px);
+  }
+
+  .btn-view:active {
+   transform: translateY(0);
+  }
+
+  .btn-view:focus {
+   outline: 2px solid #0066cc;
+   outline-offset: 2px;
+  }
+
+  .inline-actions {
+   display: flex;
+   gap: 0.5rem;
+   flex-wrap: wrap;
+  }
+
+  .btn-approve,
+  .btn-reject {
+   padding: 0.5rem 0.8rem;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 0.85rem;
+   transition: background 0.2s, transform 0.1s;
+   white-space: nowrap;
+  }
+
+  .btn-approve {
+   background: #4caf50;
+   color: white;
+  }
+
+  .btn-approve:hover {
+   background: #45a049;
+   transform: translateY(-1px);
+  }
+
+  .btn-approve:active {
+   transform: translateY(0);
+  }
+
+  .btn-approve:focus {
+   outline: 2px solid #4caf50;
+   outline-offset: 2px;
+  }
+
+  .btn-reject {
+   background: #f44336;
+   color: white;
+  }
+
+  .btn-reject:hover {
+   background: #da190b;
+   transform: translateY(-1px);
+  }
+
+  .btn-reject:active {
+   transform: translateY(0);
+  }
+
+  .btn-reject:focus {
+   outline: 2px solid #f44336;
+   outline-offset: 2px;
+  }
+
+  .empty-state {
+   text-align: center;
+   padding: 3rem 1rem;
+   color: #999;
+   font-size: 1.1rem;
+   background: #f9f9f9;
+   border-radius: 8px;
+   margin: 2rem 0;
+  }
+
+  .no-results {
+   display: none;
+   text-align: center;
+   padding: 2rem;
+   color: #999;
+  }
+
+  .no-results.show {
+   display: block;
+  }
+
+  @media (max-width: 1024px) {
+   .filter-controls {
+    flex-direction: column;
+   }
+
+   .filter-group {
+    min-width: auto;
+   }
+  }
+
+  @media (max-width: 768px) {
+   .admin-controls {
+    padding: 1rem;
+   }
+
+   .search-group {
+    flex-direction: column;
+   }
+
+   .search-input {
+    width: 100%;
+   }
+
+   .filter-controls {
+    flex-direction: column;
+    gap: 1rem;
+   }
+
+   .filter-group {
+    min-width: 100%;
+   }
+
+   .applications-table {
+    font-size: 0.85rem;
+   }
+
+   .applications-table th,
+   .applications-table td {
+    padding: 0.75rem 0.5rem;
+   }
+
+   .btn-view {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+   }
+
+   .btn-approve,
+   .btn-reject {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+   }
+
+   .actions-cell {
+    flex-direction: column;
+   }
+
+   .inline-actions {
+    flex-direction: column;
+    width: 100%;
+   }
+
+   .inline-actions button {
+    width: 100%;
+   }
+  }
+ </style>
+
+ <script>
+  // Initialize filter inputs
+  const searchInput = document.getElementById("search-input");
+  const statusFilter = document.getElementById("status-filter");
+  const roleFilter = document.getElementById("role-filter");
+  const applicationsTable = document.querySelector(".applications-table tbody");
+
+  // Handle search
+  searchInput.addEventListener("input", () => {
+   filterApplications();
+  });
+
+  // Handle status filter
+  statusFilter.addEventListener("change", () => {
+   filterApplications();
+  });
+
+  // Handle role filter
+  roleFilter.addEventListener("change", () => {
+   filterApplications();
+  });
+
+  // Handle view details button clicks
+  document.querySelectorAll(".btn-view").forEach((btn) => {
+   btn.addEventListener("click", () => {
+    const href = btn.getAttribute("data-href");
+    if (href) {
+     window.location.href = href;
+    }
+   });
+
+   btn.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+     event.preventDefault();
+     const href = btn.getAttribute("data-href");
+     if (href) {
+      window.location.href = href;
+     }
+    }
+   });
+  });
+
+  // Handle approve button clicks
+  document.querySelectorAll(".btn-approve").forEach((btn) => {
+   btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const applicationId = btn.getAttribute("data-application-id");
+    approveApplication(applicationId);
+   });
+  });
+
+  // Handle reject button clicks
+  document.querySelectorAll(".btn-reject").forEach((btn) => {
+   btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const applicationId = btn.getAttribute("data-application-id");
+    rejectApplication(applicationId);
+   });
+  });
+
+  function filterApplications() {
+   const searchTerm = searchInput.value.toLowerCase();
+   const statusValue = statusFilter.value.toLowerCase();
+   const roleValue = roleFilter.value.toLowerCase();
+
+   const rows = document.querySelectorAll(".application-row");
+   let visibleCount = 0;
+
+   rows.forEach((row) => {
+    let shouldShow = true;
+
+    // Search filter (name and email)
+    if (searchTerm) {
+     const applicantName = row.querySelector(".applicant-cell").textContent.toLowerCase();
+     const applicantEmail = row.querySelector(".email-cell").textContent.toLowerCase();
+     shouldShow = 
+      shouldShow && 
+      (applicantName.includes(searchTerm) || applicantEmail.includes(searchTerm));
+    }
+
+    // Status filter
+    if (statusValue) {
+     const statusBadge = row.querySelector(".status-badge");
+     const rowStatus = statusBadge.textContent.trim().toLowerCase();
+     shouldShow = shouldShow && rowStatus === statusValue;
+    }
+
+    // Role filter
+    if (roleValue) {
+     const roleCell = row.querySelector(".role-cell").textContent.toLowerCase();
+     shouldShow = shouldShow && roleCell === roleValue;
+    }
+
+    row.style.display = shouldShow ? "" : "none";
+    if (shouldShow) visibleCount++;
+   });
+
+   // Show/hide no results message
+   if (visibleCount === 0 && rows.length > 0) {
+    if (!document.querySelector(".no-results")) {
+     const noResults = document.createElement("tr");
+     noResults.className = "no-results show";
+     noResults.innerHTML = '<td colspan="6" style="text-align: center; padding: 2rem; color: #999;">No applications match your filters.</td>';
+     applicationsTable.appendChild(noResults);
+    } else {
+     document.querySelector(".no-results").classList.add("show");
+    }
+   } else {
+    const noResults = document.querySelector(".no-results");
+    if (noResults) {
+     noResults.classList.remove("show");
+    }
+   }
+  }
+
+  function approveApplication(applicationId) {
+   if (confirm("Are you sure you want to approve this application?")) {
+    // TODO: Send approval request to backend
+    console.log("Approving application:", applicationId);
+    // Example: fetch(`/job-applications/${applicationId}/approve`, { method: 'POST' })
+   }
+  }
+
+  function rejectApplication(applicationId) {
+   if (confirm("Are you sure you want to reject this application?")) {
+    // TODO: Send rejection request to backend
+    console.log("Rejecting application:", applicationId);
+    // Example: fetch(`/job-applications/${applicationId}/reject`, { method: 'POST' })
+   }
+  }
+ </script>
+{% endblock %}
