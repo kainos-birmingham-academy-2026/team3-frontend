@@ -172,9 +172,36 @@ export class JobRoleController {
 		const errorMessage =
 			error instanceof Error ? error.message : "Unable to load job roles";
 
-		res.status(500).render("pages/jobRoleList.njk", {
-			jobRoles: [],
-			errorMessage,
-		});
-	}
+      res.status(500).render("pages/jobRoleList.njk", {
+        jobRoles: [],
+        errorMessage,
+      });
+    }
+
+    async getApplications(req: Request, res: Response): Promise<void> {
+      try {
+        const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
+        // Applications will be fetched client-side from /job-applications/admin endpoint
+        res.render("pages/jobApplicationAdmin.njk", { 
+          applications: [],
+          jobRoles 
+        });
+      } catch (error) {
+        if (this.handleUnauthorized(req, res, error)) {
+          return;
+        }
+        this.renderApplicationsError(res, error);
+      }
+    }
+
+    private renderApplicationsError(res: Response, error: unknown): void {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unable to load applications";
+
+      res.status(500).render("pages/jobApplicationAdmin.njk", {
+        applications: [],
+        jobRoles: [],
+        errorMessage,
+      });
+    }
 }

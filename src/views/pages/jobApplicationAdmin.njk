@@ -43,87 +43,45 @@
   </div>
  </section>
 
- {% if applications and applications.length > 0 %}
-  <div class="applications-summary">
-   <div class="summary-card">
-    <span class="summary-label">Total Applications</span>
-    <span class="summary-value">{{ applications.length }}</span>
-   </div>
-   <div class="summary-card pending">
-    <span class="summary-label">Pending Review</span>
-    <span class="summary-value">{{ applications | selectattr('status', 'equalto', 'pending') | list | length }}</span>
-   </div>
-   <div class="summary-card approved">
-    <span class="summary-label">Approved</span>
-    <span class="summary-value">{{ applications | selectattr('status', 'equalto', 'approved') | list | length }}</span>
-   </div>
-   <div class="summary-card rejected">
-    <span class="summary-label">Rejected</span>
-    <span class="summary-value">{{ applications | selectattr('status', 'equalto', 'rejected') | list | length }}</span>
-   </div>
+ <div class="applications-summary" id="summary-container" style="display: none;">
+  <div class="summary-card">
+   <span class="summary-label">Total Applications</span>
+   <span class="summary-value" id="total-count">0</span>
   </div>
+  <div class="summary-card pending">
+   <span class="summary-label">Pending Review</span>
+   <span class="summary-value" id="pending-count">0</span>
+  </div>
+  <div class="summary-card approved">
+   <span class="summary-label">Approved</span>
+   <span class="summary-value" id="approved-count">0</span>
+  </div>
+  <div class="summary-card rejected">
+   <span class="summary-label">Rejected</span>
+   <span class="summary-value" id="rejected-count">0</span>
+  </div>
+ </div>
 
-  <div class="applications-container">
-   <table class="applications-table" role="grid">
-    <thead>
-     <tr>
-      <th>Applicant</th>
-      <th>Email</th>
-      <th>Applied Role</th>
-      <th>Application Date</th>
-      <th>Status</th>
-      <th>Actions</th>
-     </tr>
-    </thead>
-    <tbody>
-     {% for application in applications %}
-      <tr class="application-row" data-application-id="{{ application.applicationId }}">
-       <td class="applicant-cell">{{ application.applicantName }}</td>
-       <td class="email-cell">{{ application.applicantEmail }}</td>
-       <td class="role-cell">{{ application.roleName }}</td>
-       <td class="date-cell">{{ application.applicationDate }}</td>
-       <td class="status-cell">
-        <span class="status-badge status-{{ application.status | lower }}">
-         {{ application.status | capitalize }}
-        </span>
-       </td>
-       <td class="actions-cell">
-        <button 
-         class="btn-view" 
-         data-href="/job-applications/{{ application.applicationId }}"
-         aria-label="View full application details for {{ application.applicantName }}"
-        >
-         View Details
-        </button>
-        {% if application.status == 'pending' %}
-         <div class="inline-actions">
-          <button 
-           class="btn-approve" 
-           data-application-id="{{ application.applicationId }}"
-           aria-label="Approve {{ application.applicantName }}'s application"
-          >
-           Approve
-          </button>
-          <button 
-           class="btn-reject" 
-           data-application-id="{{ application.applicationId }}"
-           aria-label="Reject {{ application.applicantName }}'s application"
-          >
-           Reject
-          </button>
-         </div>
-        {% endif %}
-       </td>
-      </tr>
-     {% endfor %}
-    </tbody>
-   </table>
-  </div>
- {% else %}
-  <div class="empty-state">
-   <p>No job applications found.</p>
-  </div>
- {% endif %}
+ <div class="applications-container" id="table-container" style="display: none;">
+  <table class="applications-table" role="grid">
+   <thead>
+    <tr>
+     <th>Applicant</th>
+     <th>Email</th>
+     <th>Applied Role</th>
+     <th>Application Date</th>
+     <th>Status</th>
+     <th>Actions</th>
+    </tr>
+   </thead>
+   <tbody id="applications-tbody">
+   </tbody>
+  </table>
+ </div>
+
+ <div class="empty-state" id="empty-state">
+  <p>No job applications found.</p>
+ </div>
 
  <style>
   .admin-controls {
@@ -484,69 +442,171 @@
  </style>
 
  <script>
-  // Initialize filter inputs
+  let allApplications = [];
+
+  // DOM Elements
   const searchInput = document.getElementById("search-input");
   const statusFilter = document.getElementById("status-filter");
   const roleFilter = document.getElementById("role-filter");
-  const applicationsTable = document.querySelector(".applications-table tbody");
+  const tbody = document.getElementById("applications-tbody");
+  const tableContainer = document.getElementById("table-container");
+  const summaryContainer = document.getElementById("summary-container");
+  const emptyState = document.getElementById("empty-state");
 
-  // Handle search
-  searchInput.addEventListener("input", () => {
-   filterApplications();
-  });
+  // Fetch applications on page load
+  async function loadApplications() {
+   try {
+    const response = await fetch("/api/job-applications/admin", {
+     method: "GET",
+    });
 
-  // Handle status filter
-  statusFilter.addEventListener("change", () => {
-   filterApplications();
-  });
-
-  // Handle role filter
-  roleFilter.addEventListener("change", () => {
-   filterApplications();
-  });
-
-  // Handle view details button clicks
-  document.querySelectorAll(".btn-view").forEach((btn) => {
-   btn.addEventListener("click", () => {
-    const href = btn.getAttribute("data-href");
-    if (href) {
-     window.location.href = href;
+    if (!response.ok) {
+     throw new Error(`Failed to fetch applications: ${response.statusText}`);
     }
+
+    allApplications = await response.json();
+    renderApplications();
+    populateRoleFilter();
+    attachEventListeners();
+   } catch (error) {
+    console.error("Error loading applications:", error);
+    showError("Failed to load applications. Please refresh the page.");
+   }
+  }
+
+  function renderApplications() {
+   tbody.innerHTML = "";
+
+   if (allApplications.length === 0) {
+    emptyState.style.display = "block";
+    tableContainer.style.display = "none";
+    summaryContainer.style.display = "none";
+    return;
+   }
+
+   emptyState.style.display = "none";
+   tableContainer.style.display = "block";
+   summaryContainer.style.display = "grid";
+
+   allApplications.forEach((app) => {
+    const row = document.createElement("tr");
+    row.className = "application-row";
+    row.setAttribute("data-application-id", app.applicationId);
+
+    const statusLower = app.status.toLowerCase();
+    const isPending = statusLower === "pending";
+
+    row.innerHTML = `
+     <td class="applicant-cell">${escapeHtml(app.applicantName)}</td>
+     <td class="email-cell">${escapeHtml(app.applicantEmail)}</td>
+     <td class="role-cell">${escapeHtml(app.roleName)}</td>
+     <td class="date-cell">${escapeHtml(app.applicationDate)}</td>
+     <td class="status-cell">
+      <span class="status-badge status-${statusLower}">
+       ${capitalize(statusLower)}
+      </span>
+     </td>
+     <td class="actions-cell">
+      <button 
+       class="btn-view" 
+       data-href="/job-applications/${app.applicationId}"
+       aria-label="View full application details for ${escapeHtml(app.applicantName)}"
+      >
+       View Details
+      </button>
+      ${isPending ? `
+       <div class="inline-actions">
+        <button 
+         class="btn-approve" 
+         data-application-id="${app.applicationId}"
+         aria-label="Approve ${escapeHtml(app.applicantName)}'s application"
+        >
+         Approve
+        </button>
+        <button 
+         class="btn-reject" 
+         data-application-id="${app.applicationId}"
+         aria-label="Reject ${escapeHtml(app.applicantName)}'s application"
+        >
+         Reject
+        </button>
+       </div>
+      ` : ''}
+     </td>
+    `;
+
+    tbody.appendChild(row);
    });
 
-   btn.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-     event.preventDefault();
+   updateSummary();
+  }
+
+  function populateRoleFilter() {
+   const roles = new Set(allApplications.map((app) => app.roleName));
+   const roleSelect = document.getElementById("role-filter");
+
+   roles.forEach((role) => {
+    const option = document.createElement("option");
+    option.value = role;
+    option.textContent = role;
+    roleSelect.appendChild(option);
+   });
+  }
+
+  function updateSummary() {
+   const total = allApplications.length;
+   const pending = allApplications.filter(
+    (app) => app.status.toLowerCase() === "pending"
+   ).length;
+   const approved = allApplications.filter(
+    (app) => app.status.toLowerCase() === "approved"
+   ).length;
+   const rejected = allApplications.filter(
+    (app) => app.status.toLowerCase() === "rejected"
+   ).length;
+
+   document.getElementById("total-count").textContent = total;
+   document.getElementById("pending-count").textContent = pending;
+   document.getElementById("approved-count").textContent = approved;
+   document.getElementById("rejected-count").textContent = rejected;
+  }
+
+  function attachEventListeners() {
+   // Filter inputs
+   searchInput.addEventListener("input", filterApplications);
+   statusFilter.addEventListener("change", filterApplications);
+   roleFilter.addEventListener("change", filterApplications);
+
+   // View details buttons
+   document.querySelectorAll(".btn-view").forEach((btn) => {
+    btn.addEventListener("click", () => {
      const href = btn.getAttribute("data-href");
-     if (href) {
-      window.location.href = href;
-     }
-    }
+     if (href) window.location.href = href;
+    });
    });
-  });
 
-  // Handle approve button clicks
-  document.querySelectorAll(".btn-approve").forEach((btn) => {
-   btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const applicationId = btn.getAttribute("data-application-id");
-    approveApplication(applicationId);
+   // Approve/Reject buttons
+   document.querySelectorAll(".btn-approve").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+     e.preventDefault();
+     const applicationId = btn.getAttribute("data-application-id");
+     approveApplication(applicationId);
+    });
    });
-  });
 
-  // Handle reject button clicks
-  document.querySelectorAll(".btn-reject").forEach((btn) => {
-   btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const applicationId = btn.getAttribute("data-application-id");
-    rejectApplication(applicationId);
+   document.querySelectorAll(".btn-reject").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+     e.preventDefault();
+     const applicationId = btn.getAttribute("data-application-id");
+     rejectApplication(applicationId);
+    });
    });
-  });
+  }
 
   function filterApplications() {
    const searchTerm = searchInput.value.toLowerCase();
    const statusValue = statusFilter.value.toLowerCase();
-   const roleValue = roleFilter.value.toLowerCase();
+   const roleValue = roleFilter.value;
 
    const rows = document.querySelectorAll(".application-row");
    let visibleCount = 0;
@@ -554,12 +614,12 @@
    rows.forEach((row) => {
     let shouldShow = true;
 
-    // Search filter (name and email)
+    // Search filter
     if (searchTerm) {
      const applicantName = row.querySelector(".applicant-cell").textContent.toLowerCase();
      const applicantEmail = row.querySelector(".email-cell").textContent.toLowerCase();
-     shouldShow = 
-      shouldShow && 
+     shouldShow =
+      shouldShow &&
       (applicantName.includes(searchTerm) || applicantEmail.includes(searchTerm));
     }
 
@@ -573,7 +633,7 @@
     // Role filter
     if (roleValue) {
      const roleCell = row.querySelector(".role-cell").textContent.toLowerCase();
-     shouldShow = shouldShow && roleCell === roleValue;
+     shouldShow = shouldShow && roleCell === roleValue.toLowerCase();
     }
 
     row.style.display = shouldShow ? "" : "none";
@@ -582,13 +642,15 @@
 
    // Show/hide no results message
    if (visibleCount === 0 && rows.length > 0) {
-    if (!document.querySelector(".no-results")) {
-     const noResults = document.createElement("tr");
+    let noResults = document.querySelector(".no-results");
+    if (!noResults) {
+     noResults = document.createElement("tr");
      noResults.className = "no-results show";
-     noResults.innerHTML = '<td colspan="6" style="text-align: center; padding: 2rem; color: #999;">No applications match your filters.</td>';
-     applicationsTable.appendChild(noResults);
+     noResults.innerHTML =
+      '<td colspan="6" style="text-align: center; padding: 2rem; color: #999;">No applications match your filters.</td>';
+     tbody.appendChild(noResults);
     } else {
-     document.querySelector(".no-results").classList.add("show");
+     noResults.classList.add("show");
     }
    } else {
     const noResults = document.querySelector(".no-results");
@@ -600,18 +662,64 @@
 
   function approveApplication(applicationId) {
    if (confirm("Are you sure you want to approve this application?")) {
-    // TODO: Send approval request to backend
-    console.log("Approving application:", applicationId);
-    // Example: fetch(`/job-applications/${applicationId}/approve`, { method: 'POST' })
+    fetch(`/api/job-applications/${applicationId}/approve`, {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+    })
+     .then((response) => {
+      if (response.ok) {
+       alert("Application approved!");
+       loadApplications(); // Reload the table
+      } else {
+       alert("Failed to approve application");
+      }
+     })
+     .catch((error) => {
+      console.error("Error approving application:", error);
+      alert("Error approving application");
+     });
    }
   }
 
   function rejectApplication(applicationId) {
    if (confirm("Are you sure you want to reject this application?")) {
-    // TODO: Send rejection request to backend
-    console.log("Rejecting application:", applicationId);
-    // Example: fetch(`/job-applications/${applicationId}/reject`, { method: 'POST' })
+    fetch(`/api/job-applications/${applicationId}/reject`, {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+    })
+     .then((response) => {
+      if (response.ok) {
+       alert("Application rejected!");
+       loadApplications(); // Reload the table
+      } else {
+       alert("Failed to reject application");
+      }
+     })
+     .catch((error) => {
+      console.error("Error rejecting application:", error);
+      alert("Error rejecting application");
+     });
    }
   }
+
+  function escapeHtml(text) {
+   const div = document.createElement("div");
+   div.textContent = text;
+   return div.innerHTML;
+  }
+
+  function capitalize(str) {
+   return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function showError(message) {
+   emptyState.innerHTML = `<p>${escapeHtml(message)}</p>`;
+   emptyState.style.display = "block";
+   tableContainer.style.display = "none";
+   summaryContainer.style.display = "none";
+  }
+
+  // Load applications when page loads
+  window.addEventListener("DOMContentLoaded", loadApplications);
  </script>
 {% endblock %}
