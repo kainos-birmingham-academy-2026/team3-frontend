@@ -246,4 +246,81 @@ describe("JobRoleService", () => {
     expect(result?.openPositions).toBeUndefined();
     expect(result?.addressLine1).toBeUndefined();
   });
+
+  it("should send authorization header when token is provided", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          jobRoleId: 9,
+          roleName: "Platform Engineer",
+          closingDate: "2026-10-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    await service.getAll("jwt-token");
+
+    expect(apiClient.get).toHaveBeenCalledWith("/job-roles", {
+      headers: { Authorization: "Bearer jwt-token" },
+    });
+  });
+
+  it("should use fallback values for missing location, capability, and band", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          jobRoleId: 10,
+          roleName: "Data Engineer",
+          closingDate: "2026-11-12T00:00:00.000Z",
+        },
+      ],
+    });
+
+    const result = await service.getAll();
+
+    expect(result[0]?.location).toBe("Unknown");
+    expect(result[0]?.capability).toBe("Unknown");
+    expect(result[0]?.band).toBe("Unknown");
+    expect(result[0]?.status).toBe("unknown");
+  });
+
+  it("should map id-based capability, band, openPositions and jobSpecUrl fallback", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 11,
+        roleName: "Delivery Lead",
+        closingDate: "2026-12-20T00:00:00.000Z",
+        capabilityId: 44,
+        bandId: 7,
+        status: "OPEN",
+        jobSpecUrl: "https://example.com/spec",
+        openPositions: 5,
+      },
+    });
+
+    const result = await service.getById("11");
+
+    expect(result.capability).toBe("44");
+    expect(result.band).toBe("7");
+    expect(result.jobSpecUrl).toBe("https://example.com/spec");
+    expect(result.openPositions).toBe(5);
+  });
+
+  it("should throw a friendly message when getById returns 404", async () => {
+    vi.mocked(apiClient.get).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 404 },
+    });
+
+    await expect(service.getById("999")).rejects.toThrow("Job role with ID 999 not found");
+  });
+
+  it("should throw a friendly message when getById returns 500", async () => {
+    vi.mocked(apiClient.get).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 500 },
+    });
+
+    await expect(service.getById("123")).rejects.toThrow("Backend server error");
+  });
 });
