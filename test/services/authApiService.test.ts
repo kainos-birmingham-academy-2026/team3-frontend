@@ -177,4 +177,54 @@ describe("authApiService", () => {
       "Backend server error during registration",
     );
   });
+
+  it("should map 400 error for registration", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 400 },
+    });
+
+    await expect(register("invalid@example.com", "password123")).rejects.toThrow(
+      "Please enter a valid email and password",
+    );
+  });
+
+  it("should map 404 error for registration endpoint", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 404 },
+    });
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow(
+      "Registration endpoint not found",
+    );
+  });
+
+  it("should map backend connection failures for registration", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ECONNREFUSED",
+      response: undefined,
+    });
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow(
+      "Something went wrong, please try again later.",
+    );
+  });
+
+  it("should map non-axios errors for login", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce(new Error("Unexpected error"));
+
+    await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
+      "Unexpected error",
+    );
+  });
+
+  it("should map non-axios errors for register", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce(new Error("Unexpected error"));
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow(
+      "Unexpected error",
+    );
+  });
 });

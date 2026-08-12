@@ -282,6 +282,124 @@ describe("AuthController", () => {
     });
   });
 
+  it("should validate password with no uppercase", async () => {
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "password123!",
+        confirmPassword: "password123!",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
+      formValues: { email: "new.user" },
+    });
+  });
+
+  it("should validate password with no lowercase", async () => {
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "PASSWORD123!",
+        confirmPassword: "PASSWORD123!",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
+      formValues: { email: "new.user" },
+    });
+  });
+
+  it("should validate password with no special characters", async () => {
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "Password123",
+        confirmPassword: "Password123",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
+      formValues: { email: "new.user" },
+    });
+  });
+
+  it("should validate password that is too short", async () => {
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "Pass1!",
+        confirmPassword: "Pass1!",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(authApiService.register).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
+      formValues: { email: "new.user" },
+    });
+  });
+
+  it("should handle non-Error exceptions during login", async () => {
+    vi.mocked(authApiService.login).mockRejectedValueOnce("Some string error");
+
+    const req = createReq({
+      body: { email: "jane.doe", password: "password123" },
+    });
+    const res = createRes();
+
+    await controller.login(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.render).toHaveBeenCalledWith("pages/login.njk", {
+      errorMessage: "Unable to sign in",
+      formValues: { email: "jane.doe" },
+    });
+  });
+
+  it("should handle non-Error exceptions during register", async () => {
+    vi.mocked(authApiService.register).mockRejectedValueOnce("Some string error");
+
+    const req = createReq({
+      body: {
+        email: "new.user",
+        password: "Password123!",
+        confirmPassword: "Password123!",
+      },
+    });
+    const res = createRes();
+
+    await controller.register(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/register.njk", {
+      errorMessage: "Unable to register",
+      formValues: { email: "new.user" },
+    });
+  });
+
   it("should redirect to login after successful registration", async () => {
     vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
 

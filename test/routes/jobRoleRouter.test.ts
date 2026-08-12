@@ -98,5 +98,37 @@ describe("routes", () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain("Create job role");
   });
+
+  it("should show access restricted page when USER accesses create page", async () => {
+    const userApp = express();
+
+    nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
+      autoescape: true,
+      express: userApp,
+      noCache: true,
+    });
+
+    userApp.use(
+      session({
+        secret: "test-session-secret",
+        resave: false,
+        saveUninitialized: false,
+      }),
+    );
+
+    userApp.use(((req, _res, next) => {
+      req.session.jwtToken = "user-token";
+      req.session.userRole = "USER";
+      next();
+    }) as RequestHandler);
+
+    userApp.use(router);
+
+    const response = await request(userApp).get("/job-role-create");
+
+    expect(response.status).toBe(403);
+    expect(response.text).toContain("Access restricted");
+    expect(response.text).toContain("You do not have permission to access this page.");
+  });
 });
 

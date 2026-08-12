@@ -10,9 +10,15 @@ type MockRequest = Partial<Request> & {
 };
 
 function createResponse(): Response {
-	return {
+	const res = {
 		redirect: vi.fn(),
+		render: vi.fn(),
+		status: vi.fn(),
 	} as unknown as Response;
+
+	vi.mocked(res.status).mockReturnValue(res);
+
+	return res;
 }
 
 describe("authMiddleware", () => {
@@ -50,7 +56,8 @@ describe("authMiddleware", () => {
 
 		requireAdmin(req as Request, res, next);
 
-		expect(res.redirect).toHaveBeenCalledWith("/job-role-list");
+		expect(res.status).toHaveBeenCalledWith(403);
+		expect(res.render).toHaveBeenCalledWith("pages/accessRestricted.njk");
 		expect(next).not.toHaveBeenCalled();
 	});
 
