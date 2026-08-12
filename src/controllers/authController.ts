@@ -85,7 +85,7 @@ export class AuthController {
 			if (tokenParts.length === 3) {
 				try {
 					const payload = JSON.parse(Buffer.from(tokenParts[1], "base64").toString());
-					req.session.isAdmin = payload.role === "admin" || payload.isAdmin === true;
+					req.session.isAdmin = payload.role?.toLowerCase() === "admin" || payload.isAdmin === true;
 				} catch {
 					req.session.isAdmin = false;
 				}
