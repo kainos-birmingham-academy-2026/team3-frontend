@@ -34,6 +34,7 @@ Services:
 - Backend API: `http://localhost:4000`
 
 Dependencies are installed at image build time for both services, so container startup does not run `npm install`.
+Docker Compose mounts source/config files only in development and does not mount host `node_modules`, which prevents cross-platform native dependency mismatches.
 
 Stop and remove containers:
 
