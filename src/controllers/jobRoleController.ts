@@ -68,10 +68,12 @@ export class JobRoleController {
 
     async getApplications(req: Request, res: Response): Promise<void> {
       try {
-        const applications = await this.adminApplicationService.getAll(this.getJwtToken(req));
         const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
-
-        res.render("pages/jobApplicationAdmin.njk", { applications, jobRoles });
+        // Applications will be fetched client-side from /job-applications/admin endpoint
+        res.render("pages/jobApplicationAdmin.njk", { 
+          applications: [],
+          jobRoles 
+        });
       } catch (error) {
         if (this.handleUnauthorized(req, res, error)) {
           return;

@@ -3,11 +3,11 @@ import type { Application } from "../models/application";
 
 interface ApiApplication {
   applicationId: number;
-  applicantName: string;
-  applicantEmail: string;
-  jobRoleId: number;
-  roleName: string;
-  applicationDate: string;
+  applicantName?: string;
+  applicantEmail?: string;
+  jobRoleId?: number;
+  roleName?: string;
+  applicationDate?: string;
   status: string;
 }
 
@@ -22,17 +22,17 @@ export class AdminApplicationService {
   async getAll(jwtToken?: string): Promise<Application[]> {
     try {
       const response = jwtToken
-        ? await apiClient.get<ApiApplication[]>("/applications", {
+        ? await apiClient.get<ApiApplication[]>("/job-applications/admin", {
             headers: { Authorization: `Bearer ${jwtToken}` },
           })
-        : await apiClient.get<ApiApplication[]>("/applications");
+        : await apiClient.get<ApiApplication[]>("/job-applications/admin");
 
       return response.data.map((app) => ({
         applicationId: app.applicationId,
-        applicantName: app.applicantName,
-        applicantEmail: app.applicantEmail,
-        roleName: app.roleName,
-        applicationDate: app.applicationDate.split("T")[0] ?? app.applicationDate,
+        applicantName: app.applicantName ?? "N/A",
+        applicantEmail: app.applicantEmail ?? "N/A",
+        roleName: app.roleName ?? "N/A",
+        applicationDate: app.applicationDate ? app.applicationDate.split("T")[0] : "Unknown",
         status: this.mapStatus(app.status),
       }));
     } catch (error) {
