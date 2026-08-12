@@ -5,6 +5,7 @@ import { JobRoleController } from "../../src/controllers/jobRoleController";
 type TestRequest = {
   session: {
     jwtToken?: string;
+		userRole?: "ADMIN" | "USER";
   };
   params?: {
     id?: string | string[];
@@ -70,7 +71,7 @@ describe("JobRoleController", () => {
 
   it("should clear token and redirect to login when backend returns 401", async () => {
     const req = createRequest({
-      session: { jwtToken: "jwt-token" },
+      session: { jwtToken: "jwt-token", userRole: "USER" },
     });
     const res = createResponse();
 
@@ -82,12 +83,25 @@ describe("JobRoleController", () => {
     await controller.getAll(req as unknown as Request, res);
 
     expect(req.session.jwtToken).toBeUndefined();
+    expect(req.session.userRole).toBeUndefined();
     expect(res.redirect).toHaveBeenCalledWith("/login");
     expect(res.render).not.toHaveBeenCalled();
   });
 
-  it("should render 500 with empty list and message when API call fails", async () => {
+  it("should redirect to login when session token is missing", async () => {
     const req = createRequest();
+    const res = createResponse();
+
+    await controller.getAll(req as unknown as Request, res);
+
+    expect(jobRoleService.getAll).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith("/login");
+  });
+
+  it("should render 500 with empty list and message when API call fails", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token" },
+    });
     const res = createResponse();
 
     jobRoleService.getAll.mockRejectedValueOnce(new Error("Backend server error"));

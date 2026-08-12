@@ -29,6 +29,7 @@ Available variables:
 
 - `SESSION_SECRET` - Secret used to sign the session cookie (required)
 - `AUTH_LOGIN_PATH` - Backend login endpoint path used by the frontend auth service (default: `/api/login`)
+- `AUTH_REGISTER_PATH` - Backend register endpoint path used by the frontend auth service (default: `/api/register`)
 - `API_BASE_URL` - Base URL used for API requests (default: `http://localhost:4000`)
 - `NODE_ENV` - Runtime environment (`development` or `production`)
 - `PORT` - Port for this Express app (default: `3000`)
@@ -38,6 +39,7 @@ Example:
 ```bash
 SESSION_SECRET=replace-with-a-long-random-secret
 AUTH_LOGIN_PATH=/api/login
+AUTH_REGISTER_PATH=/api/register
 API_BASE_URL=http://localhost:4000
 NODE_ENV=development
 PORT=3000
@@ -104,7 +106,8 @@ Example response:
 
 Renders the job role page using backend API data.
 
-- Sends the session JWT token to the backend when present
+- Requires an authenticated session; unauthenticated users are redirected to `/login`
+- Sends the session JWT token to the backend
 - If backend responds with `401`, redirects to `/login`
 - If backend errors, renders the page with an error state
 
@@ -120,6 +123,22 @@ Authenticates against the backend endpoint configured by `AUTH_LOGIN_PATH`.
 
 - On success: stores JWT in session and redirects to `/`
 - On failure: re-renders login with an error message
+
+### `GET /register`
+
+Renders the registration page.
+
+- If user is already authenticated, redirects to `/`
+
+### `POST /register`
+
+Registers via backend endpoint configured by `AUTH_REGISTER_PATH`.
+
+- Requires email, password, and confirm password
+- Password and confirm password must match
+- Password must be more than 8 characters and include uppercase, lowercase, and special characters
+- On success: redirects to `/login?registered=1`
+- On failure: re-renders register with an error message
 
 ### `GET /logout`
 

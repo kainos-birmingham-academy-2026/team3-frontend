@@ -11,6 +11,10 @@
  <section class="login-panel" aria-labelledby="login-form-title">
   <h2 id="login-form-title">Welcome back</h2>
 
+	{% if successMessage %}
+	 <p class="form-success" role="status">{{ successMessage }}</p>
+	{% endif %}
+
   {% if errorMessage %}
    <p class="form-alert" role="alert">{{ errorMessage }}</p>
   {% endif %}
@@ -41,5 +45,7 @@
 
    <button type="submit" class="button button-solid">Sign in</button>
   </form>
+
+	<p class="form-footnote">New here? <a href="/register">Create an account</a></p>
  </section>
 {% endblock %}

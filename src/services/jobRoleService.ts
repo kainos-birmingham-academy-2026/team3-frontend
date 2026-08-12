@@ -32,12 +32,14 @@ export class JobRoleService {
   }
 
   async getAll(jwtToken?: string): Promise<JobRole[]> {
+    if (!jwtToken) {
+      throw new Error("Not authenticated");
+    }
+
     try {
-      const response = jwtToken
-        ? await apiClient.get<ApiJobRole[]>("/job-roles", {
-            headers: { Authorization: `Bearer ${jwtToken}` },
-          })
-        : await apiClient.get<ApiJobRole[]>("/job-roles");
+      const response = await apiClient.get<ApiJobRole[]>("/job-roles", {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      });
 
       return response.data.map((jobRole) => {
         const closingDate = jobRole.closingDate.split("T")[0] ?? jobRole.closingDate;

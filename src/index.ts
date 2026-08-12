@@ -50,6 +50,7 @@ app.use((req, res, next) => {
 // Expose auth state to all templates for sign in/sign out navigation.
 app.use((req, res, next) => {
 	res.locals.isAuthenticated = Boolean(req.session.jwtToken);
+	res.locals.currentUserRole = req.session.userRole ?? null;
 	next();
 });
 
@@ -57,7 +58,7 @@ app.use(authRouter);
 app.use(router);
 
 // Catch-all route for 404 errors
-app.use((req, res) => {
+app.use((_req, res) => {
 	res.status(404).render("pages/404.njk");
 });
 

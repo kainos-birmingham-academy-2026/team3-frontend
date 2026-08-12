@@ -5,6 +5,9 @@
   <p class="eyebrow">Careers</p>
   <h1>Open job roles</h1>
   <p>Explore current opportunities and apply before the closing date.</p>
+  {% if currentUserRole == 'ADMIN' %}
+   <p><a class="button button-solid" href="/job-role-create">Create new role</a></p>
+  {% endif %}
  </section>
 
  {% set hasOpenRoles = false %}

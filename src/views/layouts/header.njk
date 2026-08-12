@@ -8,14 +8,17 @@
    />
   </a>
 
-  {% if currentPath != '/login' %}
+    {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
    <nav class="site-nav" aria-label="Main navigation">
     <a class="nav-link {% if currentPath == '/' %}nav-link-active{% endif %}" href="/">Home</a>
     <a class="nav-link {% if currentPath == '/job-role-list' %}nav-link-active{% endif %}" href="/job-role-list">Job roles</a>
+    {% if currentUserRole == 'ADMIN' %}
+     <a class="nav-link {% if currentPath == '/job-role-create' %}nav-link-active{% endif %}" href="/job-role-create">Create role</a>
+    {% endif %}
    </nav>
   {% endif %}
 
-  {% if currentPath != '/login' %}
+    {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
    {% if isAuthenticated %}
     <a class="button button-outline header-cta header-cta-danger" href="/logout">Sign out</a>
    {% else %}

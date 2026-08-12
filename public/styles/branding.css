@@ -836,3 +836,28 @@ a:hover {
     text-align: center;
   }
 }
+.restricted-page {
+  min-height: 62vh;
+  display: grid;
+  place-items: center;
+}
+
+.restricted-card {
+  width: min(520px, 100%);
+  background: var(--kainos-white);
+  border: 1px solid #d9def0;
+  border-top: 6px solid var(--kainos-blue);
+  box-shadow: 0 16px 36px rgba(40, 53, 131, 0.12);
+  padding: 1.8rem;
+  text-align: center;
+}
+
+.restricted-card h2 {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+}
+
+.restricted-card p {
+  margin: 0 0 1.2rem;
+  color: var(--kainos-text-muted);
+}
