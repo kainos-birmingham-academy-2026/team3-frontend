@@ -10,12 +10,12 @@ const template = fs.readFileSync(templatePath, "utf8");
 const viewsPath = path.resolve(process.cwd(), "src/views");
 const environment = new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsPath));
 
-function renderView(jobRoles: JobRole[]): string {
+function renderView(jobRoles: JobRole[], currentUserRole?: string): string {
   if (!template.length) {
     throw new Error("Template should not be empty");
   }
 
-  return environment.render("pages/jobRoleList.njk", { jobRoles });
+  return environment.render("pages/jobRoleList.njk", { jobRoles, currentUserRole });
 }
 
 describe("jobRoleList", () => {
@@ -67,5 +67,19 @@ describe("jobRoleList", () => {
 
     expect(html).toContain("No open job roles found");
     expect(html).not.toContain("Delivery Manager");
+  });
+
+  it("should show create action for admins", () => {
+    const html = renderView([], "ADMIN");
+
+    expect(html).toContain('href="/job-role-create"');
+    expect(html).toContain("Create new role");
+  });
+
+  it("should hide create action for non-admin users", () => {
+    const html = renderView([], "USER");
+
+    expect(html).not.toContain('href="/job-role-create"');
+    expect(html).not.toContain("Create new role");
   });
 });

@@ -86,7 +86,7 @@ describe("JobRoleService", () => {
       ],
     });
 
-    const result = await service.getAll();
+    const result = await service.getAll(jwtToken);
 
     expect(result[0]?.status).toBe("open");
   });
@@ -125,7 +125,7 @@ describe("JobRoleService", () => {
       ],
     });
 
-    const result = await service.getAll();
+    const result = await service.getAll(jwtToken);
 
     expect(result[0]?.jobSpecUrl).toBe("https://sharepoint.com/jobs/engineer");
   });
@@ -146,7 +146,7 @@ describe("JobRoleService", () => {
       ],
     });
 
-    const result = await service.getAll();
+    const result = await service.getAll(jwtToken);
 
     expect(result[0]?.openPositions).toBe(3);
   });
@@ -167,7 +167,7 @@ describe("JobRoleService", () => {
       ],
     });
 
-    const result = await service.getAll();
+    const result = await service.getAll(jwtToken);
 
     expect(result[0]?.responsibilities).toBe("Build and maintain software systems");
   });
@@ -190,7 +190,7 @@ describe("JobRoleService", () => {
       ],
     });
 
-    const result = await service.getAll();
+    const result = await service.getAll(jwtToken);
 
     expect(result[0]?.addressLine1).toBe("123 Business Street");
     expect(result[0]?.addressLine2).toBe("Suite 100");
@@ -217,9 +217,11 @@ describe("JobRoleService", () => {
       },
     });
 
-    const result = await service.getById("1");
+    const result = await service.getById("1", jwtToken);
 
-    expect(apiClient.get).toHaveBeenCalledWith("/job-roles/1");
+    expect(apiClient.get).toHaveBeenCalledWith("/job-roles/1", {
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
     expect(result?.jobRoleId).toBe(1);
     expect(result?.description).toBe("We are looking for a talented Software Engineer");
     expect(result?.responsibilities).toBe("Build and maintain software systems");
@@ -241,7 +243,7 @@ describe("JobRoleService", () => {
       },
     });
 
-    const result = await service.getById("1");
+    const result = await service.getById("1", jwtToken);
 
     expect(result?.description).toBeUndefined();
     expect(result?.responsibilities).toBeUndefined();

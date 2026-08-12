@@ -68,6 +68,13 @@ describe("routes", () => {
     expect(response.headers.location).toBe("/login");
   });
 
+  it("should redirect unauthenticated users from job role detail page to login", async () => {
+    const response = await request(app).get("/job-role-list/1");
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe("/login");
+  });
+
   it("should allow ADMIN to access create page", async () => {
     const adminApp = express();
 
@@ -97,6 +104,10 @@ describe("routes", () => {
 
     expect(response.status).toBe(200);
     expect(response.text).toContain("Create job role");
+    expect(response.text).toContain('name="capabilityId"');
+    expect(response.text).toContain('name="bandId"');
+    expect(response.text).toContain('name="locationId"');
+    expect(response.text).toContain('value="OPEN"');
   });
 
   it("should show access restricted page when USER accesses create page", async () => {
