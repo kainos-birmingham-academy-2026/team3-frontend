@@ -14,19 +14,18 @@ describe("authApiService", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     if (originalAuthLoginPath === undefined) {
       delete process.env.AUTH_LOGIN_PATH;
-      return;
+    } else {
+      process.env.AUTH_LOGIN_PATH = originalAuthLoginPath;
     }
-
-    process.env.AUTH_LOGIN_PATH = originalAuthLoginPath;
 
     if (originalAuthRegisterPath === undefined) {
       delete process.env.AUTH_REGISTER_PATH;
-      return;
+    } else {
+      process.env.AUTH_REGISTER_PATH = originalAuthRegisterPath;
     }
-
-    process.env.AUTH_REGISTER_PATH = originalAuthRegisterPath;
   });
 
   it("should send login payload with email mapping and return token", async () => {
