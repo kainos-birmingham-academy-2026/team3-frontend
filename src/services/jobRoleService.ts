@@ -11,7 +11,7 @@ interface ApiJobRole {
   capabilityId?: number;
   bandName?: string;
   bandId?: number;
-  closingDate: string;
+  closingDate: string | null;
   status?: string;
   statusName?: string;
   description?: string;
@@ -40,7 +40,9 @@ export class JobRoleService {
         : await apiClient.get<ApiJobRole[]>("/job-roles");
 
       return response.data.map((jobRole) => {
-        const closingDate = jobRole.closingDate.split("T")[0] ?? jobRole.closingDate;
+        const closingDate = jobRole.closingDate
+          ? (jobRole.closingDate.split("T")[0] ?? jobRole.closingDate)
+          : null;
 
         return {
           jobRoleId: jobRole.jobRoleId,
@@ -86,7 +88,9 @@ export class JobRoleService {
         : await apiClient.get<ApiJobRole>(`/job-roles/${jobRoleId}`);
 
       const jobRole = response.data;
-      const closingDate = jobRole.closingDate.split("T")[0] ?? jobRole.closingDate;
+      const closingDate = jobRole.closingDate
+        ? (jobRole.closingDate.split("T")[0] ?? jobRole.closingDate)
+        : null;
 
       return {
         jobRoleId: jobRole.jobRoleId,

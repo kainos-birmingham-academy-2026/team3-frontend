@@ -11,6 +11,44 @@ A lightweight Express + TypeScript server used for Team 3 frontend.
 
 ## Getting Started
 
+### Docker development mode (recommended for full stack)
+
+Prerequisite for corporate networks with TLS inspection: run the certificate export step once in the backend repository before first startup (see the Docker section in the backend README).
+
+Clone both repositories as sibling folders under the same parent directory:
+
+```text
+your-workspace/
+  team3-backend/
+  team3-frontend/
+```
+
+From the backend repository folder, start frontend, backend, and Postgres together:
+
+```bash
+cd ../team3-backend
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Services:
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:4000`
+
+Stop and remove containers:
+
+```bash
+cd ../team3-backend
+docker compose -f docker-compose.dev.yml down
+```
+
+Reset database volume as well:
+
+```bash
+cd ../team3-backend
+docker compose -f docker-compose.dev.yml down -v
+```
+
 ### 1. Install dependencies
 
 ```bash
@@ -107,6 +145,7 @@ Renders the job role page using backend API data.
 - Sends the session JWT token to the backend when present
 - If backend responds with `401`, redirects to `/login`
 - If backend errors, renders the page with an error state
+- If a job role has no closing date, the UI shows "No closing date"
 
 ### `GET /login`
 

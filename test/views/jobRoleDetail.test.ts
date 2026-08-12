@@ -259,4 +259,20 @@ describe("jobRoleDetail", () => {
     expect(html).toContain("Closing Date");
     expect(html).toContain("2026-08-06");
   });
+
+  it("should show ongoing recruitment when closing date is null", () => {
+    const jobRole: JobRole = {
+      jobRoleId: 1,
+      roleName: "Lead Software Engineer",
+      location: "Birmingham",
+      capability: "Software Engineering",
+      band: "Senior Engineer",
+      closingDate: null,
+      status: "open",
+    };
+
+    const html = renderView(jobRole);
+
+    expect(html).toContain("No closing date");
+  });
 });

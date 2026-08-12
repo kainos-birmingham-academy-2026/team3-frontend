@@ -5,6 +5,20 @@ node_modules/
 .env.*
 !.env.example
 
+# Local certificates and key material
+.certs/*.crt
+.certs/*.pem
+.certs/*.cer
+.certs/*.key
+
+# Common local secret/key files
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+
 # Logs
 logs/
 *.log

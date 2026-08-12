@@ -57,7 +57,7 @@
             <dd>{{ jobRoleId.capability }}</dd>
 
             <dt>Closing Date</dt>
-            <dd>{{ jobRoleId.closingDate }}</dd>
+            <dd>{{ jobRoleId.closingDate or "No closing date" }}</dd>
 
             {% if jobRoleId.openPositions %}
               <dt>Open Positions</dt>

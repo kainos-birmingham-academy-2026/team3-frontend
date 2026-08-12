@@ -33,7 +33,7 @@
          <td>{{ jobRole.location }}</td>
          <td>{{ jobRole.capability }}</td>
          <td>{{ jobRole.band }}</td>
-         <td>{{ jobRole.closingDate }}</td>
+         <td>{{ jobRole.closingDate or "No closing date" }}</td>
         </tr>
        {% endif %}
       {% endfor %}

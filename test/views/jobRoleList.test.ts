@@ -68,4 +68,22 @@ describe("jobRoleList", () => {
     expect(html).toContain("No open job roles found");
     expect(html).not.toContain("Delivery Manager");
   });
+
+  it("should render fallback text when closing date is null", () => {
+    const jobRoles: JobRole[] = [
+      {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        location: "Birmingham",
+        capability: "Software Engineering",
+        band: "Engineer",
+        closingDate: null,
+        status: "open",
+      },
+    ];
+
+    const html = renderView(jobRoles);
+
+    expect(html).toContain("No closing date");
+  });
 });
