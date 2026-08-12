@@ -1,12 +1,12 @@
 import express from "express";
+import type { RequestHandler } from "express";
 import session from "express-session";
-import nunjucks from "nunjucks";
 import path from "node:path";
+import nunjucks from "nunjucks";
 import request from "supertest";
 import { beforeAll, describe, expect, it } from "vitest";
 import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
-import type { RequestHandler } from "express";
 
 describe("routes", () => {
   const app = express();
@@ -75,6 +75,13 @@ describe("routes", () => {
     expect(response.headers.location).toBe("/login");
   });
 
+  it("should redirect unauthenticated users from apply page to login", async () => {
+    const response = await request(app).get("/job-role-list/1/apply");
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe("/login");
+  });
+
   it("should allow ADMIN to access create page", async () => {
     const adminApp = express();
 
@@ -93,8 +100,12 @@ describe("routes", () => {
     );
 
     adminApp.use(((req, _res, next) => {
-      req.session.jwtToken = "admin-token";
-      req.session.userRole = "ADMIN";
+      const sessionData = req.session as {
+        jwtToken?: string;
+        userRole?: "ADMIN" | "USER";
+      };
+      sessionData.jwtToken = "admin-token";
+      sessionData.userRole = "ADMIN";
       next();
     }) as RequestHandler);
 
@@ -128,8 +139,12 @@ describe("routes", () => {
     );
 
     userApp.use(((req, _res, next) => {
-      req.session.jwtToken = "user-token";
-      req.session.userRole = "USER";
+      const sessionData = req.session as {
+        jwtToken?: string;
+        userRole?: "ADMIN" | "USER";
+      };
+      sessionData.jwtToken = "user-token";
+      sessionData.userRole = "USER";
       next();
     }) as RequestHandler);
 
@@ -140,6 +155,40 @@ describe("routes", () => {
     expect(response.status).toBe(403);
     expect(response.text).toContain("Access restricted");
     expect(response.text).toContain("You do not have permission to access this page.");
+  });
+
+  it("should not block ADMIN users from apply route middleware", async () => {
+    const adminApp = express();
+
+    nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
+      autoescape: true,
+      express: adminApp,
+      noCache: true,
+    });
+
+    adminApp.use(
+      session({
+        secret: "test-session-secret",
+        resave: false,
+        saveUninitialized: false,
+      }),
+    );
+
+    adminApp.use(((req, _res, next) => {
+      const sessionData = req.session as {
+        jwtToken?: string;
+        userRole?: "ADMIN" | "USER";
+      };
+      sessionData.jwtToken = "admin-token";
+      sessionData.userRole = "ADMIN";
+      next();
+    }) as RequestHandler);
+
+    adminApp.use(router);
+
+    const response = await request(adminApp).get("/job-role-list/1/apply");
+
+    expect(response.status).not.toBe(403);
   });
 });
 

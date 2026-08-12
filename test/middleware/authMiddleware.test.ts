@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { requireAdmin, requireAuth } from "../../src/middleware/authMiddleware";
+import { requireAdmin, requireApplicant, requireAuth } from "../../src/middleware/authMiddleware";
 
 type MockRequest = Partial<Request> & {
 	session: {
@@ -68,6 +68,31 @@ describe("authMiddleware", () => {
 		const res = createResponse();
 
 		requireAdmin(req as Request, res, next);
+
+		expect(next).toHaveBeenCalledTimes(1);
+		expect(res.redirect).not.toHaveBeenCalled();
+	});
+
+	it("requireApplicant should block admin users", () => {
+		const req = {
+			session: { jwtToken: "jwt-token", userRole: "ADMIN" },
+		} as MockRequest;
+		const res = createResponse();
+
+		requireApplicant(req as Request, res, next);
+
+		expect(res.status).toHaveBeenCalledWith(403);
+		expect(res.render).toHaveBeenCalledWith("pages/accessRestricted.njk");
+		expect(next).not.toHaveBeenCalled();
+	});
+
+	it("requireApplicant should call next for USER role", () => {
+		const req = {
+			session: { jwtToken: "jwt-token", userRole: "USER" },
+		} as MockRequest;
+		const res = createResponse();
+
+		requireApplicant(req as Request, res, next);
 
 		expect(next).toHaveBeenCalledTimes(1);
 		expect(res.redirect).not.toHaveBeenCalled();

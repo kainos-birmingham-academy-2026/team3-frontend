@@ -76,13 +76,23 @@
         </div>
       </div>
 
-      {% if jobRoleId.status == "open" %}
-        <div class="cta-section">
-          <a href="https://www.kainos.com/careers" class="button button-primary">Apply Now</a>
+      {% if applicationSuccessMessage %}
+        <div class="info-message" role="status">
+          <p>{{ applicationSuccessMessage }}</p>
         </div>
-      {% else %}
+      {% endif %}
+
+      {% if canApply %}
+        <div class="cta-section">
+          <a href="/job-role-list/{{ jobRoleId.jobRoleId }}/apply" class="button button-primary">Apply Now</a>
+        </div>
+      {% elif jobRoleId.status != "open" %}
         <div class="info-message">
           <p>This position is currently closed. Please check back later for more opportunities.</p>
+        </div>
+      {% elif jobRoleId.openPositions is defined and jobRoleId.openPositions <= 0 %}
+        <div class="info-message">
+          <p>This role is open but no positions are currently available.</p>
         </div>
       {% endif %}
     </article>

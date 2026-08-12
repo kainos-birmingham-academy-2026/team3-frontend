@@ -1,0 +1,36 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+  <a href="/job-role-list/{{ jobRoleId.jobRoleId }}" class="back-link">← Back to Job Details</a>
+
+  <article class="job-role-detail" tabindex="0">
+    <div class="hero-section">
+      <p class="eyebrow">Apply for Role</p>
+      <div class="hero-title-row">
+        <h1>{{ jobRoleId.roleName }}</h1>
+        <span class="status-badge status-{{ jobRoleId.status | lower }}">
+          {{ jobRoleId.status | capitalize }}
+        </span>
+      </div>
+    </div>
+
+    <div class="description-section">
+      <h2>Upload your CV</h2>
+      <p>Submit your CV to register your interest in this job role.</p>
+    </div>
+
+    {% if errorMessage %}
+      <div class="error-message" role="alert">
+        <p>{{ errorMessage }}</p>
+      </div>
+    {% endif %}
+
+    <form action="/job-role-list/{{ jobRoleId.jobRoleId }}/apply" method="post" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="cv">CV file</label>
+        <input id="cv" name="cv" type="file" accept=".pdf,.doc,.docx" required>
+      </div>
+      <button type="submit" class="button button-primary">Submit Application</button>
+    </form>
+  </article>
+{% endblock %}

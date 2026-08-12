@@ -38,7 +38,11 @@ describe("JobRoleController", () => {
     getById: vi.fn(),
   };
 
-  const controller = new JobRoleController(jobRoleService);
+  const applicationService = {
+    submitApplication: vi.fn(),
+  };
+
+  const controller = new JobRoleController(jobRoleService, applicationService);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -117,13 +121,15 @@ describe("JobRoleController", () => {
 
   it("should render detail page for getById success", async () => {
     const req = createRequest({
-      session: { jwtToken: "jwt-token" },
+      session: { jwtToken: "jwt-token", userRole: "ADMIN" },
       params: { id: "7" },
     });
     const res = createResponse();
     const jobRole = {
       jobRoleId: 7,
       roleName: "QA Engineer",
+      status: "open",
+      openPositions: 2,
     };
 
     jobRoleService.getById.mockResolvedValueOnce(jobRole);
@@ -131,7 +137,11 @@ describe("JobRoleController", () => {
     await controller.getById(req as unknown as Request, res);
 
     expect(jobRoleService.getById).toHaveBeenCalledWith("7", "jwt-token");
-    expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", { jobRoleId: jobRole });
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
+      jobRoleId: jobRole,
+      canApply: true,
+      applicationSuccessMessage: undefined,
+    });
   });
 
   it("should use the first id when params.id is an array", async () => {
@@ -182,5 +192,113 @@ describe("JobRoleController", () => {
       jobRoles: [],
       errorMessage: "Unable to load job roles",
     });
+  });
+
+  it("should render apply page for eligible admin", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token", userRole: "ADMIN" },
+      params: { id: "10" },
+    });
+    const res = createResponse();
+    const jobRole = {
+      jobRoleId: 10,
+      roleName: "Engineer",
+      status: "open",
+      openPositions: 1,
+    };
+
+    jobRoleService.getById.mockResolvedValueOnce(jobRole);
+
+    await controller.showApplyPage(req as unknown as Request, res);
+
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", { jobRoleId: jobRole });
+  });
+
+  it("should block apply page when open positions are unavailable", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token", userRole: "ADMIN" },
+      params: { id: "10" },
+    });
+    const res = createResponse();
+
+    jobRoleService.getById.mockResolvedValueOnce({
+      jobRoleId: 10,
+      roleName: "Engineer",
+      status: "open",
+      openPositions: 0,
+    });
+
+    await controller.showApplyPage(req as unknown as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.render).toHaveBeenCalledWith("pages/accessRestricted.njk");
+  });
+
+  it("should render validation error when CV file is missing", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token", userRole: "USER" },
+      params: { id: "15" },
+    });
+    const res = createResponse();
+
+    jobRoleService.getById.mockResolvedValueOnce({
+      jobRoleId: 15,
+      roleName: "Engineer",
+      status: "open",
+      openPositions: 2,
+    });
+
+    await controller.submitApplication(req as unknown as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
+      jobRoleId: {
+        jobRoleId: 15,
+        roleName: "Engineer",
+        status: "open",
+        openPositions: 2,
+      },
+      errorMessage: "Upload your CV before submitting your application.",
+    });
+    expect(applicationService.submitApplication).not.toHaveBeenCalled();
+  });
+
+  it("should submit application and redirect to detail success state", async () => {
+    const req = createRequest({
+      session: { jwtToken: "jwt-token", userRole: "USER" },
+      params: { id: "16" },
+    }) as unknown as Request & {
+      file: {
+        buffer: Buffer;
+        originalname: string;
+        mimetype: string;
+      };
+    };
+    const res = createResponse();
+
+    req.file = {
+      buffer: Buffer.from("fake-cv"),
+      originalname: "cv.pdf",
+      mimetype: "application/pdf",
+    };
+
+    jobRoleService.getById.mockResolvedValueOnce({
+      jobRoleId: 16,
+      roleName: "Engineer",
+      status: "open",
+      openPositions: 2,
+    });
+
+    await controller.submitApplication(req, res);
+
+    expect(applicationService.submitApplication).toHaveBeenCalledWith({
+      jobRoleId: "16",
+      jwtToken: "jwt-token",
+      cvBuffer: Buffer.from("fake-cv"),
+      cvFileName: "cv.pdf",
+      cvMimeType: "application/pdf",
+      status: "in progress",
+    });
+    expect(res.redirect).toHaveBeenCalledWith("/job-role-list/16?applied=1");
   });
 });

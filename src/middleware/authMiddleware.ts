@@ -25,3 +25,16 @@ export function requireAdmin(
 
 	next();
 }
+
+export function requireApplicant(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+): void {
+	if (req.session.userRole !== USER_ROLES.USER) {
+		res.status(403).render("pages/accessRestricted.njk");
+		return;
+	}
+
+	next();
+}

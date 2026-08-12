@@ -16,12 +16,14 @@
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
 		"express-session": "^1.19.0",
+		"multer": "^2.0.2",
 		"nunjucks": "^3.2.4"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.5.7",
 		"@types/express": "^5.0.0",
 		"@types/express-session": "^1.19.0",
+		"@types/multer": "^2.0.0",
 		"@types/node": "^24.0.0",
 		"@types/nunjucks": "^3.2.6",
 		"@types/supertest": "^7.2.1",

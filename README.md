@@ -30,6 +30,7 @@ Available variables:
 - `SESSION_SECRET` - Secret used to sign the session cookie (required)
 - `AUTH_LOGIN_PATH` - Backend login endpoint path used by the frontend auth service (default: `/api/login`)
 - `AUTH_REGISTER_PATH` - Backend register endpoint path used by the frontend auth service (default: `/api/register`)
+- `APPLICATION_SUBMIT_PATH` - Backend endpoint path used to submit applicant CV and application status (default: `/applications`)
 - `API_BASE_URL` - Base URL used for API requests (default: `http://localhost:4000`)
 - `NODE_ENV` - Runtime environment (`development` or `production`)
 - `PORT` - Port for this Express app (default: `3000`)
@@ -40,6 +41,7 @@ Example:
 SESSION_SECRET=replace-with-a-long-random-secret
 AUTH_LOGIN_PATH=/api/login
 AUTH_REGISTER_PATH=/api/register
+APPLICATION_SUBMIT_PATH=/applications
 API_BASE_URL=http://localhost:4000
 NODE_ENV=development
 PORT=3000
@@ -110,6 +112,23 @@ Renders the job role page using backend API data.
 - Sends the session JWT token to the backend
 - If backend responds with `401`, redirects to `/login`
 - If backend errors, renders the page with an error state
+
+### `GET /job-role-list/:id/apply`
+
+Renders the applicant CV upload form for the selected role.
+
+- Requires an authenticated session
+- Requires `USER` role (applicant)
+- Role must be `open` with `openPositions > 0`
+
+### `POST /job-role-list/:id/apply`
+
+Submits applicant CV for the selected role.
+
+- Requires an authenticated session
+- Requires `USER` role (applicant)
+- Requires multipart `cv` file upload
+- Sends application status as `in progress` to backend
 
 ### `GET /login`
 

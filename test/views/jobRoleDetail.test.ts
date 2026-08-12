@@ -10,12 +10,20 @@ const template = fs.readFileSync(templatePath, "utf8");
 const viewsPath = path.resolve(process.cwd(), "src/views");
 const environment = new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsPath));
 
-function renderView(jobRoleId: JobRole): string {
+function renderView(
+  jobRoleId: JobRole,
+  canApply = false,
+  applicationSuccessMessage?: string,
+): string {
   if (!template.length) {
     throw new Error("Template should not be empty");
   }
 
-  return environment.render("pages/jobRoleDetail.njk", { jobRoleId });
+  return environment.render("pages/jobRoleDetail.njk", {
+    jobRoleId,
+    canApply,
+    applicationSuccessMessage,
+  });
 }
 
 describe("jobRoleDetail", () => {
@@ -201,7 +209,7 @@ describe("jobRoleDetail", () => {
     expect(html).toContain("B1 1AA");
   });
 
-  it("should display apply button when status is open", () => {
+  it("should display apply button when applicant can apply", () => {
     const jobRole: JobRole = {
       jobRoleId: 1,
       roleName: "Software Engineer",
@@ -210,12 +218,48 @@ describe("jobRoleDetail", () => {
       band: "Engineer",
       closingDate: "2026-08-06",
       status: "open",
+      openPositions: 2,
     };
 
-    const html = renderView(jobRole);
+    const html = renderView(jobRole, true);
 
     expect(html).toContain("Apply Now");
-    expect(html).toContain("https://www.kainos.com/careers");
+    expect(html).toContain('/job-role-list/1/apply');
+  });
+
+  it("should not display apply button when role has no open positions", () => {
+    const jobRole: JobRole = {
+      jobRoleId: 1,
+      roleName: "Software Engineer",
+      location: "Birmingham",
+      capability: "Software Engineering",
+      band: "Engineer",
+      closingDate: "2026-08-06",
+      status: "open",
+      openPositions: 0,
+    };
+
+    const html = renderView(jobRole, false);
+
+    expect(html).not.toContain("Apply Now");
+    expect(html).toContain("no positions are currently available");
+  });
+
+  it("should not display apply button when user is not eligible", () => {
+    const jobRole: JobRole = {
+      jobRoleId: 1,
+      roleName: "Software Engineer",
+      location: "Birmingham",
+      capability: "Software Engineering",
+      band: "Engineer",
+      closingDate: "2026-08-06",
+      status: "open",
+      openPositions: 4,
+    };
+
+    const html = renderView(jobRole, false);
+
+    expect(html).not.toContain("Apply Now");
   });
 
   it("should display closed status message when status is not open", () => {
@@ -233,6 +277,27 @@ describe("jobRoleDetail", () => {
 
     expect(html).not.toContain("Apply Now");
     expect(html).toContain("This position is currently closed");
+  });
+
+  it("should display application success message after submit", () => {
+    const jobRole: JobRole = {
+      jobRoleId: 3,
+      roleName: "QA Engineer",
+      location: "Belfast",
+      capability: "Quality Assurance",
+      band: "Engineer",
+      closingDate: "2026-09-30",
+      status: "open",
+      openPositions: 1,
+    };
+
+    const html = renderView(
+      jobRole,
+      true,
+      "Application submitted successfully. Your application is now in progress.",
+    );
+
+    expect(html).toContain("Application submitted successfully. Your application is now in progress.");
   });
 
   it("should display all job details fields inline with labels", () => {
