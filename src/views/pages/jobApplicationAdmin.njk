@@ -26,7 +26,7 @@
     <select id="status-filter" class="status-filter">
      <option value="">All Statuses</option>
      <option value="pending">Pending Review</option>
-     <option value="approved">Approved</option>
+      <option value="hired">Hired</option>
      <option value="rejected">Rejected</option>
     </select>
    </div>
@@ -52,9 +52,9 @@
    <span class="summary-label">Pending Review</span>
    <span class="summary-value" id="pending-count">0</span>
   </div>
-  <div class="summary-card approved">
-   <span class="summary-label">Approved</span>
-   <span class="summary-value" id="approved-count">0</span>
+  <div class="summary-card hired">
+   <span class="summary-label">Hired</span>
+   <span class="summary-value" id="hired-count">0</span>
   </div>
   <div class="summary-card rejected">
    <span class="summary-label">Rejected</span>
@@ -165,7 +165,7 @@
    border-left-color: #ff9800;
   }
 
-  .summary-card.approved {
+  .summary-card.hired {
    border-left-color: #4caf50;
   }
 
@@ -219,6 +219,7 @@
    padding: 1rem;
    border-bottom: 1px solid #e0e0e0;
    font-size: 0.9rem;
+    vertical-align: middle;
   }
 
   .application-row {
@@ -232,6 +233,18 @@
   .applicant-cell {
    font-weight: 600;
    color: #333;
+  }
+
+  .applicant-link {
+    color: #0052a3;
+    text-decoration: underline;
+   font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    text-align: left;
   }
 
   .email-cell {
@@ -254,6 +267,7 @@
    color: #e65100;
   }
 
+  .status-hired,
   .status-approved {
    background: #e8f5e9;
    color: #2e7d32;
@@ -265,9 +279,13 @@
   }
 
   .actions-cell {
-   display: flex;
-   gap: 0.5rem;
-   flex-wrap: wrap;
+    vertical-align: middle;
+    }
+
+    .actions-content {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .btn-view {
@@ -303,7 +321,7 @@
    flex-wrap: wrap;
   }
 
-  .btn-approve,
+  .btn-hire,
   .btn-reject {
    padding: 0.5rem 0.8rem;
    border: none;
@@ -315,21 +333,21 @@
    white-space: nowrap;
   }
 
-  .btn-approve {
+  .btn-hire {
    background: #4caf50;
    color: white;
   }
 
-  .btn-approve:hover {
+  .btn-hire:hover {
    background: #45a049;
    transform: translateY(-1px);
   }
 
-  .btn-approve:active {
+  .btn-hire:active {
    transform: translateY(0);
   }
 
-  .btn-approve:focus {
+  .btn-hire:focus {
    outline: 2px solid #4caf50;
    outline-offset: 2px;
   }
@@ -420,7 +438,7 @@
     font-size: 0.85rem;
    }
 
-   .btn-approve,
+  .btn-hire,
    .btn-reject {
     padding: 0.4rem 0.6rem;
     font-size: 0.8rem;
@@ -459,6 +477,32 @@
    return String(applicationId);
   }
 
+  function normalizeApplicationStatus(status) {
+   const normalizedStatus = String(status || "").trim().toLowerCase();
+
+   if (
+    normalizedStatus === "hired" ||
+    normalizedStatus === "approved" ||
+    normalizedStatus === "approve" ||
+    normalizedStatus === "accepted" ||
+    normalizedStatus === "success"
+   ) {
+    return "hired";
+   }
+
+   if (
+    normalizedStatus === "rejected" ||
+    normalizedStatus === "reject" ||
+    normalizedStatus === "declined" ||
+    normalizedStatus === "denied" ||
+    normalizedStatus === "failed"
+   ) {
+    return "rejected";
+   }
+
+   return "pending";
+  }
+
   // Fetch applications on page load
   async function loadApplications() {
    try {
@@ -473,7 +517,8 @@
     const fetchedApplications = await response.json();
     allApplications = fetchedApplications.map((app) => {
      const overrideStatus = statusOverrides.get(getApplicationKey(app.applicationId));
-     return overrideStatus ? { ...app, status: overrideStatus } : app;
+     const effectiveStatus = overrideStatus ?? app.status;
+     return { ...app, status: normalizeApplicationStatus(effectiveStatus) };
     });
     renderApplications();
     populateRoleFilter();
@@ -503,11 +548,19 @@
     row.className = "application-row";
     row.setAttribute("data-application-id", app.applicationId);
 
-    const statusLower = app.status.toLowerCase();
+    const statusLower = normalizeApplicationStatus(app.status);
     const isPending = statusLower === "pending";
+    const jobRoleId = Number.parseInt(String(app.jobRoleId), 10);
+    const detailsHref = Number.isNaN(jobRoleId)
+     ? "/job-role-list"
+     : `/job-role-list/${jobRoleId}`;
 
     row.innerHTML = `
-     <td class="applicant-cell">${escapeHtml(app.applicantName)}</td>
+     <td class="applicant-cell">
+      <button type="button" class="applicant-link" aria-label="Applicant name ${escapeHtml(app.applicantName)}">
+       ${escapeHtml(app.applicantName)}
+      </button>
+     </td>
      <td class="email-cell">${escapeHtml(app.applicantEmail)}</td>
      <td class="role-cell">${escapeHtml(app.roleName)}</td>
      <td class="date-cell">${escapeHtml(app.applicationDate)}</td>
@@ -517,31 +570,33 @@
       </span>
      </td>
      <td class="actions-cell">
-      <button 
-       class="btn-view" 
-       data-href="/job-applications/${app.applicationId}"
-       aria-label="View full application details for ${escapeHtml(app.applicantName)}"
-      >
-       View Details
-      </button>
-      ${isPending ? `
-       <div class="inline-actions">
-        <button 
-         class="btn-approve" 
-         data-application-id="${app.applicationId}"
-         aria-label="Approve ${escapeHtml(app.applicantName)}'s application"
-        >
-         Approve
-        </button>
-        <button 
-         class="btn-reject" 
-         data-application-id="${app.applicationId}"
-         aria-label="Reject ${escapeHtml(app.applicantName)}'s application"
-        >
-         Reject
-        </button>
-       </div>
-      ` : ''}
+      <div class="actions-content">
+       <button 
+        class="btn-view" 
+        data-href="${detailsHref}"
+        aria-label="View full application details for ${escapeHtml(app.applicantName)}"
+       >
+        View Job-Role
+       </button>
+       ${isPending ? `
+        <div class="inline-actions">
+         <button 
+          class="btn-hire" 
+          data-application-id="${app.applicationId}"
+          aria-label="Hire ${escapeHtml(app.applicantName)}"
+         >
+          Hire
+         </button>
+         <button 
+          class="btn-reject" 
+          data-application-id="${app.applicationId}"
+          aria-label="Reject ${escapeHtml(app.applicantName)}'s application"
+         >
+          Reject
+         </button>
+        </div>
+       ` : ''}
+      </div>
      </td>
     `;
 
@@ -565,28 +620,29 @@
 
   function updateSummary() {
    const total = allApplications.length;
-   const pending = allApplications.filter(
-    (app) => app.status.toLowerCase() === "pending"
-   ).length;
-   const approved = allApplications.filter(
-    (app) => app.status.toLowerCase() === "approved"
-   ).length;
-   const rejected = allApplications.filter(
-    (app) => app.status.toLowerCase() === "rejected"
-   ).length;
+    const pending = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "pending"
+    ).length;
+    const hired = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "hired"
+    ).length;
+    const rejected = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "rejected"
+    ).length;
 
    document.getElementById("total-count").textContent = total;
    document.getElementById("pending-count").textContent = pending;
-   document.getElementById("approved-count").textContent = approved;
+    document.getElementById("hired-count").textContent = hired;
    document.getElementById("rejected-count").textContent = rejected;
   }
 
   function updateApplicationStatusInView(applicationId, newStatus) {
     const applicationKey = getApplicationKey(applicationId);
-    statusOverrides.set(applicationKey, newStatus);
+    const normalizedStatus = normalizeApplicationStatus(newStatus);
+    statusOverrides.set(applicationKey, normalizedStatus);
    allApplications = allApplications.map((app) =>
      getApplicationKey(app.applicationId) === applicationKey
-      ? { ...app, status: newStatus }
+      ? { ...app, status: normalizedStatus }
       : app
    );
    renderApplications();
@@ -603,12 +659,12 @@
     });
    });
 
-   // Approve/Reject buttons
-   document.querySelectorAll(".btn-approve").forEach((btn) => {
+   // Hire/Reject buttons
+   document.querySelectorAll(".btn-hire").forEach((btn) => {
     btn.addEventListener("click", (e) => {
      e.preventDefault();
      const applicationId = btn.getAttribute("data-application-id");
-     approveApplication(applicationId);
+     hireApplication(applicationId);
     });
    });
 
@@ -689,35 +745,35 @@
    }
   }
 
-  function approveApplication(applicationId) {
-   if (confirm("Are you sure you want to approve this application?")) {
+  function hireApplication(applicationId) {
+   if (confirm("Are you sure you want to hire this applicant?")) {
     fetch(`/api/job-applications/${applicationId}/approve`, {
      method: "POST",
      headers: { "Content-Type": "application/json" },
     })
      .then(async (response) => {
       if (response.ok) {
-       updateApplicationStatusInView(applicationId, "approved");
-       alert("Application approved!");
+         updateApplicationStatusInView(applicationId, "hired");
+       alert("Applicant hired!");
        loadApplications(); // Reload the table
       } else if (response.status === 409) {
-       updateApplicationStatusInView(applicationId, "approved");
-       alert("Application is already approved.");
+         updateApplicationStatusInView(applicationId, "hired");
+       alert("Applicant is already hired.");
        loadApplications();
       } else {
        const errorBody = await response
         .json()
-        .catch(() => ({ error: "Failed to approve application" }));
+        .catch(() => ({ error: "Failed to hire applicant" }));
        const message =
         errorBody && typeof errorBody.error === "string"
          ? errorBody.error
-         : "Failed to approve application";
-       alert(`Failed to approve application: ${message}`);
+         : "Failed to hire applicant";
+       alert(`Failed to hire applicant: ${message}`);
       }
      })
      .catch((error) => {
-      console.error("Error approving application:", error);
-      alert("Error approving application");
+      console.error("Error hiring applicant:", error);
+      alert("Error hiring applicant");
      });
    }
   }
