@@ -114,6 +114,13 @@ describe("routes", () => {
 		expect(response.headers.location).toBe("/login");
 	});
 
+	it("should redirect unauthenticated users from application confirmation page to login", async () => {
+		const response = await request(app).get("/job-role-list/1/apply/confirmation");
+
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/login");
+	});
+
 	it("should allow ADMIN to access create page", async () => {
 		const adminApp = express();
 

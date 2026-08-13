@@ -26,6 +26,11 @@ router.post(
 	requireAuth,
 	(req, res) => controller.submitApplication(req, res),
 );
+router.get(
+	"/job-role-list/:id/apply/confirmation",
+	requireAuth,
+	(req, res) => controller.showApplicationConfirmation(req, res),
+);
 
 router.get("/job-role-create", requireAuth, requireAdmin, (_req, res) => {
 	res.render("pages/jobRoleCreate.njk", {

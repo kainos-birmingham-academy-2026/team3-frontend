@@ -120,12 +120,7 @@ export class JobRoleController {
 
 			await this.jobRoleService.applyForRole(id, cvText, this.getJwtToken(req));
 
-			res.status(201).render("pages/jobRoleApply.njk", {
-				jobRoleId,
-				canApply: true,
-				successMessage: "Application submitted successfully.",
-				applicationStatus: "in progress",
-			});
+			res.redirect(303, `/job-role-list/${id}/apply/confirmation`);
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
 				return;
@@ -156,6 +151,13 @@ export class JobRoleController {
 				errorMessage,
 			});
 		}
+	}
+
+	showApplicationConfirmation(req: Request, res: Response): void {
+		const id = this.getRoleIdParam(req);
+		res.render("pages/applicationReceivedConfirmation.njk", {
+			jobRoleId: id,
+		});
 	}
 
 	private handleUnauthorized(
