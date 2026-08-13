@@ -1,33 +1,56 @@
+import type { Server } from "node:http";
 import path from "node:path";
-import type { RequestHandler } from "express";
+import type { Application, RequestHandler } from "express";
 import express from "express";
 import session from "express-session";
 import nunjucks from "nunjucks";
 import request from "supertest";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
 
+function createTestApp(): Application {
+	const testApp = express();
+
+	nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
+		autoescape: true,
+		express: testApp,
+		noCache: true,
+	});
+
+	testApp.use(
+		session({
+			secret: "test-session-secret",
+			resave: false,
+			saveUninitialized: false,
+		}),
+	);
+
+	testApp.use(authRouter);
+	testApp.use(router);
+
+	return testApp;
+}
+
 describe("routes", () => {
-	const app = express();
+	let app: Application;
+	let server: Server;
 
-	beforeAll(() => {
-		nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
-			autoescape: true,
-			express: app,
-			noCache: true,
+	beforeAll(async () => {
+		app = createTestApp();
+		return new Promise<void>((resolve) => {
+			server = app.listen(0, () => {
+				resolve();
+			});
 		});
+	});
 
-		app.use(
-			session({
-				secret: "test-session-secret",
-				resave: false,
-				saveUninitialized: false,
-			}),
-		);
-
-		app.use(authRouter);
-		app.use(router);
+	afterAll(async () => {
+		return new Promise<void>((resolve) => {
+			server.close(() => {
+				resolve();
+			});
+		});
 	});
 
 	it("should return 200 status code and branded home page", async () => {
@@ -109,10 +132,12 @@ describe("routes", () => {
 		);
 
 		adminApp.use(((req, _res, next) => {
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken =
-				"admin-token";
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).userRole =
-				"ADMIN";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).jwtToken = "admin-token";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).userRole = "ADMIN";
 			next();
 		}) as RequestHandler);
 
@@ -146,10 +171,12 @@ describe("routes", () => {
 		);
 
 		userApp.use(((req, _res, next) => {
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken =
-				"user-token";
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).userRole =
-				"USER";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).jwtToken = "user-token";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).userRole = "USER";
 			next();
 		}) as RequestHandler);
 
@@ -196,8 +223,9 @@ describe("routes", () => {
 		);
 
 		authApp.use(((req, _res, next) => {
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken =
-				"existing-token";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).jwtToken = "existing-token";
 			next();
 		}) as RequestHandler);
 
@@ -228,8 +256,9 @@ describe("routes", () => {
 		);
 
 		authApp.use(((req, _res, next) => {
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken =
-				"existing-token";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).jwtToken = "existing-token";
 			next();
 		}) as RequestHandler);
 
@@ -260,8 +289,9 @@ describe("routes", () => {
 		);
 
 		authApp.use(((req, _res, next) => {
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken =
-				"existing-token";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).jwtToken = "existing-token";
 			next();
 		}) as RequestHandler);
 
@@ -292,10 +322,12 @@ describe("routes", () => {
 		);
 
 		authApp.use(((req, _res, next) => {
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken =
-				"existing-token";
-			(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).userRole =
-				"ADMIN";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).jwtToken = "existing-token";
+			(
+				req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+			).userRole = "ADMIN";
 			next();
 		}) as RequestHandler);
 
@@ -305,6 +337,6 @@ describe("routes", () => {
 		const response = await request(authApp).get("/logout");
 
 		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.headers.location).toBe("/logout/confirmation");
 	});
 });
