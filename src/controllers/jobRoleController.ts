@@ -75,7 +75,7 @@ export class JobRoleController {
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Unable to load the apply page";
+					: "This page cannot be loaded right now. Please try again.";
 
 			res.status(500).render("pages/jobRoleApply.njk", {
 				canApply: false,

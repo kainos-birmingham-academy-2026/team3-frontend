@@ -577,7 +577,7 @@ describe("JobRoleController", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
         canApply: false,
-        errorMessage: "Unable to load the apply page",
+		errorMessage: "This page cannot be loaded right now. Please try again.",
       });
     });
 

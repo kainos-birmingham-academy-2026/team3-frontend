@@ -129,7 +129,9 @@ describe("JobRoleService", () => {
       response: { status: 500 },
     });
 
-    await expect(service.getAll(jwtToken)).rejects.toThrow("Backend server error");
+    await expect(service.getAll(jwtToken)).rejects.toThrow(
+      "Job roles cannot be loaded right now. Please try again in a moment.",
+    );
   });
 
   it("should map sharepointUrl to jobSpecUrl for getAll", async () => {
@@ -349,7 +351,9 @@ describe("JobRoleService", () => {
       response: { status: 500 },
     });
 
-    await expect(service.getById("123")).rejects.toThrow("Backend server error");
+    await expect(service.getById("123")).rejects.toThrow(
+      "This job role cannot be loaded right now. Please try again in a moment.",
+    );
   });
 
   it("should submit an application with cvText payload", async () => {
@@ -365,7 +369,7 @@ describe("JobRoleService", () => {
   });
 
   it("should throw when submitting an application without jwt token", async () => {
-    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Not authenticated");
+    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Please sign in to continue");
     expect(apiClient.post).not.toHaveBeenCalled();
   });
 
