@@ -18,9 +18,16 @@ router.get("/health", (_req, res) => {
 	});
 });
 
-router.get("/job-role-list", requireAuth, (req,res) => controller.getAll(req, res));
-router.get("/job-role-list/:id", requireAuth, (req, res) => controller.getById(req, res));
-router.get("/job-role-list/:id/apply", requireAuth, (req, res) => controller.showApplyForm(req, res));
+router.get("/job-role-list", (req,res) => controller.getAll(req, res));
+router.get("/job-role-list/:id", (req, res) => controller.getById(req, res));
+router.get("/job-role-list/:id/apply", (req, res) => {
+	if (!req.session.jwtToken) {
+		res.redirect("/unauthorised");
+		return;
+	}
+
+	controller.showApplyForm(req, res);
+});
 router.post(
 	"/job-role-list/:id/apply",
 	requireAuth,

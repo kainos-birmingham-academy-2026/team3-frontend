@@ -42,6 +42,28 @@ describe("JobRoleService", () => {
     expect(result[0]?.capability).toBe("Software Engineering");
   });
 
+  it("should fetch public job roles without authorization header", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          jobRoleId: 1,
+          roleName: "Software Engineer",
+          locationName: "Birmingham",
+          capabilityName: "Software Engineering",
+          bandName: "Engineer",
+          closingDate: "2026-08-06T00:00:00.000Z",
+          status: "OPEN",
+        },
+      ],
+    });
+
+    const result = await service.getAll();
+
+    expect(apiClient.get).toHaveBeenCalledWith("/job-roles");
+    expect(result).toHaveLength(1);
+    expect(result[0]?.status).toBe("open");
+  });
+
   it("should keeps role status values from backend for view filtering", async () => {
     vi.mocked(apiClient.get).mockResolvedValueOnce({
       data: [
@@ -107,7 +129,9 @@ describe("JobRoleService", () => {
       response: { status: 500 },
     });
 
-    await expect(service.getAll(jwtToken)).rejects.toThrow("Backend server error");
+    await expect(service.getAll(jwtToken)).rejects.toThrow(
+      "Job roles cannot be loaded right now. Please try again in a moment.",
+    );
   });
 
   it("should map sharepointUrl to jobSpecUrl for getAll", async () => {
@@ -327,7 +351,9 @@ describe("JobRoleService", () => {
       response: { status: 500 },
     });
 
-    await expect(service.getById("123")).rejects.toThrow("Backend server error");
+    await expect(service.getById("123")).rejects.toThrow(
+      "This job role cannot be loaded right now. Please try again in a moment.",
+    );
   });
 
   it("should submit an application with cvText payload", async () => {
@@ -343,13 +369,8 @@ describe("JobRoleService", () => {
   });
 
   it("should throw when submitting an application without jwt token", async () => {
-    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Not authenticated");
+    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Please sign in to continue");
     expect(apiClient.post).not.toHaveBeenCalled();
-  });
-
-  it("should throw when getAll is called without jwtToken", async () => {
-    await expect(service.getAll()).rejects.toThrow("Not authenticated");
-    expect(apiClient.get).not.toHaveBeenCalled();
   });
 
   it("should handle getById without jwtToken and retrieve public job role", async () => {

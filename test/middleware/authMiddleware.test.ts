@@ -28,13 +28,13 @@ describe("authMiddleware", () => {
 		next = vi.fn();
 	});
 
-	it("requireAuth should redirect to login when token is missing", () => {
+	it("requireAuth should redirect to unauthorised when token is missing", () => {
 		const req = { session: {} } as MockRequest;
 		const res = createResponse();
 
 		requireAuth(req as Request, res, next);
 
-		expect(res.redirect).toHaveBeenCalledWith("/login");
+		expect(res.redirect).toHaveBeenCalledWith("/unauthorised");
 		expect(next).not.toHaveBeenCalled();
 	});
 

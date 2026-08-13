@@ -74,6 +74,29 @@ describe("JobRoleController", () => {
     expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", { jobRoles });
   });
 
+  it("should allow missing session token and still render public job roles", async () => {
+    const req = createRequest();
+    const res = createResponse();
+    const jobRoles = [
+      {
+        jobRoleId: 2,
+        roleName: "Delivery Manager",
+        location: "Leeds",
+        capabilityId: 2,
+        bandId: 6,
+        closingDate: "2026-09-01",
+        status: "open",
+      },
+    ];
+
+    jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
+
+    await controller.getAll(req as unknown as Request, res);
+
+    expect(jobRoleService.getAll).toHaveBeenCalledWith(undefined);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", { jobRoles });
+  });
+
   it("should clear token and redirect to login when backend returns 401", async () => {
     const req = createRequest({
       session: { jwtToken: "jwt-token", userRole: "USER" },
@@ -91,16 +114,6 @@ describe("JobRoleController", () => {
     expect(req.session.userRole).toBeUndefined();
     expect(res.redirect).toHaveBeenCalledWith("/login");
     expect(res.render).not.toHaveBeenCalled();
-  });
-
-  it("should redirect to login when session token is missing", async () => {
-    const req = createRequest();
-    const res = createResponse();
-
-    await controller.getAll(req as unknown as Request, res);
-
-    expect(jobRoleService.getAll).not.toHaveBeenCalled();
-    expect(res.redirect).toHaveBeenCalledWith("/login");
   });
 
   it("should render 500 with empty list and message when API call fails", async () => {
@@ -564,7 +577,7 @@ describe("JobRoleController", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
         canApply: false,
-        errorMessage: "Unable to load the apply page",
+		errorMessage: "This page cannot be loaded right now. Please try again.",
       });
     });
 

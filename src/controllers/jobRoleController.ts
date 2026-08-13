@@ -19,15 +19,8 @@ export class JobRoleController {
 	}
 
 	async getAll(req: Request, res: Response): Promise<void> {
-		const jwtToken = this.getJwtToken(req);
-
-		if (!jwtToken) {
-			res.redirect("/login");
-			return;
-		}
-
 		try {
-			const jobRoles = await this.jobRoleService.getAll(jwtToken);
+			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
 			res.render("pages/jobRoleList.njk", { jobRoles });
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -82,7 +75,7 @@ export class JobRoleController {
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Unable to load the apply page";
+					: "This page cannot be loaded right now. Please try again.";
 
 			res.status(500).render("pages/jobRoleApply.njk", {
 				canApply: false,

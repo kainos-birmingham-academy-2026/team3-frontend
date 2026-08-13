@@ -7,7 +7,7 @@ export function requireAuth(
 	next: NextFunction,
 ): void {
 	if (!req.session.jwtToken) {
-		res.redirect("/login");
+		res.redirect("/unauthorised");
 		return;
 	}
 	next();
