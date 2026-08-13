@@ -123,4 +123,18 @@ export class JobRoleService {
       throw error;
     }
   }
+
+  async applyForRole(jobRoleId: string, cvText: string, jwtToken?: string): Promise<void> {
+    if (!jwtToken) {
+      throw new Error("Not authenticated");
+    }
+
+    await apiClient.post(
+      `/job-roles/${jobRoleId}/apply`,
+      { cvText },
+      {
+        headers: { Authorization: `Bearer ${jwtToken}` },
+      },
+    );
+  }
 }

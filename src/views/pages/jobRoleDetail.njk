@@ -76,9 +76,9 @@
         </div>
       </div>
 
-      {% if jobRoleId.status == "open" %}
+      {% if jobRoleId.status == "open" and jobRoleId.openPositions and jobRoleId.openPositions > 0 %}
         <div class="cta-section">
-          <a href="https://www.kainos.com/careers" class="button button-primary">Apply Now</a>
+          <a href="/job-role-list/{{ jobRoleId.jobRoleId }}/apply" class="button button-primary">Apply Now</a>
         </div>
       {% else %}
         <div class="info-message">

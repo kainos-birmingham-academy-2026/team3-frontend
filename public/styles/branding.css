@@ -360,7 +360,23 @@ body.modal-open {
   background: #fbfcff;
 }
 
+.form-field textarea {
+  width: 100%;
+  border: 1px solid #b8c2e6;
+  padding: 0.68rem 0.75rem;
+  font: inherit;
+  color: var(--kainos-navy);
+  background: #fbfcff;
+  resize: vertical;
+}
+
 .form-field input:focus {
+  border-color: var(--kainos-blue);
+  outline: 3px solid rgba(40, 53, 131, 0.2);
+  outline-offset: 1px;
+}
+
+.form-field textarea:focus {
   border-color: var(--kainos-blue);
   outline: 3px solid rgba(40, 53, 131, 0.2);
   outline-offset: 1px;
@@ -373,6 +389,21 @@ body.modal-open {
   background: #fff3ea;
   color: #7c2d04;
   font-weight: 600;
+}
+
+.form-success {
+  margin: 0 0 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-left: 4px solid var(--kainos-green);
+  background: rgba(97, 168, 63, 0.12);
+  color: #234716;
+  font-weight: 600;
+}
+
+.form-success-detail {
+  margin: 0 0 1rem;
+  color: var(--kainos-navy);
+  font-weight: 500;
 }
 
 .site-footer {
