@@ -24,6 +24,8 @@ export class AdminApplicationService {
     const normalizedStatus = status.trim().toLowerCase();
 
     if (
+      normalizedStatus === "hired" ||
+      normalizedStatus === "hire" ||
       normalizedStatus === "approved" ||
       normalizedStatus === "approve" ||
       normalizedStatus === "accepted" ||
@@ -57,6 +59,7 @@ export class AdminApplicationService {
         applicationId: app.applicationId,
         applicantName: app.applicantName ?? "N/A",
         applicantEmail: app.applicantEmail ?? "N/A",
+        jobRoleId: app.jobRoleId ?? null,
         roleName: app.roleName ?? "N/A",
         applicationDate: app.applicationDate ? app.applicationDate.split("T")[0] : "Unknown",
         status: this.mapStatus(app.status),
