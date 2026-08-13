@@ -17,6 +17,7 @@ pnpm-debug.log*
 dist/
 build/
 coverage/
+code_reviews/
 
 # Cache and temp files
 .cache/
