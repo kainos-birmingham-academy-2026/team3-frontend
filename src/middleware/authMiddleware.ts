@@ -18,10 +18,7 @@ export function requireAdmin(
 	res: Response,
 	next: NextFunction,
 ): void {
-	const isAdminByFlag = req.session.isAdmin === true;
-	const isAdminByRole = req.session.userRole === USER_ROLES.ADMIN;
-
-	if (!isAdminByFlag && !isAdminByRole) {
+	if (req.session.userRole !== USER_ROLES.ADMIN) {
 		res.status(403).render("pages/accessRestricted.njk");
 		return;
 	}
