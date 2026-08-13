@@ -25,6 +25,12 @@ Create a local environment file from the example:
 cp .env.example .env
 ```
 
+Generate a secure secret for `SESSION_SECRET` below:
+
+```bash
+openssl rand -hex 32
+```
+
 Available variables:
 
 - `SESSION_SECRET` - Secret used to sign the session cookie (required)

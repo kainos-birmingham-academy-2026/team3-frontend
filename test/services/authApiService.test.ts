@@ -78,7 +78,7 @@ describe("authApiService", () => {
     });
 
     await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
-      "Authentication succeeded but no JWT token was returned",
+      "Sign-in could not be completed. Please try again.",
     );
   });
 
@@ -109,7 +109,7 @@ describe("authApiService", () => {
     });
 
     await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
-      "Login endpoint not found",
+      "We cannot sign you in right now. Please try again in a moment.",
     );
 
     vi.mocked(apiClient.post).mockRejectedValueOnce({
@@ -118,7 +118,7 @@ describe("authApiService", () => {
     });
 
     await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
-      "Backend server error during login",
+      "We cannot sign you in right now. Please try again in a moment.",
     );
   });
 
@@ -130,7 +130,7 @@ describe("authApiService", () => {
     });
 
     await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
-      "Something went wrong, please try again later.",
+      "We cannot sign you in right now. Please try again in a moment.",
     );
   });
 
@@ -173,7 +173,7 @@ describe("authApiService", () => {
     });
 
     await expect(register("existing@example.com", "password123")).rejects.toThrow(
-      "Backend server error during registration",
+      "We cannot create your account right now. Please try again in a moment.",
     );
   });
 
@@ -195,7 +195,7 @@ describe("authApiService", () => {
     });
 
     await expect(register("new@example.com", "password123")).rejects.toThrow(
-      "Registration endpoint not found",
+      "We cannot create your account right now. Please try again in a moment.",
     );
   });
 
@@ -207,7 +207,7 @@ describe("authApiService", () => {
     });
 
     await expect(register("new@example.com", "password123")).rejects.toThrow(
-      "Something went wrong, please try again later.",
+      "We cannot create your account right now. Please try again in a moment.",
     );
   });
 

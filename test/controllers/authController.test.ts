@@ -203,7 +203,7 @@ describe("AuthController", () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.render).toHaveBeenCalledWith("pages/login.njk", {
-      errorMessage: "Invalid login token",
+      errorMessage: "Sign-in could not be completed. Please try again.",
       formValues: { email: "jane.doe" },
     });
   });

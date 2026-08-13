@@ -65,7 +65,7 @@ export class AuthController {
 			const userRole = getUserRoleFromToken(jwtToken);
 
 			if (!userRole) {
-				throw new Error("Invalid login token");
+				throw new Error("Sign-in could not be completed. Please try again.");
 			}
 
 			req.session.jwtToken = jwtToken;
