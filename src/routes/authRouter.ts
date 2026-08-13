@@ -11,6 +11,12 @@ router.get("/register/confirmation", (req, res) =>
 	authController.showRegisterConfirmation(req, res),
 );
 router.post("/register", (req, res) => authController.register(req, res));
+router.get("/unauthorised", (_req, res) => {
+	res.status(401).render("pages/401.njk");
+});
+router.get("/logout/confirmation", (req, res) =>
+	authController.showLogoutConfirmation(req, res),
+);
 router.get("/logout", (req, res) => authController.logout(req, res));
 
 export default router;

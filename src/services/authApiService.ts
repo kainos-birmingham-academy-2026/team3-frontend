@@ -26,7 +26,7 @@ export async function login(email: string, password: string): Promise<string> {
 
 		const token = extractToken(response.data);
 		if (!token) {
-			throw new Error("Authentication succeeded but no JWT token was returned");
+			throw new Error("Sign-in could not be completed. Please try again.");
 		}
 
 		return token;
@@ -36,17 +36,17 @@ export async function login(email: string, password: string): Promise<string> {
 			const networkErrorCodes = new Set(["ECONNREFUSED", "ENOTFOUND", "ECONNABORTED", "ETIMEDOUT"]);
 
 			if (!status && error.code && networkErrorCodes.has(error.code)) {
-				throw new Error("Something went wrong, please try again later.");
+				throw new Error("We cannot sign you in right now. Please try again in a moment.");
 			}
 
 			if (status === 400 || status === 401) {
 				throw new Error("Invalid email or password");
 			}
 			if (status === 404) {
-				throw new Error("Login endpoint not found");
+				throw new Error("We cannot sign you in right now. Please try again in a moment.");
 			}
 			if (status === 500) {
-				throw new Error("Backend server error during login");
+				throw new Error("We cannot sign you in right now. Please try again in a moment.");
 			}
 		}
 
@@ -68,7 +68,7 @@ export async function register(email: string, password: string): Promise<void> {
 			const networkErrorCodes = new Set(["ECONNREFUSED", "ENOTFOUND", "ECONNABORTED", "ETIMEDOUT"]);
 
 			if (!status && error.code && networkErrorCodes.has(error.code)) {
-				throw new Error("Something went wrong, please try again later.");
+				throw new Error("We cannot create your account right now. Please try again in a moment.");
 			}
 
 			if (status === 400) {
@@ -80,11 +80,11 @@ export async function register(email: string, password: string): Promise<void> {
 			}
 
 			if (status === 404) {
-				throw new Error("Registration endpoint not found");
+				throw new Error("We cannot create your account right now. Please try again in a moment.");
 			}
 
 			if (status === 500) {
-				throw new Error("Backend server error during registration");
+				throw new Error("We cannot create your account right now. Please try again in a moment.");
 			}
 		}
 

@@ -20,10 +20,66 @@
 
     {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
    {% if isAuthenticated %}
-    <a class="button button-outline header-cta header-cta-danger" href="/logout">Sign out</a>
+    <a class="button button-outline header-cta header-cta-danger" href="/logout" id="logout-trigger">Sign out</a>
    {% else %}
     <a class="button button-outline header-cta" href="/login">Sign in</a>
    {% endif %}
   {% endif %}
  </div>
 </header>
+
+{% if isAuthenticated and currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' and currentPath != '/logout/confirmation' %}
+ <div class="logout-modal-backdrop" id="logout-modal-backdrop" hidden>
+  <div class="logout-modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title">
+   <h2 id="logout-modal-title">Sign out of your account?</h2>
+   <p>
+    You are about to sign out of Kainos Careers. You will need to sign in again
+    to access protected pages.
+   </p>
+   <div class="logout-modal-actions">
+    <button type="button" class="button button-outline" id="logout-modal-cancel">Stay signed in</button>
+    <a href="/logout" class="button button-danger-solid" id="logout-modal-confirm">Sign out</a>
+   </div>
+  </div>
+ </div>
+
+ <script>
+  const logoutTrigger = document.getElementById("logout-trigger");
+  const logoutBackdrop = document.getElementById("logout-modal-backdrop");
+  const logoutCancel = document.getElementById("logout-modal-cancel");
+  const logoutConfirm = document.getElementById("logout-modal-confirm");
+
+  if (logoutTrigger && logoutBackdrop && logoutCancel && logoutConfirm) {
+   const openModal = () => {
+    logoutBackdrop.hidden = false;
+    document.body.classList.add("modal-open");
+    logoutConfirm.focus();
+   };
+
+   const closeModal = () => {
+    logoutBackdrop.hidden = true;
+    document.body.classList.remove("modal-open");
+    logoutTrigger.focus();
+   };
+
+   logoutTrigger.addEventListener("click", (event) => {
+    event.preventDefault();
+    openModal();
+   });
+
+   logoutCancel.addEventListener("click", closeModal);
+
+   logoutBackdrop.addEventListener("click", (event) => {
+    if (event.target === logoutBackdrop) {
+      closeModal();
+    }
+   });
+
+   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !logoutBackdrop.hidden) {
+      closeModal();
+    }
+   });
+  }
+ </script>
+{% endif %}
