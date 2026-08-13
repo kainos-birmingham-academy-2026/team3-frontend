@@ -42,6 +42,28 @@ describe("JobRoleService", () => {
     expect(result[0]?.capability).toBe("Software Engineering");
   });
 
+  it("should fetch public job roles without authorization header", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          jobRoleId: 1,
+          roleName: "Software Engineer",
+          locationName: "Birmingham",
+          capabilityName: "Software Engineering",
+          bandName: "Engineer",
+          closingDate: "2026-08-06T00:00:00.000Z",
+          status: "OPEN",
+        },
+      ],
+    });
+
+    const result = await service.getAll();
+
+    expect(apiClient.get).toHaveBeenCalledWith("/job-roles");
+    expect(result).toHaveLength(1);
+    expect(result[0]?.status).toBe("open");
+  });
+
   it("should keeps role status values from backend for view filtering", async () => {
     vi.mocked(apiClient.get).mockResolvedValueOnce({
       data: [
@@ -345,11 +367,6 @@ describe("JobRoleService", () => {
   it("should throw when submitting an application without jwt token", async () => {
     await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Not authenticated");
     expect(apiClient.post).not.toHaveBeenCalled();
-  });
-
-  it("should throw when getAll is called without jwtToken", async () => {
-    await expect(service.getAll()).rejects.toThrow("Not authenticated");
-    expect(apiClient.get).not.toHaveBeenCalled();
   });
 
   it("should handle getById without jwtToken and retrieve public job role", async () => {

@@ -1,13 +1,20 @@
-import type { Server } from "node:http";
 import path from "node:path";
 import type { Application, RequestHandler } from "express";
 import express from "express";
 import session from "express-session";
 import nunjucks from "nunjucks";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
+import apiClient from "../../src/config/apiClient";
+
+vi.mock("../../src/config/apiClient", () => ({
+	default: {
+		get: vi.fn(),
+		post: vi.fn(),
+	},
+}));
 
 function createTestApp(): Application {
 	const testApp = express();
@@ -28,13 +35,54 @@ function createTestApp(): Application {
 
 	testApp.use(authRouter);
 	testApp.use(router);
+	testApp.use((_req, res) => {
+		res.status(404).render("pages/404.njk");
+	});
 
 	return testApp;
 }
 
 describe("routes", () => {
 	let app: Application;
-	let server: Server;
+	let server: ReturnType<Application["listen"]>;
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(apiClient.get).mockImplementation(async (url) => {
+			if (url === "/job-roles") {
+				return {
+					data: [
+						{
+							jobRoleId: 1,
+							roleName: "Software Engineer",
+							locationName: "Birmingham",
+							capabilityName: "Software Engineering",
+							bandName: "Engineer",
+							closingDate: "2026-08-06T00:00:00.000Z",
+							status: "OPEN",
+						},
+					],
+				};
+			}
+
+			if (url === "/job-roles/1") {
+				return {
+					data: {
+						jobRoleId: 1,
+						roleName: "Software Engineer",
+						locationName: "Birmingham",
+						capabilityName: "Software Engineering",
+						bandName: "Engineer",
+						closingDate: "2026-08-06T00:00:00.000Z",
+						statusName: "OPEN",
+						numberOfOpenPositions: 1,
+					},
+				};
+			}
+
+			throw new Error(`Unexpected URL: ${String(url)}`);
+		});
+	});
 
 	beforeAll(async () => {
 		app = createTestApp();
@@ -77,32 +125,39 @@ describe("routes", () => {
 		expect(response.text).toContain("Create your account");
 	});
 
-	it("should redirect unauthenticated users from job role list to login", async () => {
-		const response = await request(app).get("/job-role-list");
+	it("should return 404 page for unknown routes", async () => {
+		const response = await request(app).get("/not-a-real-route");
 
-		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.status).toBe(404);
+		expect(response.text).toContain("Page Not Found");
 	});
 
-	it("should redirect unauthenticated users from create page to login", async () => {
+	it("should allow unauthenticated users to access job role list", async () => {
+		const response = await request(app).get("/job-role-list");
+
+		expect(response.status).toBe(200);
+		expect(response.text).toContain("Open job roles");
+	});
+
+	it("should redirect unauthenticated users from create page to 401 flow", async () => {
 		const response = await request(app).get("/job-role-create");
 
 		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.headers.location).toBe("/unauthorised");
 	});
 
-	it("should redirect unauthenticated users from job role detail page to login", async () => {
+	it("should allow unauthenticated users to access job role detail page", async () => {
 		const response = await request(app).get("/job-role-list/1");
 
-		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.status).toBe(200);
+		expect(response.text).toContain("Software Engineer");
 	});
 
-	it("should redirect unauthenticated users from apply page to login", async () => {
+	it("should redirect unauthenticated users from apply page to 401 flow", async () => {
 		const response = await request(app).get("/job-role-list/1/apply");
 
 		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.headers.location).toBe("/unauthorised");
 	});
 
 	it("should redirect unauthenticated users when posting an application", async () => {
@@ -111,14 +166,14 @@ describe("routes", () => {
 			.field("cvText", "my cv");
 
 		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.headers.location).toBe("/unauthorised");
 	});
 
-	it("should redirect unauthenticated users from application confirmation page to login", async () => {
+	it("should redirect unauthenticated users from application confirmation page to 401 flow", async () => {
 		const response = await request(app).get("/job-role-list/1/apply/confirmation");
 
 		expect(response.status).toBe(302);
-		expect(response.headers.location).toBe("/login");
+		expect(response.headers.location).toBe("/unauthorised");
 	});
 
 	it("should allow ADMIN to access create page", async () => {

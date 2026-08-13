@@ -19,15 +19,8 @@ export class JobRoleController {
 	}
 
 	async getAll(req: Request, res: Response): Promise<void> {
-		const jwtToken = this.getJwtToken(req);
-
-		if (!jwtToken) {
-			res.redirect("/login");
-			return;
-		}
-
 		try {
-			const jobRoles = await this.jobRoleService.getAll(jwtToken);
+			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
 			res.render("pages/jobRoleList.njk", { jobRoles });
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
