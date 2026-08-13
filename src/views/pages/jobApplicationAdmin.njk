@@ -443,6 +443,8 @@
 
  <script>
   let allApplications = [];
+  const statusOverrides = new Map();
+  let filtersBound = false;
 
   // DOM Elements
   const searchInput = document.getElementById("search-input");
@@ -452,6 +454,10 @@
   const tableContainer = document.getElementById("table-container");
   const summaryContainer = document.getElementById("summary-container");
   const emptyState = document.getElementById("empty-state");
+
+  function getApplicationKey(applicationId) {
+   return String(applicationId);
+  }
 
   // Fetch applications on page load
   async function loadApplications() {
@@ -464,7 +470,11 @@
      throw new Error(`Failed to fetch applications: ${response.statusText}`);
     }
 
-    allApplications = await response.json();
+    const fetchedApplications = await response.json();
+    allApplications = fetchedApplications.map((app) => {
+     const overrideStatus = statusOverrides.get(getApplicationKey(app.applicationId));
+     return overrideStatus ? { ...app, status: overrideStatus } : app;
+    });
     renderApplications();
     populateRoleFilter();
     attachEventListeners();
@@ -571,12 +581,20 @@
    document.getElementById("rejected-count").textContent = rejected;
   }
 
-  function attachEventListeners() {
-   // Filter inputs
-   searchInput.addEventListener("input", filterApplications);
-   statusFilter.addEventListener("change", filterApplications);
-   roleFilter.addEventListener("change", filterApplications);
+  function updateApplicationStatusInView(applicationId, newStatus) {
+    const applicationKey = getApplicationKey(applicationId);
+    statusOverrides.set(applicationKey, newStatus);
+   allApplications = allApplications.map((app) =>
+     getApplicationKey(app.applicationId) === applicationKey
+      ? { ...app, status: newStatus }
+      : app
+   );
+   renderApplications();
+   filterApplications();
+   bindRowActionListeners();
+  }
 
+  function bindRowActionListeners() {
    // View details buttons
    document.querySelectorAll(".btn-view").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -601,6 +619,17 @@
      rejectApplication(applicationId);
     });
    });
+  }
+
+  function attachEventListeners() {
+   if (!filtersBound) {
+    searchInput.addEventListener("input", filterApplications);
+    statusFilter.addEventListener("change", filterApplications);
+    roleFilter.addEventListener("change", filterApplications);
+    filtersBound = true;
+   }
+
+   bindRowActionListeners();
   }
 
   function filterApplications() {
@@ -666,12 +695,24 @@
      method: "POST",
      headers: { "Content-Type": "application/json" },
     })
-     .then((response) => {
+     .then(async (response) => {
       if (response.ok) {
+       updateApplicationStatusInView(applicationId, "approved");
        alert("Application approved!");
        loadApplications(); // Reload the table
+      } else if (response.status === 409) {
+       updateApplicationStatusInView(applicationId, "approved");
+       alert("Application is already approved.");
+       loadApplications();
       } else {
-       alert("Failed to approve application");
+       const errorBody = await response
+        .json()
+        .catch(() => ({ error: "Failed to approve application" }));
+       const message =
+        errorBody && typeof errorBody.error === "string"
+         ? errorBody.error
+         : "Failed to approve application";
+       alert(`Failed to approve application: ${message}`);
       }
      })
      .catch((error) => {
@@ -687,12 +728,24 @@
      method: "POST",
      headers: { "Content-Type": "application/json" },
     })
-     .then((response) => {
+     .then(async (response) => {
       if (response.ok) {
+       updateApplicationStatusInView(applicationId, "rejected");
        alert("Application rejected!");
        loadApplications(); // Reload the table
+      } else if (response.status === 409) {
+       updateApplicationStatusInView(applicationId, "rejected");
+       alert("Application is already rejected.");
+       loadApplications();
       } else {
-       alert("Failed to reject application");
+       const errorBody = await response
+        .json()
+        .catch(() => ({ error: "Failed to reject application" }));
+       const message =
+        errorBody && typeof errorBody.error === "string"
+         ? errorBody.error
+         : "Failed to reject application";
+       alert(`Failed to reject application: ${message}`);
       }
      })
      .catch((error) => {
