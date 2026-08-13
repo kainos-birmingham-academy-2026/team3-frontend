@@ -235,7 +235,7 @@ describe("JobRoleController", () => {
       });
     });
 
-    it("should submit application with extracted cvText and render success", async () => {
+    it("should submit application with extracted cvText and redirect to confirmation", async () => {
       const req = createRequest({
         session: { jwtToken: "jwt-token" },
         params: { id: "8" },
@@ -259,13 +259,26 @@ describe("JobRoleController", () => {
         "Experienced engineer CV",
         "jwt-token",
       );
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
-        jobRoleId: expect.objectContaining({ jobRoleId: 8 }),
-        canApply: true,
-        successMessage: "Application submitted successfully.",
-        applicationStatus: "in progress",
+      expect(res.redirect).toHaveBeenCalledWith(
+        303,
+        "/job-role-list/8/apply/confirmation",
+      );
+    });
+
+    it("should render application received confirmation page", () => {
+      const req = createRequest({
+        params: { id: "8" },
       });
+      const res = createResponse();
+
+      controller.showApplicationConfirmation(req as unknown as Request, res);
+
+      expect(res.render).toHaveBeenCalledWith(
+        "pages/applicationReceivedConfirmation.njk",
+        {
+          jobRoleId: "8",
+        },
+      );
     });
 
     it("should show validation error when cv text is missing", async () => {
