@@ -1,0 +1,895 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Job Applications Admin{% endblock %}
+
+{% block content %}
+ <section class="page-hero">
+  <p class="eyebrow">Admin Panel</p>
+  <h1>Application Review</h1>
+  <p>Review and manage all submitted job applications.</p>
+ </section>
+
+ <section class="admin-controls" aria-label="Application filters and search">
+  <div class="search-group">
+   <input 
+    type="text" 
+    id="search-input" 
+    class="search-input" 
+    placeholder="Search by applicant name or email..."
+    aria-label="Search applications"
+   />
+  </div>
+
+  <div class="filter-controls">
+   <div class="filter-group">
+    <label for="status-filter">Status:</label>
+    <select id="status-filter" class="status-filter">
+     <option value="">All Statuses</option>
+     <option value="pending">Pending Review</option>
+      <option value="hired">Hired</option>
+     <option value="rejected">Rejected</option>
+    </select>
+   </div>
+
+   <div class="filter-group">
+    <label for="role-filter">Job Role:</label>
+    <select id="role-filter" class="role-filter">
+     <option value="">All Roles</option>
+     {% for jobRole in jobRoles %}
+    <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}">{{ jobRole.roleName }}</option>
+       {% endfor %}
+      </select>
+     </div>
+
+     <div class="filter-group">
+      <label for="location-filter">Location:</label>
+      <select id="location-filter" class="location-filter">
+       <option value="">All Locations</option>
+       {% for jobRole in jobRoles %}
+    {% if jobRole.location %}
+     <option value="{{ jobRole.location }}">{{ jobRole.location }}</option>
+    {% endif %}
+     {% endfor %}
+    </select>
+   </div>
+  </div>
+ </section>
+
+ <div class="applications-summary" id="summary-container" style="display: none;">
+  <div class="summary-card">
+   <span class="summary-label">Total Applications</span>
+   <span class="summary-value" id="total-count">0</span>
+  </div>
+  <div class="summary-card pending">
+   <span class="summary-label">Pending Review</span>
+   <span class="summary-value" id="pending-count">0</span>
+  </div>
+  <div class="summary-card hired">
+   <span class="summary-label">Hired</span>
+   <span class="summary-value" id="hired-count">0</span>
+  </div>
+  <div class="summary-card rejected">
+   <span class="summary-label">Rejected</span>
+   <span class="summary-value" id="rejected-count">0</span>
+  </div>
+ </div>
+
+ <div class="applications-container" id="table-container" style="display: none;">
+  <table class="applications-table" role="grid">
+   <thead>
+    <tr>
+     <th>Applicant</th>
+     <th>Applied Role</th>
+     <th>Application Date</th>
+     <th>Status</th>
+     <th>Actions</th>
+    </tr>
+   </thead>
+   <tbody id="applications-tbody">
+   </tbody>
+  </table>
+ </div>
+
+ <div class="empty-state" id="empty-state">
+  <p>No job applications found.</p>
+ </div>
+
+ <style>
+  .admin-controls {
+   display: flex;
+   flex-direction: column;
+   gap: 1.5rem;
+   margin: 2rem 0;
+   background: #f9f9f9;
+   padding: 1.5rem;
+   border-radius: 8px;
+  }
+
+  .search-group {
+   display: flex;
+   gap: 0.5rem;
+  }
+
+  .search-input {
+   flex: 1;
+   padding: 0.75rem;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-size: 0.95rem;
+  }
+
+  .search-input:focus {
+   outline: 2px solid #0066cc;
+   outline-offset: -1px;
+  }
+
+  .filter-controls {
+   display: flex;
+   gap: 1.5rem;
+   flex-wrap: wrap;
+  }
+
+  .filter-group {
+   display: flex;
+   flex-direction: column;
+   gap: 0.5rem;
+   flex: 1;
+   min-width: 200px;
+  }
+
+  .filter-group label {
+   font-weight: 600;
+   font-size: 0.9rem;
+   color: #333;
+  }
+
+  .filter-group select {
+   padding: 0.5rem 0.75rem;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-size: 0.9rem;
+  }
+
+  .filter-group select:focus {
+   outline: 2px solid #0066cc;
+   outline-offset: -1px;
+  }
+
+  .applications-summary {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+   gap: 1.5rem;
+   margin: 2rem 0;
+  }
+
+  .summary-card {
+   padding: 1.5rem;
+   background: #f5f5f5;
+   border-radius: 8px;
+   border-left: 4px solid #0066cc;
+   display: flex;
+   flex-direction: column;
+   gap: 0.5rem;
+  }
+
+  .summary-card.pending {
+   border-left-color: #ff9800;
+  }
+
+  .summary-card.hired {
+   border-left-color: #4caf50;
+  }
+
+  .summary-card.rejected {
+   border-left-color: #f44336;
+  }
+
+  .summary-label {
+   font-size: 0.8rem;
+   color: #666;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   font-weight: 600;
+  }
+
+  .summary-value {
+   font-size: 2.5rem;
+   font-weight: bold;
+   color: #333;
+  }
+
+  .applications-container {
+   overflow-x: auto;
+   margin: 2rem 0;
+  }
+
+  .applications-table {
+   width: 100%;
+   border-collapse: collapse;
+   background: white;
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+   border-radius: 8px;
+   overflow: hidden;
+  }
+
+  .applications-table thead {
+   background: #f5f5f5;
+   border-bottom: 2px solid #e0e0e0;
+  }
+
+  .applications-table th {
+   padding: 1rem;
+   text-align: left;
+   font-weight: 600;
+   color: #333;
+   font-size: 0.9rem;
+   white-space: nowrap;
+  }
+
+  .applications-table td {
+   padding: 1rem;
+   border-bottom: 1px solid #e0e0e0;
+   font-size: 0.9rem;
+    vertical-align: middle;
+  }
+
+  .application-row {
+   transition: background 0.15s;
+  }
+
+  .application-row:hover {
+   background: #f9f9f9;
+  }
+
+  .applicant-cell {
+   font-weight: 600;
+   color: #333;
+  }
+
+  .applicant-link {
+    color: #0052a3;
+    text-decoration: underline;
+   font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+  }
+
+  .email-cell {
+   color: #666;
+   word-break: break-all;
+  }
+
+  .status-badge {
+   display: inline-block;
+   padding: 0.35rem 0.75rem;
+   border-radius: 20px;
+   font-size: 0.8rem;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.3px;
+  }
+
+  .status-pending {
+   background: #fff3e0;
+   color: #e65100;
+  }
+
+  .status-hired,
+  .status-approved {
+   background: #e8f5e9;
+   color: #2e7d32;
+  }
+
+  .status-rejected {
+   background: #ffebee;
+   color: #c62828;
+  }
+
+  .actions-cell {
+    vertical-align: middle;
+    }
+
+    .actions-content {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-view {
+   padding: 0.5rem 1rem;
+   background: #0066cc;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 0.9rem;
+   transition: background 0.2s, transform 0.1s;
+   white-space: nowrap;
+  }
+
+  .btn-view:hover {
+   background: #0052a3;
+   transform: translateY(-1px);
+  }
+
+  .btn-view:active {
+   transform: translateY(0);
+  }
+
+  .btn-view:focus {
+   outline: 2px solid #0066cc;
+   outline-offset: 2px;
+  }
+
+  .inline-actions {
+   display: flex;
+   gap: 0.5rem;
+   flex-wrap: wrap;
+  }
+
+  .btn-hire,
+  .btn-reject {
+   padding: 0.5rem 0.8rem;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 0.85rem;
+   transition: background 0.2s, transform 0.1s;
+   white-space: nowrap;
+  }
+
+  .btn-hire {
+   background: #4caf50;
+   color: white;
+  }
+
+  .btn-hire:hover {
+   background: #45a049;
+   transform: translateY(-1px);
+  }
+
+  .btn-hire:active {
+   transform: translateY(0);
+  }
+
+  .btn-hire:focus {
+   outline: 2px solid #4caf50;
+   outline-offset: 2px;
+  }
+
+  .btn-reject {
+   background: #f44336;
+   color: white;
+  }
+
+  .btn-reject:hover {
+   background: #da190b;
+   transform: translateY(-1px);
+  }
+
+  .btn-reject:active {
+   transform: translateY(0);
+  }
+
+  .btn-reject:focus {
+   outline: 2px solid #f44336;
+   outline-offset: 2px;
+  }
+
+  .empty-state {
+   text-align: center;
+   padding: 3rem 1rem;
+   color: #999;
+   font-size: 1.1rem;
+   background: #f9f9f9;
+   border-radius: 8px;
+   margin: 2rem 0;
+  }
+
+  .no-results {
+   display: none;
+   text-align: center;
+   padding: 2rem;
+   color: #999;
+  }
+
+  .no-results.show {
+   display: block;
+  }
+
+  @media (max-width: 1024px) {
+   .filter-controls {
+    flex-direction: column;
+   }
+
+   .filter-group {
+    min-width: auto;
+   }
+  }
+
+  @media (max-width: 768px) {
+   .admin-controls {
+    padding: 1rem;
+   }
+
+   .search-group {
+    flex-direction: column;
+   }
+
+   .search-input {
+    width: 100%;
+   }
+
+   .filter-controls {
+    flex-direction: column;
+    gap: 1rem;
+   }
+
+   .filter-group {
+    min-width: 100%;
+   }
+
+   .applications-table {
+    font-size: 0.85rem;
+   }
+
+   .applications-table th,
+   .applications-table td {
+    padding: 0.75rem 0.5rem;
+   }
+
+   .btn-view {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+   }
+
+  .btn-hire,
+   .btn-reject {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+   }
+
+   .actions-cell {
+    flex-direction: column;
+   }
+
+   .inline-actions {
+    flex-direction: column;
+    width: 100%;
+   }
+
+   .inline-actions button {
+    width: 100%;
+   }
+  }
+ </style>
+
+ <script>
+  let allApplications = [];
+  const statusOverrides = new Map();
+  let filtersBound = false;
+
+  // DOM Elements
+  const searchInput = document.getElementById("search-input");
+  const statusFilter = document.getElementById("status-filter");
+  const roleFilter = document.getElementById("role-filter");
+  const locationFilter = document.getElementById("location-filter");
+  const tbody = document.getElementById("applications-tbody");
+  const tableContainer = document.getElementById("table-container");
+  const summaryContainer = document.getElementById("summary-container");
+  const emptyState = document.getElementById("empty-state");
+  const roleLocationByName = new Map();
+
+  Array.from(roleFilter.options).forEach((option) => {
+   if (!option.value) {
+    return;
+   }
+
+   const normalizedRole = option.value.trim().toLowerCase();
+   const locationValue = (option.dataset.location || "Unknown").trim();
+   if (normalizedRole && !roleLocationByName.has(normalizedRole)) {
+    roleLocationByName.set(normalizedRole, locationValue);
+   }
+  });
+
+  function getApplicationKey(applicationId) {
+   return String(applicationId);
+  }
+
+  function normalizeApplicationStatus(status) {
+   const normalizedStatus = String(status || "").trim().toLowerCase();
+
+   if (
+    normalizedStatus === "hired" ||
+    normalizedStatus === "approved" ||
+    normalizedStatus === "approve" ||
+    normalizedStatus === "accepted" ||
+    normalizedStatus === "success"
+   ) {
+    return "hired";
+   }
+
+   if (
+    normalizedStatus === "rejected" ||
+    normalizedStatus === "reject" ||
+    normalizedStatus === "declined" ||
+    normalizedStatus === "denied" ||
+    normalizedStatus === "failed"
+   ) {
+    return "rejected";
+   }
+
+   return "pending";
+  }
+
+  // Fetch applications on page load
+  async function loadApplications() {
+   try {
+    const response = await fetch("/api/job-applications/admin", {
+     method: "GET",
+    });
+
+    if (!response.ok) {
+     throw new Error(`Failed to fetch applications: ${response.statusText}`);
+    }
+
+    const fetchedApplications = await response.json();
+    allApplications = fetchedApplications.map((app) => {
+     const overrideStatus = statusOverrides.get(getApplicationKey(app.applicationId));
+     const effectiveStatus = overrideStatus ?? app.status;
+     return { ...app, status: normalizeApplicationStatus(effectiveStatus) };
+    });
+    renderApplications();
+    populateRoleFilter();
+    attachEventListeners();
+   } catch (error) {
+    console.error("Error loading applications:", error);
+    showError("Failed to load applications. Please refresh the page.");
+   }
+  }
+
+  function renderApplications() {
+   tbody.innerHTML = "";
+
+   if (allApplications.length === 0) {
+    emptyState.style.display = "block";
+    tableContainer.style.display = "none";
+    summaryContainer.style.display = "none";
+    return;
+   }
+
+   emptyState.style.display = "none";
+   tableContainer.style.display = "block";
+   summaryContainer.style.display = "grid";
+
+   allApplications.forEach((app) => {
+    const row = document.createElement("tr");
+    row.className = "application-row";
+    row.setAttribute("data-application-id", app.applicationId);
+
+    const statusLower = normalizeApplicationStatus(app.status);
+    const isPending = statusLower === "pending";
+    const roleKey = String(app.roleName || "").trim().toLowerCase();
+    const appLocation = roleLocationByName.get(roleKey) || "Unknown";
+    const jobRoleId = Number.parseInt(String(app.jobRoleId), 10);
+    const detailsHref = Number.isNaN(jobRoleId)
+     ? "/job-role-list"
+     : `/job-role-list/${jobRoleId}`;
+    const normalizedLocation = appLocation.toLowerCase();
+
+    row.innerHTML = `
+     <td class="applicant-cell">
+      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantName)}">
+       ${escapeHtml(app.applicantName)}
+      </a>
+     </td>
+     <td class="role-cell">${escapeHtml(app.roleName)}</td>
+     <td class="date-cell">${escapeHtml(app.applicationDate)}</td>
+     <td class="status-cell">
+      <span class="status-badge status-${statusLower}">
+       ${capitalize(statusLower)}
+      </span>
+     </td>
+     <td class="actions-cell">
+      <div class="actions-content">
+       <button 
+        class="btn-view" 
+        data-href="${detailsHref}"
+        aria-label="View full application details for ${escapeHtml(app.applicantName)}"
+       >
+        View job role
+       </button>
+       ${isPending ? `
+        <div class="inline-actions">
+         <button 
+          class="btn-hire" 
+          data-application-id="${app.applicationId}"
+          aria-label="Hire ${escapeHtml(app.applicantName)}"
+         >
+          Hire
+         </button>
+         <button 
+          class="btn-reject" 
+          data-application-id="${app.applicationId}"
+          aria-label="Reject ${escapeHtml(app.applicantName)}'s application"
+         >
+          Reject
+         </button>
+        </div>
+       ` : ''}
+      </div>
+     </td>
+    `;
+
+    row.setAttribute("data-location", normalizedLocation);
+
+    tbody.appendChild(row);
+   });
+
+   updateSummary();
+  }
+
+  function populateRoleFilter() {
+   const roles = new Set(allApplications.map((app) => app.roleName));
+    roleFilter.innerHTML = '<option value="">All Roles</option>';
+
+    Array.from(roles).sort().forEach((role) => {
+    const option = document.createElement("option");
+    option.value = role;
+    option.textContent = role;
+     const roleKey = String(role || "").trim().toLowerCase();
+     option.dataset.location = roleLocationByName.get(roleKey) || "Unknown";
+     roleFilter.appendChild(option);
+   });
+
+    populateLocationFilter();
+    }
+
+    function populateLocationFilter() {
+    const locations = new Set();
+
+    allApplications.forEach((app) => {
+     const roleKey = String(app.roleName || "").trim().toLowerCase();
+     locations.add(roleLocationByName.get(roleKey) || "Unknown");
+    });
+
+    locationFilter.innerHTML = '<option value="">All Locations</option>';
+
+    Array.from(locations).sort().forEach((location) => {
+     const option = document.createElement("option");
+     option.value = location;
+     option.textContent = location;
+     locationFilter.appendChild(option);
+    });
+  }
+
+  function updateSummary() {
+   const total = allApplications.length;
+    const pending = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "pending"
+    ).length;
+    const hired = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "hired"
+    ).length;
+    const rejected = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "rejected"
+    ).length;
+
+   document.getElementById("total-count").textContent = total;
+   document.getElementById("pending-count").textContent = pending;
+    document.getElementById("hired-count").textContent = hired;
+   document.getElementById("rejected-count").textContent = rejected;
+  }
+
+  function updateApplicationStatusInView(applicationId, newStatus) {
+    const applicationKey = getApplicationKey(applicationId);
+    const normalizedStatus = normalizeApplicationStatus(newStatus);
+    statusOverrides.set(applicationKey, normalizedStatus);
+   allApplications = allApplications.map((app) =>
+     getApplicationKey(app.applicationId) === applicationKey
+      ? { ...app, status: normalizedStatus }
+      : app
+   );
+   renderApplications();
+   filterApplications();
+   bindRowActionListeners();
+  }
+
+  function bindRowActionListeners() {
+   // View details buttons
+   document.querySelectorAll(".btn-view").forEach((btn) => {
+    btn.addEventListener("click", () => {
+     const href = btn.getAttribute("data-href");
+     if (href) window.location.href = href;
+    });
+   });
+
+   // Hire/Reject buttons
+   document.querySelectorAll(".btn-hire").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+     e.preventDefault();
+     const applicationId = btn.getAttribute("data-application-id");
+     hireApplication(applicationId);
+    });
+   });
+
+   document.querySelectorAll(".btn-reject").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+     e.preventDefault();
+     const applicationId = btn.getAttribute("data-application-id");
+     rejectApplication(applicationId);
+    });
+   });
+  }
+
+  function attachEventListeners() {
+   if (!filtersBound) {
+    searchInput.addEventListener("input", filterApplications);
+    statusFilter.addEventListener("change", filterApplications);
+    roleFilter.addEventListener("change", filterApplications);
+      locationFilter.addEventListener("change", filterApplications);
+    filtersBound = true;
+   }
+
+   bindRowActionListeners();
+  }
+
+  function filterApplications() {
+   const searchTerm = searchInput.value.toLowerCase();
+   const statusValue = statusFilter.value.toLowerCase();
+   const roleValue = roleFilter.value;
+  const locationValue = locationFilter.value.toLowerCase();
+
+   const rows = document.querySelectorAll(".application-row");
+   let visibleCount = 0;
+
+   rows.forEach((row) => {
+    let shouldShow = true;
+
+    // Search filter
+    if (searchTerm) {
+     const applicantName = row.querySelector(".applicant-cell").textContent.toLowerCase();
+     const applicantEmail = row.querySelector(".email-cell").textContent.toLowerCase();
+     shouldShow =
+      shouldShow &&
+      (applicantName.includes(searchTerm) || applicantEmail.includes(searchTerm));
+    }
+
+    // Status filter
+    if (statusValue) {
+     const statusBadge = row.querySelector(".status-badge");
+     const rowStatus = statusBadge.textContent.trim().toLowerCase();
+     shouldShow = shouldShow && rowStatus === statusValue;
+    }
+
+    // Role filter
+    if (roleValue) {
+     const roleCell = row.querySelector(".role-cell").textContent.toLowerCase();
+     shouldShow = shouldShow && roleCell === roleValue.toLowerCase();
+    }
+
+    // Location filter
+    if (locationValue) {
+     const rowLocation = (row.getAttribute("data-location") || "").toLowerCase();
+     shouldShow = shouldShow && rowLocation === locationValue;
+    }
+
+    row.style.display = shouldShow ? "" : "none";
+    if (shouldShow) visibleCount++;
+   });
+
+   // Show/hide no results message
+   if (visibleCount === 0 && rows.length > 0) {
+    let noResults = document.querySelector(".no-results");
+    if (!noResults) {
+     noResults = document.createElement("tr");
+     noResults.className = "no-results show";
+     noResults.innerHTML =
+      '<td colspan="6" style="text-align: center; padding: 2rem; color: #999;">No applications match your filters.</td>';
+     tbody.appendChild(noResults);
+    } else {
+     noResults.classList.add("show");
+    }
+   } else {
+    const noResults = document.querySelector(".no-results");
+    if (noResults) {
+     noResults.classList.remove("show");
+    }
+   }
+  }
+
+  function hireApplication(applicationId) {
+   if (confirm("Are you sure you want to hire this applicant?")) {
+    fetch(`/api/job-applications/${applicationId}/status`, {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ action: "approve" }),
+    })
+     .then(async (response) => {
+      if (response.ok) {
+         updateApplicationStatusInView(applicationId, "hired");
+       alert("Applicant hired!");
+       loadApplications(); // Reload the table
+      } else if (response.status === 409) {
+         updateApplicationStatusInView(applicationId, "hired");
+       alert("Applicant is already hired.");
+       loadApplications();
+      } else {
+       const errorBody = await response
+        .json()
+        .catch(() => ({ error: "Failed to hire applicant" }));
+       const message =
+        errorBody && typeof errorBody.error === "string"
+         ? errorBody.error
+         : "Failed to hire applicant";
+       alert(`Failed to hire applicant: ${message}`);
+      }
+     })
+     .catch((error) => {
+      console.error("Error hiring applicant:", error);
+      alert("Error hiring applicant");
+     });
+   }
+  }
+
+  function rejectApplication(applicationId) {
+   if (confirm("Are you sure you want to reject this application?")) {
+    fetch(`/api/job-applications/${applicationId}/status`, {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ action: "reject" }),
+    })
+     .then(async (response) => {
+      if (response.ok) {
+       updateApplicationStatusInView(applicationId, "rejected");
+       alert("Application rejected!");
+       loadApplications(); // Reload the table
+      } else if (response.status === 409) {
+       updateApplicationStatusInView(applicationId, "rejected");
+       alert("Application is already rejected.");
+       loadApplications();
+      } else {
+       const errorBody = await response
+        .json()
+        .catch(() => ({ error: "Failed to reject application" }));
+       const message =
+        errorBody && typeof errorBody.error === "string"
+         ? errorBody.error
+         : "Failed to reject application";
+       alert(`Failed to reject application: ${message}`);
+      }
+     })
+     .catch((error) => {
+      console.error("Error rejecting application:", error);
+      alert("Error rejecting application");
+     });
+   }
+  }
+
+  function escapeHtml(text) {
+   const div = document.createElement("div");
+   div.textContent = text;
+   return div.innerHTML;
+  }
+
+  function capitalize(str) {
+   return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function showError(message) {
+   emptyState.innerHTML = `<p>${escapeHtml(message)}</p>`;
+   emptyState.style.display = "block";
+   tableContainer.style.display = "none";
+   summaryContainer.style.display = "none";
+  }
+
+  // Load applications when page loads
+  window.addEventListener("DOMContentLoaded", loadApplications);
+ </script>
+{% endblock %}

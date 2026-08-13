@@ -79,6 +79,7 @@ export class AuthController {
 
 			req.session.jwtToken = jwtToken;
 			req.session.userRole = userRole;
+
 			res.redirect("/");
 		} catch (error) {
 			const message =

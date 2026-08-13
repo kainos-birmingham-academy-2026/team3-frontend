@@ -15,6 +15,7 @@
     {% if currentUserRole == 'ADMIN' %}
      <a class="nav-link {% if currentPath == '/job-role-create' %}nav-link-active{% endif %}" href="/job-role-create">Create role</a>
     {% endif %}
+    <a class="nav-link {% if currentPath == '/job-applications/admin' %}nav-link-active{% endif %}" href="{% if currentUserRole == 'ADMIN' %}/job-applications/admin{% else %}/login{% endif %}">Applications</a>
    </nav>
   {% endif %}
 
