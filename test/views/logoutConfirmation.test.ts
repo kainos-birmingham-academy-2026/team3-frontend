@@ -15,7 +15,8 @@ describe("logout confirmation", () => {
 		expect(html).toContain("You have been signed out of your account.");
 		expect(html).toContain('href="/login"');
 		expect(html).toContain("Go to sign in");
-		expect(html).not.toContain(">Home<");
-		expect(html).not.toContain(">Job roles<");
+		expect(html).toContain(">Home<");
+		expect(html).toContain(">Job roles<");
+		expect(html).toContain("header-cta");
 	});
 });

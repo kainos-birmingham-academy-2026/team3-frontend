@@ -910,8 +910,7 @@ body.modal-open {
 }
 
 .restricted-card {
-  width: min(520px, 100%);
-  width: min(460px, 100%);
+  width: min(440px, 100%);
   border: 1px solid #d9def0;
   border-top: 6px solid var(--kainos-blue);
   box-shadow: 0 16px 36px rgba(40, 53, 131, 0.12);

@@ -8,7 +8,7 @@
    />
   </a>
 
-    {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' and currentPath != '/logout/confirmation' %}
+    {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
    <nav class="site-nav" aria-label="Main navigation">
     <a class="nav-link {% if currentPath == '/' %}nav-link-active{% endif %}" href="/">Home</a>
     <a class="nav-link {% if currentPath == '/job-role-list' %}nav-link-active{% endif %}" href="/job-role-list">Job roles</a>
@@ -18,7 +18,7 @@
    </nav>
   {% endif %}
 
-    {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' and currentPath != '/logout/confirmation' %}
+    {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
    {% if isAuthenticated %}
     <a class="button button-outline header-cta header-cta-danger" href="/logout" id="logout-trigger">Sign out</a>
    {% else %}
