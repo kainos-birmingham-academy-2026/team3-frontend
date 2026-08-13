@@ -281,7 +281,7 @@ describe("JobRoleService", () => {
       ],
     });
 
-    const result = await service.getAll();
+    const result = await service.getAll(jwtToken);
 
     expect(result[0]?.location).toBe("Unknown");
     expect(result[0]?.capability).toBe("Unknown");
