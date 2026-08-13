@@ -6,6 +6,18 @@ interface ApiApplication {
   applicationId: number;
   applicantName?: string;
   applicantEmail?: string;
+  cvText?: string;
+  cvReference?: string;
+  cvreference?: string;
+  coverLetter?: string;
+  resumeText?: string;
+  application?: {
+    cvText?: string;
+    cvReference?: string;
+    cvreference?: string;
+    coverLetter?: string;
+    resumeText?: string;
+  };
   jobRoleId?: number;
   roleName?: string;
   applicationDate?: string;
@@ -18,6 +30,99 @@ type RequestMethod = "post" | "patch" | "put";
 export class AdminApplicationService {
   private getAuthHeaders(jwtToken: string): { Authorization: string } {
     return { Authorization: `Bearer ${jwtToken}` };
+  }
+
+  private extractCvText(app: ApiApplication): string {
+    const rawCvText =
+      app.cvText ??
+      app.cvReference ??
+      app.cvreference ??
+      app.coverLetter ??
+      app.resumeText ??
+      app.application?.cvText ??
+      app.application?.cvReference ??
+      app.application?.cvreference ??
+      app.application?.coverLetter ??
+      app.application?.resumeText;
+
+    return typeof rawCvText === "string" ? rawCvText : "";
+  }
+
+  private findCvTextDeep(payload: unknown): string {
+    const cvKeys = new Set([
+      "cvtext",
+      "cvreference",
+      "cv",
+      "resumetext",
+      "coverletter",
+      "personalstatement",
+    ]);
+    const seen = new Set<object>();
+
+    const visit = (value: unknown): string => {
+      if (typeof value === "string") {
+        return "";
+      }
+
+      if (!value || typeof value !== "object") {
+        return "";
+      }
+
+      if (seen.has(value)) {
+        return "";
+      }
+      seen.add(value);
+
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          const foundInArray = visit(item);
+          if (foundInArray) {
+            return foundInArray;
+          }
+        }
+        return "";
+      }
+
+      const record = value as Record<string, unknown>;
+
+      for (const [key, fieldValue] of Object.entries(record)) {
+        const normalizedKey = key.trim().toLowerCase();
+        if (cvKeys.has(normalizedKey) && typeof fieldValue === "string") {
+          const trimmedValue = fieldValue.trim();
+          if (trimmedValue) {
+            return trimmedValue;
+          }
+        }
+      }
+
+      for (const nestedValue of Object.values(record)) {
+        const foundNested = visit(nestedValue);
+        if (foundNested) {
+          return foundNested;
+        }
+      }
+
+      return "";
+    };
+
+    return visit(payload);
+  }
+
+  private extractCvTextFromUnknown(payload: unknown): string {
+    if (typeof payload === "string") {
+      return payload.trim();
+    }
+
+    if (!payload || typeof payload !== "object") {
+      return "";
+    }
+
+    const direct = this.extractCvText(payload as ApiApplication).trim();
+    if (direct) {
+      return direct;
+    }
+
+    return this.findCvTextDeep(payload);
   }
 
   private mapStatus(status: string): "pending" | "approved" | "rejected" {
@@ -59,6 +164,7 @@ export class AdminApplicationService {
         applicationId: app.applicationId,
         applicantName: app.applicantName ?? "N/A",
         applicantEmail: app.applicantEmail ?? "N/A",
+        cvText: this.extractCvTextFromUnknown(app),
         jobRoleId: app.jobRoleId ?? null,
         roleName: app.roleName ?? "N/A",
         applicationDate: app.applicationDate ? app.applicationDate.split("T")[0] : "Unknown",
@@ -69,6 +175,50 @@ export class AdminApplicationService {
         `Failed to fetch applications: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
+  }
+
+  async getCvTextById(applicationId: number, jwtToken: string): Promise<string> {
+    const headers = this.getAuthHeaders(jwtToken);
+    const endpoints = [
+      `/job-applications/admin/${applicationId}/cv-text`,
+      `/job-applications/admin/${applicationId}`,
+      `/job-applications/admin/${applicationId}/details`,
+      `/job-applications/${applicationId}`,
+      `/job-applications/${applicationId}/details`,
+      `/applications/${applicationId}`,
+      `/applications/${applicationId}/details`,
+      `/job-applications/admin/${applicationId}/cv`,
+      `/job-applications/${applicationId}/cv`,
+      `/applications/${applicationId}/cv`,
+    ];
+
+    for (const url of endpoints) {
+      try {
+        const response = await apiClient.get<unknown>(url, { headers });
+        const cvText = this.extractCvTextFromUnknown(response.data).trim();
+        if (cvText) {
+          return cvText;
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    try {
+      const applications = await this.getAll(jwtToken);
+      const application = applications.find((item) => item.applicationId === applicationId);
+      const listCvText = (application?.cvText ?? "").trim();
+      if (listCvText) {
+        return listCvText;
+      }
+    } catch {
+      // Ignore list fallback errors and return empty string below.
+    }
+
+    return "";
   }
 
   private async updateStatusWithFallbacks(

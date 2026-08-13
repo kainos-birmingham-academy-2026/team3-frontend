@@ -1,0 +1,42 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Applicant CV{% endblock %}
+
+{% block content %}
+ <a href="/job-applications/admin" class="back-link">← Back to Applications</a>
+
+ <section class="page-hero">
+  <p class="eyebrow">Application CV</p>
+  <h1>{{ application.applicantName }}</h1>
+  <p>{{ application.roleName }} • {{ application.applicationDate }}</p>
+ </section>
+
+ <article class="cv-card" aria-label="Applicant CV text">
+  <h2>CV Text</h2>
+  <pre class="cv-text">{{ cvText }}</pre>
+ </article>
+
+ <style>
+  .cv-card {
+   background: #fff;
+   border: 1px solid #e5e7eb;
+   border-radius: 10px;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+   padding: 1rem;
+   margin-top: 1rem;
+  }
+
+  .cv-text {
+   margin: 0;
+   white-space: pre-wrap;
+   word-break: break-word;
+   line-height: 1.6;
+   font-size: 0.95rem;
+   color: #1f2937;
+   background: #f8fafc;
+   border: 1px solid #e5e7eb;
+   border-radius: 8px;
+   padding: 1rem;
+  }
+ </style>
+{% endblock %}
