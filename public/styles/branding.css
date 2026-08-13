@@ -19,6 +19,9 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   color: var(--kainos-navy);
   background: linear-gradient(180deg, #ffffff 0%, #f7f8fc 100%);
   font-family: "Galano Grotesque", "Avenir Next", "Century Gothic", "Segoe UI", sans-serif;
@@ -407,6 +410,7 @@ body.modal-open {
 }
 
 .site-footer {
+  flex: 1 0 auto;
   position: relative;
   overflow: hidden;
   background: linear-gradient(90deg, #1D3844 0%, #3C5C4C 30%, #395457 50%, #30446E 70%, #2C3A69 100%);
