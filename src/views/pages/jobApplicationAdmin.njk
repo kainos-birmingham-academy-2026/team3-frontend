@@ -585,9 +585,9 @@
 
     row.innerHTML = `
      <td class="applicant-cell">
-      <button type="button" class="applicant-link" aria-label="Applicant name ${escapeHtml(app.applicantName)}">
+      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantName)}">
        ${escapeHtml(app.applicantName)}
-      </button>
+      </a>
      </td>
      <td class="role-cell">${escapeHtml(app.roleName)}</td>
      <td class="date-cell">${escapeHtml(app.applicationDate)}</td>
@@ -603,7 +603,7 @@
         data-href="${detailsHref}"
         aria-label="View full application details for ${escapeHtml(app.applicantName)}"
        >
-        View Job-Role
+        View job role
        </button>
        ${isPending ? `
         <div class="inline-actions">

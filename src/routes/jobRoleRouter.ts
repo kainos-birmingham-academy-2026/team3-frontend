@@ -16,6 +16,37 @@ router.get("/", (_req, res) => {
 
 router.get("/job-applications/admin", requireAdmin, (req, res) => controller.getApplications(req, res));
 
+router.get("/job-applications/:applicationId/cv", requireAdmin, async (req, res) => {
+	try {
+		const idParam = Array.isArray(req.params.applicationId) ? req.params.applicationId[0] : req.params.applicationId;
+		const applicationId = Number.parseInt(idParam, 10);
+		if (Number.isNaN(applicationId)) {
+			res.status(400).render("pages/404.njk");
+			return;
+		}
+
+		const jwtToken = req.session.jwtToken ?? "";
+		const applications = await adminApplicationService.getAll(jwtToken);
+		const application = applications.find((item) => item.applicationId === applicationId);
+
+		if (!application) {
+			res.status(404).render("pages/404.njk");
+			return;
+		}
+
+		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
+		res.render("pages/applicationCv.njk", {
+			application,
+			cvText: cvText || application.cvText || "No CV text available for this application.",
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Failed to load CV";
+		res.status(500).render("pages/404.njk", {
+			errorMessage: message,
+		});
+	}
+});
+
 // API endpoint for fetching applications (called by client-side JavaScript)
 router.get("/api/job-applications/admin", requireAdmin, async (req, res) => {
 	try {
@@ -24,6 +55,37 @@ router.get("/api/job-applications/admin", requireAdmin, async (req, res) => {
 		res.json(applications);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : "Failed to fetch applications";
+		res.status(500).json({ error: message });
+	}
+});
+
+router.get("/api/job-applications/:applicationId/cv-text", requireAdmin, async (req, res) => {
+	try {
+		const idParam = Array.isArray(req.params.applicationId) ? req.params.applicationId[0] : req.params.applicationId;
+		const applicationId = Number.parseInt(idParam, 10);
+		if (Number.isNaN(applicationId)) {
+			res.status(400).json({ error: "Invalid application ID" });
+			return;
+		}
+
+		const jwtToken = req.session.jwtToken ?? "";
+		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
+		res.json({ cvText });
+	} catch (error) {
+		if (axios.isAxiosError(error)) {
+			const message =
+				typeof error.response?.data === "object" &&
+				error.response?.data !== null &&
+				"error" in error.response.data &&
+				typeof (error.response.data as { error?: unknown }).error === "string"
+					? (error.response.data as { error: string }).error
+					: error.message;
+
+			res.status(error.response?.status ?? 500).json({ error: message });
+			return;
+		}
+
+		const message = error instanceof Error ? error.message : "Failed to fetch CV text";
 		res.status(500).json({ error: message });
 	}
 });
