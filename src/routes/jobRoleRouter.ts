@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import axios from "axios";
 import { JobRoleController } from "../controllers/jobRoleController";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
@@ -9,23 +9,63 @@ const router = Router();
 const service = new JobRoleService();
 const controller = new JobRoleController(service);
 const adminApplicationService = new AdminApplicationService();
+type ApplicationAction = "approve" | "reject";
+
+function getSessionToken(req: Request): string {
+	return req.session.jwtToken ?? "";
+}
+
+function parseApplicationId(rawId: string | string[] | undefined): number | null {
+	const idParam = Array.isArray(rawId) ? rawId[0] : rawId;
+	const applicationId = Number.parseInt(idParam ?? "", 10);
+
+	if (Number.isNaN(applicationId)) {
+		return null;
+	}
+
+	return applicationId;
+}
+
+function getAxiosErrorMessage(error: unknown): string {
+	if (!axios.isAxiosError(error)) {
+		return error instanceof Error ? error.message : "Unknown error";
+	}
+
+	if (
+		typeof error.response?.data === "object" &&
+		error.response?.data !== null &&
+		"error" in error.response.data &&
+		typeof (error.response.data as { error?: unknown }).error === "string"
+	) {
+		return (error.response.data as { error: string }).error;
+	}
+
+	return error.message;
+}
+
+function parseApplicationAction(action: unknown): ApplicationAction | null {
+	if (action === "approve" || action === "reject") {
+		return action;
+	}
+
+	return null;
+}
 
 router.get("/", (_req, res) => {
 	res.render("pages/index.njk");
 });
 
-router.get("/job-applications/admin", requireAdmin, (req, res) => controller.getApplications(req, res));
+router.get("/job-applications/admin", requireAuth, requireAdmin, (req, res) => controller.getApplications(req, res));
 
-router.get("/job-applications/:applicationId/cv", requireAdmin, async (req, res) => {
+router.get("/job-applications/:applicationId/cv", requireAuth, requireAdmin, async (req, res) => {
 	try {
-		const idParam = Array.isArray(req.params.applicationId) ? req.params.applicationId[0] : req.params.applicationId;
-		const applicationId = Number.parseInt(idParam, 10);
-		if (Number.isNaN(applicationId)) {
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
 			res.status(400).render("pages/404.njk");
 			return;
 		}
 
-		const jwtToken = req.session.jwtToken ?? "";
+		const jwtToken = getSessionToken(req);
 		const applications = await adminApplicationService.getAll(jwtToken);
 		const application = applications.find((item) => item.applicationId === applicationId);
 
@@ -48,9 +88,9 @@ router.get("/job-applications/:applicationId/cv", requireAdmin, async (req, res)
 });
 
 // API endpoint for fetching applications (called by client-side JavaScript)
-router.get("/api/job-applications/admin", requireAdmin, async (req, res) => {
+router.get("/api/job-applications/admin", requireAuth, requireAdmin, async (req, res) => {
 	try {
-		const jwtToken = req.session.jwtToken ?? "";
+		const jwtToken = getSessionToken(req);
 		const applications = await adminApplicationService.getAll(jwtToken);
 		res.json(applications);
 	} catch (error) {
@@ -59,29 +99,20 @@ router.get("/api/job-applications/admin", requireAdmin, async (req, res) => {
 	}
 });
 
-router.get("/api/job-applications/:applicationId/cv-text", requireAdmin, async (req, res) => {
+router.get("/api/job-applications/:applicationId/cv-text", requireAuth, requireAdmin, async (req, res) => {
 	try {
-		const idParam = Array.isArray(req.params.applicationId) ? req.params.applicationId[0] : req.params.applicationId;
-		const applicationId = Number.parseInt(idParam, 10);
-		if (Number.isNaN(applicationId)) {
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
 			res.status(400).json({ error: "Invalid application ID" });
 			return;
 		}
 
-		const jwtToken = req.session.jwtToken ?? "";
+		const jwtToken = getSessionToken(req);
 		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
 		res.json({ cvText });
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
-			const message =
-				typeof error.response?.data === "object" &&
-				error.response?.data !== null &&
-				"error" in error.response.data &&
-				typeof (error.response.data as { error?: unknown }).error === "string"
-					? (error.response.data as { error: string }).error
-					: error.message;
-
-			res.status(error.response?.status ?? 500).json({ error: message });
+			res.status(error.response?.status ?? 500).json({ error: getAxiosErrorMessage(error) });
 			return;
 		}
 
@@ -90,62 +121,35 @@ router.get("/api/job-applications/:applicationId/cv-text", requireAdmin, async (
 	}
 });
 
-router.post("/api/job-applications/:applicationId/approve", requireAdmin, async (req, res) => {
+router.post("/api/job-applications/:applicationId/status", requireAuth, requireAdmin, async (req, res) => {
 	try {
-		const idParam = Array.isArray(req.params.applicationId) ? req.params.applicationId[0] : req.params.applicationId;
-		const applicationId = Number.parseInt(idParam, 10);
-		if (Number.isNaN(applicationId)) {
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
 			res.status(400).json({ error: "Invalid application ID" });
 			return;
 		}
-		const jwtToken = req.session.jwtToken ?? "";
-		await adminApplicationService.approve(applicationId, jwtToken);
+
+		const action = parseApplicationAction(req.body?.action);
+		if (action === null) {
+			res.status(400).json({ error: "Invalid action. Use 'approve' or 'reject'." });
+			return;
+		}
+
+		const jwtToken = getSessionToken(req);
+		if (action === "approve") {
+			await adminApplicationService.approve(applicationId, jwtToken);
+		} else {
+			await adminApplicationService.reject(applicationId, jwtToken);
+		}
+
 		res.json({ success: true });
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
-			const message =
-				typeof error.response?.data === "object" &&
-				error.response?.data !== null &&
-				"error" in error.response.data &&
-				typeof (error.response.data as { error?: unknown }).error === "string"
-					? (error.response.data as { error: string }).error
-					: error.message;
-
-			res.status(error.response?.status ?? 500).json({ error: message });
+			res.status(error.response?.status ?? 500).json({ error: getAxiosErrorMessage(error) });
 			return;
 		}
 
-		const message = error instanceof Error ? error.message : "Failed to approve application";
-		res.status(500).json({ error: message });
-	}
-});
-
-router.post("/api/job-applications/:applicationId/reject", requireAdmin, async (req, res) => {
-	try {
-		const idParam = Array.isArray(req.params.applicationId) ? req.params.applicationId[0] : req.params.applicationId;
-		const applicationId = Number.parseInt(idParam, 10);
-		if (Number.isNaN(applicationId)) {
-			res.status(400).json({ error: "Invalid application ID" });
-			return;
-		}
-		const jwtToken = req.session.jwtToken ?? "";
-		await adminApplicationService.reject(applicationId, jwtToken);
-		res.json({ success: true });
-	} catch (error) {
-		if (axios.isAxiosError(error)) {
-			const message =
-				typeof error.response?.data === "object" &&
-				error.response?.data !== null &&
-				"error" in error.response.data &&
-				typeof (error.response.data as { error?: unknown }).error === "string"
-					? (error.response.data as { error: string }).error
-					: error.message;
-
-			res.status(error.response?.status ?? 500).json({ error: message });
-			return;
-		}
-
-		const message = error instanceof Error ? error.message : "Failed to reject application";
+		const message = error instanceof Error ? error.message : "Failed to update application status";
 		res.status(500).json({ error: message });
 	}
 });

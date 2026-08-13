@@ -4,7 +4,11 @@ import type { JobRole } from "../models/jobRole";
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
+<<<<<<< HEAD
 	constructor(private jobRoleService: JobRoleService) {}
+=======
+    constructor(private jobRoleService: JobRoleService) {}
+>>>>>>> 85c614c (cleaned up files)
 
 	private getJwtToken(req: Request): string | undefined {
 		return req.session.jwtToken;
@@ -161,9 +165,16 @@ export class JobRoleController {
 		if (axios.isAxiosError(error) && error.response?.status === 401) {
 			req.session.jwtToken = undefined;
 			req.session.userRole = undefined;
+<<<<<<< HEAD
 			res.redirect("/login");
 			return true;
 		}
+=======
+			req.session.isAdmin = undefined;
+        res.redirect("/login");
+        return true;
+      }
+>>>>>>> 85c614c (cleaned up files)
 
 		return false;
 	}

@@ -806,9 +806,10 @@
 
   function hireApplication(applicationId) {
    if (confirm("Are you sure you want to hire this applicant?")) {
-    fetch(`/api/job-applications/${applicationId}/approve`, {
+    fetch(`/api/job-applications/${applicationId}/status`, {
      method: "POST",
      headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ action: "approve" }),
     })
      .then(async (response) => {
       if (response.ok) {
@@ -839,9 +840,10 @@
 
   function rejectApplication(applicationId) {
    if (confirm("Are you sure you want to reject this application?")) {
-    fetch(`/api/job-applications/${applicationId}/reject`, {
+    fetch(`/api/job-applications/${applicationId}/status`, {
      method: "POST",
      headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ action: "reject" }),
     })
      .then(async (response) => {
       if (response.ok) {

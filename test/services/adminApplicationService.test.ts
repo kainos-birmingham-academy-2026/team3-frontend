@@ -80,7 +80,7 @@ describe("AdminApplicationService", () => {
           applicantEmail: "john@example.com",
           roleName: "Engineer",
           applicationDate: "2026-08-12T00:00:00.000Z",
-          status: "denied",
+          status: "rejected",
         },
       ],
     });
@@ -106,26 +106,24 @@ describe("AdminApplicationService", () => {
     });
   });
 
-  it("should continue on 404 and succeed on fallback cv endpoint", async () => {
+  it("should continue on 404 and fallback to list cv text", async () => {
     vi.mocked(apiClient.get)
       .mockRejectedValueOnce({
         isAxiosError: true,
         response: { status: 404 },
       })
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
       .mockResolvedValueOnce({
-        data: {
-          application: {
-            cvReference: "Fallback CV",
+        data: [
+          {
+            applicationId: 7,
+            applicantName: "A",
+            applicantEmail: "a@example.com",
+            roleName: "Engineer",
+            applicationDate: "2026-08-12T00:00:00.000Z",
+            status: "pending",
+            cvText: "Fallback CV",
           },
-        },
+        ],
       });
 
     const result = await service.getCvTextById(7, jwtToken);
@@ -146,29 +144,25 @@ describe("AdminApplicationService", () => {
   });
 
   it("should fallback to list data when detail endpoints return no cv text", async () => {
-    vi.mocked(apiClient.get)
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({ data: { foo: "bar" } })
-      .mockResolvedValueOnce({
-        data: [
-          {
-            applicationId: 7,
-            applicantName: "A",
-            applicantEmail: "a@example.com",
-            roleName: "Engineer",
-            applicationDate: "2026-08-12T00:00:00.000Z",
-            status: "pending",
-            cvText: "List CV text",
-          },
-        ],
-      });
+    vi.mocked(apiClient.get).mockImplementation(async (url) => {
+      if (url === "/job-applications/admin") {
+        return {
+          data: [
+            {
+              applicationId: 7,
+              applicantName: "A",
+              applicantEmail: "a@example.com",
+              roleName: "Engineer",
+              applicationDate: "2026-08-12T00:00:00.000Z",
+              status: "pending",
+              cvText: "List CV text",
+            },
+          ],
+        };
+      }
+
+      return { data: { foo: "bar" } };
+    });
 
     const result = await service.getCvTextById(7, jwtToken);
 
@@ -197,7 +191,7 @@ describe("AdminApplicationService", () => {
     });
   });
 
-  it("should fallback approve endpoint to non-admin path when admin path returns 404", async () => {
+  it("should fallback to status endpoint when action endpoint returns 404", async () => {
     vi.mocked(apiClient.request)
       .mockRejectedValueOnce({
         isAxiosError: true,
@@ -207,66 +201,9 @@ describe("AdminApplicationService", () => {
 
     await service.approve(42, jwtToken);
 
-    const calls = vi.mocked(apiClient.request).mock.calls.map(([arg]) => arg);
-    expect(calls).toEqual(
-      expect.arrayContaining([
-        {
-          method: "post",
-          url: "/job-applications/admin/42/approve",
-          data: {},
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        },
-      ])
-    );
-  });
-
-  it("should fallback approve to legacy path after two 404s", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockResolvedValueOnce({ data: {} });
-
-    await service.approve(42, jwtToken);
-
-    const calls = vi.mocked(apiClient.request).mock.calls.map(([arg]) => arg);
-    expect(calls).toEqual(
-      expect.arrayContaining([
-        {
-          method: "post",
-          url: "/job-applications/admin/42/approve",
-          data: {},
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        },
-      ])
-    );
-  });
-
-  it("should continue approve fallback attempts after 409", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 409 },
-      })
-      .mockResolvedValueOnce({ data: {} });
-
-    await service.approve(42, jwtToken);
-
-    expect(vi.mocked(apiClient.request)).toHaveBeenCalledTimes(2);
-    expect(apiClient.request).toHaveBeenNthCalledWith(1, {
-      method: "post",
-      url: "/job-applications/admin/42/approve",
-      data: {},
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
     expect(apiClient.request).toHaveBeenNthCalledWith(2, {
       method: "post",
-      url: "/job-applications/admin/42/approve",
+      url: "/job-applications/admin/42/status",
       data: { status: "approved" },
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
@@ -285,7 +222,7 @@ describe("AdminApplicationService", () => {
     });
   });
 
-  it("should fallback reject endpoint to non-admin path when admin path returns 404", async () => {
+  it("should fallback reject to status endpoint when action endpoint returns 404", async () => {
     vi.mocked(apiClient.request)
       .mockRejectedValueOnce({
         isAxiosError: true,
@@ -295,114 +232,38 @@ describe("AdminApplicationService", () => {
 
     await service.reject(42, jwtToken);
 
-    const calls = vi.mocked(apiClient.request).mock.calls.map(([arg]) => arg);
-    expect(calls).toEqual(
-      expect.arrayContaining([
-        {
-          method: "post",
-          url: "/job-applications/admin/42/reject",
-          data: {},
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        },
-      ])
-    );
-  });
-
-  it("should fallback reject to legacy path after two 404s", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockResolvedValueOnce({ data: {} });
-
-    await service.reject(42, jwtToken);
-
-    const calls = vi.mocked(apiClient.request).mock.calls.map(([arg]) => arg);
-    expect(calls).toEqual(
-      expect.arrayContaining([
-        {
-          method: "post",
-          url: "/job-applications/admin/42/reject",
-          data: {},
-          headers: { Authorization: `Bearer ${jwtToken}` },
-        },
-      ])
-    );
-  });
-
-  it("should continue reject fallback attempts after 409", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 409 },
-      })
-      .mockResolvedValueOnce({ data: {} });
-
-    await service.reject(42, jwtToken);
-
-    expect(vi.mocked(apiClient.request)).toHaveBeenCalledTimes(2);
-    expect(apiClient.request).toHaveBeenNthCalledWith(1, {
-      method: "post",
-      url: "/job-applications/admin/42/reject",
-      data: {},
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
     expect(apiClient.request).toHaveBeenNthCalledWith(2, {
       method: "post",
-      url: "/job-applications/admin/42/reject",
+      url: "/job-applications/admin/42/status",
       data: { status: "rejected" },
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
   });
 
-  it("should throw conflict error when all update attempts return 409", async () => {
+  it("should throw non-404 axios errors from action endpoint", async () => {
     const conflictError = {
       isAxiosError: true,
       response: { status: 409 },
       message: "conflict",
     };
-    vi.mocked(apiClient.request).mockImplementation(() => Promise.reject(conflictError));
+    vi.mocked(apiClient.request).mockRejectedValueOnce(conflictError);
 
     await expect(service.approve(42, jwtToken)).rejects.toBe(conflictError);
   });
 
-  it("should throw method error when all update attempts return 405", async () => {
-    const methodError = {
-      isAxiosError: true,
-      response: { status: 405 },
-      message: "method not allowed",
-    };
-    vi.mocked(apiClient.request).mockImplementation(() => Promise.reject(methodError));
-
-    await expect(service.approve(42, jwtToken)).rejects.toBe(methodError);
-  });
-
-  it("should throw bad request error when all update attempts return 400", async () => {
-    const badRequestError = {
-      isAxiosError: true,
-      response: { status: 400 },
-      message: "bad request",
-    };
-    vi.mocked(apiClient.request).mockImplementation(() => Promise.reject(badRequestError));
-
-    await expect(service.reject(42, jwtToken)).rejects.toBe(badRequestError);
-  });
-
-  it("should throw endpoint discovery error when all update attempts return 404", async () => {
-    const notFoundError = {
-      isAxiosError: true,
-      response: { status: 404 },
-      message: "not found",
-    };
-    vi.mocked(apiClient.request).mockImplementation(() => Promise.reject(notFoundError));
+  it("should throw endpoint discovery error when both endpoints return 404", async () => {
+    vi.mocked(apiClient.request)
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      });
 
     await expect(service.reject(42, jwtToken)).rejects.toThrow(
-      "No matching status update endpoint found. Tried:"
+      "No matching status update endpoint found"
     );
   });
 });
