@@ -69,7 +69,6 @@ export class JobRoleController {
     async getApplications(req: Request, res: Response): Promise<void> {
       try {
         const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
-        // Applications will be fetched client-side from /job-applications/admin endpoint
         res.render("pages/jobApplicationAdmin.njk", { 
           applications: [],
           jobRoles 

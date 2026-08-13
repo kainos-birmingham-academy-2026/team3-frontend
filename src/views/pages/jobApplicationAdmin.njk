@@ -36,7 +36,19 @@
     <select id="role-filter" class="role-filter">
      <option value="">All Roles</option>
      {% for jobRole in jobRoles %}
-      <option value="{{ jobRole.roleName }}">{{ jobRole.roleName }}</option>
+    <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}">{{ jobRole.roleName }}</option>
+       {% endfor %}
+      </select>
+     </div>
+
+     <div class="filter-group">
+      <label for="location-filter">Location:</label>
+      <select id="location-filter" class="location-filter">
+       <option value="">All Locations</option>
+       {% for jobRole in jobRoles %}
+    {% if jobRole.location %}
+     <option value="{{ jobRole.location }}">{{ jobRole.location }}</option>
+    {% endif %}
      {% endfor %}
     </select>
    </div>
@@ -67,7 +79,6 @@
    <thead>
     <tr>
      <th>Applicant</th>
-     <th>Email</th>
      <th>Applied Role</th>
      <th>Application Date</th>
      <th>Status</th>
@@ -468,10 +479,24 @@
   const searchInput = document.getElementById("search-input");
   const statusFilter = document.getElementById("status-filter");
   const roleFilter = document.getElementById("role-filter");
+  const locationFilter = document.getElementById("location-filter");
   const tbody = document.getElementById("applications-tbody");
   const tableContainer = document.getElementById("table-container");
   const summaryContainer = document.getElementById("summary-container");
   const emptyState = document.getElementById("empty-state");
+  const roleLocationByName = new Map();
+
+  Array.from(roleFilter.options).forEach((option) => {
+   if (!option.value) {
+    return;
+   }
+
+   const normalizedRole = option.value.trim().toLowerCase();
+   const locationValue = (option.dataset.location || "Unknown").trim();
+   if (normalizedRole && !roleLocationByName.has(normalizedRole)) {
+    roleLocationByName.set(normalizedRole, locationValue);
+   }
+  });
 
   function getApplicationKey(applicationId) {
    return String(applicationId);
@@ -550,10 +575,13 @@
 
     const statusLower = normalizeApplicationStatus(app.status);
     const isPending = statusLower === "pending";
+    const roleKey = String(app.roleName || "").trim().toLowerCase();
+    const appLocation = roleLocationByName.get(roleKey) || "Unknown";
     const jobRoleId = Number.parseInt(String(app.jobRoleId), 10);
     const detailsHref = Number.isNaN(jobRoleId)
      ? "/job-role-list"
      : `/job-role-list/${jobRoleId}`;
+    const normalizedLocation = appLocation.toLowerCase();
 
     row.innerHTML = `
      <td class="applicant-cell">
@@ -561,7 +589,6 @@
        ${escapeHtml(app.applicantName)}
       </button>
      </td>
-     <td class="email-cell">${escapeHtml(app.applicantEmail)}</td>
      <td class="role-cell">${escapeHtml(app.roleName)}</td>
      <td class="date-cell">${escapeHtml(app.applicationDate)}</td>
      <td class="status-cell">
@@ -600,6 +627,8 @@
      </td>
     `;
 
+    row.setAttribute("data-location", normalizedLocation);
+
     tbody.appendChild(row);
    });
 
@@ -608,14 +637,36 @@
 
   function populateRoleFilter() {
    const roles = new Set(allApplications.map((app) => app.roleName));
-   const roleSelect = document.getElementById("role-filter");
+    roleFilter.innerHTML = '<option value="">All Roles</option>';
 
-   roles.forEach((role) => {
+    Array.from(roles).sort().forEach((role) => {
     const option = document.createElement("option");
     option.value = role;
     option.textContent = role;
-    roleSelect.appendChild(option);
+     const roleKey = String(role || "").trim().toLowerCase();
+     option.dataset.location = roleLocationByName.get(roleKey) || "Unknown";
+     roleFilter.appendChild(option);
    });
+
+    populateLocationFilter();
+    }
+
+    function populateLocationFilter() {
+    const locations = new Set();
+
+    allApplications.forEach((app) => {
+     const roleKey = String(app.roleName || "").trim().toLowerCase();
+     locations.add(roleLocationByName.get(roleKey) || "Unknown");
+    });
+
+    locationFilter.innerHTML = '<option value="">All Locations</option>';
+
+    Array.from(locations).sort().forEach((location) => {
+     const option = document.createElement("option");
+     option.value = location;
+     option.textContent = location;
+     locationFilter.appendChild(option);
+    });
   }
 
   function updateSummary() {
@@ -682,6 +733,7 @@
     searchInput.addEventListener("input", filterApplications);
     statusFilter.addEventListener("change", filterApplications);
     roleFilter.addEventListener("change", filterApplications);
+      locationFilter.addEventListener("change", filterApplications);
     filtersBound = true;
    }
 
@@ -692,6 +744,7 @@
    const searchTerm = searchInput.value.toLowerCase();
    const statusValue = statusFilter.value.toLowerCase();
    const roleValue = roleFilter.value;
+  const locationValue = locationFilter.value.toLowerCase();
 
    const rows = document.querySelectorAll(".application-row");
    let visibleCount = 0;
@@ -719,6 +772,12 @@
     if (roleValue) {
      const roleCell = row.querySelector(".role-cell").textContent.toLowerCase();
      shouldShow = shouldShow && roleCell === roleValue.toLowerCase();
+    }
+
+    // Location filter
+    if (locationValue) {
+     const rowLocation = (row.getAttribute("data-location") || "").toLowerCase();
+     shouldShow = shouldShow && rowLocation === locationValue;
     }
 
     row.style.display = shouldShow ? "" : "none";
