@@ -80,7 +80,6 @@ export class AuthController {
 			req.session.jwtToken = jwtToken;
 			req.session.userRole = userRole;
 			
-			// Decode JWT to check for admin role
 			const tokenParts = jwtToken.split(".");
 			if (tokenParts.length === 3) {
 				try {
