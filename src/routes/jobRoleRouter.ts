@@ -40,4 +40,8 @@ router.get("/job-role-create", requireAuth, requireAdmin, (_req, res) => {
 	});
 });
 
+router.get("/teapot", (_req, res) => {
+	res.render("pages/teapot.njk");
+});
+
 export default router;
