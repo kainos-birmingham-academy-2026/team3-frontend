@@ -150,6 +150,54 @@ a:hover {
   background: #a61f1f;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
+.logout-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(15, 24, 61, 0.48);
+}
+
+.logout-modal-backdrop[hidden] {
+  display: none;
+}
+
+.logout-modal {
+  width: min(540px, 100%);
+  background: var(--kainos-white);
+  border: 1px solid #d9def0;
+  border-top: 6px solid var(--kainos-blue);
+  box-shadow: 0 22px 46px rgba(26, 41, 114, 0.26);
+  padding: 1.8rem;
+}
+
+.logout-modal h2 {
+  margin: 0 0 0.8rem;
+  font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+  line-height: 1.25;
+}
+
+.logout-modal p {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--kainos-text-muted);
+}
+
+.logout-modal-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
 .button-solid {
   color: var(--kainos-white);
   background: var(--kainos-blue);
@@ -157,6 +205,15 @@ a:hover {
 
 .button-solid:hover {
   background: var(--kainos-blue-dark);
+}
+.button-danger-solid {
+  color: #ffffff;
+  background: #c62828;
+  border-color: #c62828;
+}
+.button-danger-solid:hover {
+  background: #a61f1f;
+  border-color: #a61f1f;
 }
 
 .site-main {
@@ -446,6 +503,20 @@ a:hover {
   .home-cards,
   .footer-grid {
     grid-template-columns: 1fr;
+  }
+
+  .logout-modal {
+    width: min(460px, 100%);
+    padding: 1.4rem;
+  }
+
+  .logout-modal-actions {
+    justify-content: stretch;
+  }
+
+  .logout-modal-actions .button {
+    flex: 1;
+    text-align: center;
   }
 }
 
@@ -840,7 +911,7 @@ a:hover {
 
 .restricted-card {
   width: min(520px, 100%);
-  background: var(--kainos-white);
+  width: min(460px, 100%);
   border: 1px solid #d9def0;
   border-top: 6px solid var(--kainos-blue);
   box-shadow: 0 16px 36px rgba(40, 53, 131, 0.12);

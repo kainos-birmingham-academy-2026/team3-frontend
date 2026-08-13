@@ -48,6 +48,15 @@ export class AuthController {
 		res.render("pages/registerConfirmation.njk");
 	}
 
+	showLogoutConfirmation(req: Request, res: Response): void {
+		if (req.session.jwtToken) {
+			res.redirect("/");
+			return;
+		}
+
+		res.render("pages/logoutConfirmation.njk");
+	}
+
 	async login(req: Request, res: Response): Promise<void> {
 		const email = String(req.body.email ?? "").trim();
 		const password = String(req.body.password ?? "").trim();
@@ -126,7 +135,7 @@ export class AuthController {
 	logout(req: Request, res: Response): void {
 		req.session.destroy(() => {
 			res.clearCookie("connect.sid");
-			res.redirect("/login");
+			res.redirect("/logout/confirmation");
 		});
 	}
 }

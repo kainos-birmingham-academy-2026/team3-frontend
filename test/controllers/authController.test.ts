@@ -129,6 +129,29 @@ describe("AuthController", () => {
     expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk");
   });
 
+  it("should render logout confirmation page for unauthenticated user", () => {
+    const req = createReq();
+    const res = createRes();
+
+    controller.showLogoutConfirmation(req, res);
+
+    expect(res.render).toHaveBeenCalledWith("pages/logoutConfirmation.njk");
+  });
+
+  it("should redirect authenticated users away from logout confirmation page", () => {
+    const req = createReq({
+      session: {
+        jwtToken: "existing-token",
+        destroy: vi.fn((callback: () => void) => callback()),
+      },
+    });
+    const res = createRes();
+
+    controller.showLogoutConfirmation(req, res);
+
+    expect(res.redirect).toHaveBeenCalledWith("/");
+  });
+
   it("should redirect authenticated users away from register confirmation page", () => {
     const req = createReq({
       session: {
@@ -452,6 +475,6 @@ describe("AuthController", () => {
 
     expect(destroy).toHaveBeenCalledTimes(1);
     expect(res.clearCookie).toHaveBeenCalledWith("connect.sid");
-    expect(res.redirect).toHaveBeenCalledWith("/login");
+    expect(res.redirect).toHaveBeenCalledWith("/logout/confirmation");
   });
 });
