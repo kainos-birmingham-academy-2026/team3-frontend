@@ -5,6 +5,7 @@ import { JobRoleService } from "../../src/services/jobRoleService";
 vi.mock("../../src/config/apiClient", () => ({
   default: {
     get: vi.fn(),
+    post: vi.fn(),
   },
 }));
 
@@ -327,5 +328,22 @@ describe("JobRoleService", () => {
     });
 
     await expect(service.getById("123")).rejects.toThrow("Backend server error");
+  });
+
+  it("should submit an application with cvText payload", async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: {} });
+
+    await service.applyForRole("3", "I am interested in this role", jwtToken);
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      "/job-roles/3/apply",
+      { cvText: "I am interested in this role" },
+      { headers: { Authorization: `Bearer ${jwtToken}` } },
+    );
+  });
+
+  it("should throw when submitting an application without jwt token", async () => {
+    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Not authenticated");
+    expect(apiClient.post).not.toHaveBeenCalled();
   });
 });

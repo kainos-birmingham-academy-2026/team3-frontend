@@ -1,0 +1,64 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | Apply for Role{% endblock %}
+
+{% block content %}
+  {% if jobRoleId %}
+    <a href="/job-role-list/{{ jobRoleId.jobRoleId }}" class="back-link">← Back to Job Details</a>
+  {% else %}
+    <a href="/job-role-list" class="back-link">← Back to Job Roles</a>
+  {% endif %}
+
+  <section class="job-role-detail" aria-labelledby="apply-title">
+    <div class="hero-section">
+      <p class="eyebrow">Apply for Role</p>
+      {% if jobRoleId %}
+        <div class="hero-title-row">
+          <h1 id="apply-title">{{ jobRoleId.roleName }}</h1>
+          <span class="status-badge status-{{ jobRoleId.status | lower }}">
+            {{ jobRoleId.status | capitalize }}
+          </span>
+        </div>
+      {% else %}
+        <h1 id="apply-title">Apply for Role</h1>
+      {% endif %}
+    </div>
+
+    <div class="description-section">
+      <h2>Submit your CV</h2>
+      <p>Paste your CV text to register your interest in this job role.</p>
+    </div>
+
+    {% if successMessage %}
+      <p class="form-success" role="status">{{ successMessage }}</p>
+      {% if applicationStatus %}
+        <p class="form-success-detail">Application status: {{ applicationStatus | capitalize }}</p>
+      {% endif %}
+    {% endif %}
+
+    {% if errorMessage %}
+      <p class="form-alert" role="alert">{{ errorMessage }}</p>
+    {% endif %}
+
+    {% if canApply %}
+      <form method="post" action="/job-role-list/{{ jobRoleId.jobRoleId }}/apply" class="login-form" novalidate>
+        <div class="form-field">
+          <label for="cvText">CV text</label>
+          <textarea
+            id="cvText"
+            name="cvText"
+            rows="12"
+            placeholder="Paste your CV text here."
+            required
+          >{{ cvText | default('', true) }}</textarea>
+        </div>
+
+        <button type="submit" class="button button-primary">Submit Application</button>
+      </form>
+    {% else %}
+      <div class="info-message">
+        <p>This role is not currently accepting applications.</p>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

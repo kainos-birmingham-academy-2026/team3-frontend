@@ -201,7 +201,7 @@ describe("jobRoleDetail", () => {
     expect(html).toContain("B1 1AA");
   });
 
-  it("should display apply button when status is open", () => {
+  it("should display apply button when status is open and open positions are available", () => {
     const jobRole: JobRole = {
       jobRoleId: 1,
       roleName: "Software Engineer",
@@ -210,12 +210,31 @@ describe("jobRoleDetail", () => {
       band: "Engineer",
       closingDate: "2026-08-06",
       status: "open",
+      openPositions: 1,
     };
 
     const html = renderView(jobRole);
 
     expect(html).toContain("Apply Now");
-    expect(html).toContain("https://www.kainos.com/careers");
+    expect(html).toContain("/job-role-list/1/apply");
+  });
+
+  it("should hide apply button when status is open but no positions remain", () => {
+    const jobRole: JobRole = {
+      jobRoleId: 1,
+      roleName: "Software Engineer",
+      location: "Birmingham",
+      capability: "Software Engineering",
+      band: "Engineer",
+      closingDate: "2026-08-06",
+      status: "open",
+      openPositions: 0,
+    };
+
+    const html = renderView(jobRole);
+
+    expect(html).not.toContain("Apply Now");
+    expect(html).toContain("This position is currently closed");
   });
 
   it("should display closed status message when status is not open", () => {
