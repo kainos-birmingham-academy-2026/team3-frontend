@@ -18,9 +18,18 @@ interface ApiApplication {
 
 type StatusAction = "approve" | "reject";
 type NormalizedStatus = "pending" | "approved" | "rejected";
+type UpdateMethod = "post" | "patch" | "put";
+
+interface UpdateAttempt {
+  method: UpdateMethod;
+  url: string;
+  data: unknown;
+}
 
 export class AdminApplicationService {
   private static readonly ADMIN_APPLICATIONS_ENDPOINT = "/job-applications/admin";
+  private static readonly JOB_APPLICATIONS_ENDPOINT = "/job-applications";
+  private static readonly LEGACY_APPLICATIONS_ENDPOINT = "/applications";
 
   private getAuthHeaders(jwtToken: string): { Authorization: string } {
     return { Authorization: `Bearer ${jwtToken}` };
@@ -127,37 +136,59 @@ export class AdminApplicationService {
   ): Promise<void> {
     const statusValue = this.getStatusValue(action);
     const headers = this.getAuthHeaders(jwtToken);
-    const actionUrl = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`;
-    const statusUrl = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/status`;
+    const methods: UpdateMethod[] = ["post", "patch", "put"];
+    const actionUrls = [
+      `${AdminApplicationService.JOB_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`,
+      `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`,
+      `${AdminApplicationService.LEGACY_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`,
+    ];
+    const statusUrls = [
+      `${AdminApplicationService.JOB_APPLICATIONS_ENDPOINT}/${applicationId}/status`,
+      `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/status`,
+      `${AdminApplicationService.LEGACY_APPLICATIONS_ENDPOINT}/${applicationId}/status`,
+    ];
 
-    try {
-      await apiClient.request({
-        method: "post",
-        url: actionUrl,
-        data: {},
-        headers,
-      });
-      return;
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 404) {
+    const attempts: UpdateAttempt[] = [];
+
+    for (const url of actionUrls) {
+      for (const method of methods) {
+        attempts.push({ method, url, data: {} });
+      }
+    }
+
+    for (const url of statusUrls) {
+      for (const method of methods) {
+        attempts.push({ method, url, data: { status: statusValue } });
+        attempts.push({ method, url, data: { action } });
+      }
+    }
+
+    let sawNotFound = false;
+
+    for (const attempt of attempts) {
+      try {
+        await apiClient.request({
+          method: attempt.method,
+          url: attempt.url,
+          data: attempt.data,
+          headers,
+        });
+        return;
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          sawNotFound = true;
+          continue;
+        }
+
         throw error;
       }
     }
 
-    try {
-      await apiClient.request({
-        method: "post",
-        url: statusUrl,
-        data: { status: statusValue },
-        headers,
-      });
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-        throw error;
-      }
-
+    if (sawNotFound) {
       throw new Error("No matching status update endpoint found");
     }
+
+    throw new Error("Unable to update application status");
   }
 
   async approve(applicationId: number, jwtToken: string): Promise<void> {

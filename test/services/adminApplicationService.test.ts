@@ -178,12 +178,50 @@ describe("AdminApplicationService", () => {
     expect(result).toBe("");
   });
 
-  it("should call approve endpoint with admin-scoped path first", async () => {
+  it("should call approve endpoint with job-applications path first", async () => {
     vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
 
     await service.approve(42, jwtToken);
 
     expect(apiClient.request).toHaveBeenNthCalledWith(1, {
+      method: "post",
+      url: "/job-applications/42/approve",
+      data: {},
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+  });
+
+  it("should fallback to admin-scoped action endpoint when primary action endpoint returns 404", async () => {
+    vi.mocked(apiClient.request)
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+      .mockResolvedValueOnce({ data: {} });
+
+    await service.approve(42, jwtToken);
+
+    expect(apiClient.request).toHaveBeenNthCalledWith(2, {
+      method: "patch",
+      url: "/job-applications/42/approve",
+      data: {},
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+    expect(apiClient.request).toHaveBeenNthCalledWith(3, {
+      method: "put",
+      url: "/job-applications/42/approve",
+      data: {},
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+    expect(apiClient.request).toHaveBeenNthCalledWith(4, {
       method: "post",
       url: "/job-applications/admin/42/approve",
       data: {},
@@ -191,30 +229,50 @@ describe("AdminApplicationService", () => {
     });
   });
 
-  it("should fallback to status endpoint when action endpoint returns 404", async () => {
+  it("should call reject endpoint with job-applications path first", async () => {
+    vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
+
+    await service.reject(42, jwtToken);
+
+    expect(apiClient.request).toHaveBeenNthCalledWith(1, {
+      method: "post",
+      url: "/job-applications/42/reject",
+      data: {},
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+  });
+
+  it("should fallback reject to admin-scoped action endpoint when primary action endpoint returns 404", async () => {
     vi.mocked(apiClient.request)
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
+      .mockRejectedValueOnce({
+        isAxiosError: true,
+        response: { status: 404 },
+      })
       .mockRejectedValueOnce({
         isAxiosError: true,
         response: { status: 404 },
       })
       .mockResolvedValueOnce({ data: {} });
 
-    await service.approve(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenNthCalledWith(2, {
-      method: "post",
-      url: "/job-applications/admin/42/status",
-      data: { status: "approved" },
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
-  });
-
-  it("should call reject endpoint with admin-scoped path first", async () => {
-    vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
-
     await service.reject(42, jwtToken);
 
-    expect(apiClient.request).toHaveBeenNthCalledWith(1, {
+    expect(apiClient.request).toHaveBeenNthCalledWith(2, {
+      method: "patch",
+      url: "/job-applications/42/reject",
+      data: {},
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+    expect(apiClient.request).toHaveBeenNthCalledWith(3, {
+      method: "put",
+      url: "/job-applications/42/reject",
+      data: {},
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+    expect(apiClient.request).toHaveBeenNthCalledWith(4, {
       method: "post",
       url: "/job-applications/admin/42/reject",
       data: {},
@@ -222,19 +280,24 @@ describe("AdminApplicationService", () => {
     });
   });
 
-  it("should fallback reject to status endpoint when action endpoint returns 404", async () => {
+  it("should fallback to status endpoint after exhausting action endpoints", async () => {
     vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
+      .mockRejectedValueOnce({ isAxiosError: true, response: { status: 404 } })
       .mockResolvedValueOnce({ data: {} });
 
     await service.reject(42, jwtToken);
 
-    expect(apiClient.request).toHaveBeenNthCalledWith(2, {
+    expect(apiClient.request).toHaveBeenNthCalledWith(10, {
       method: "post",
-      url: "/job-applications/admin/42/status",
+      url: "/job-applications/42/status",
       data: { status: "rejected" },
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
@@ -252,18 +315,14 @@ describe("AdminApplicationService", () => {
   });
 
   it("should throw endpoint discovery error when both endpoints return 404", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      });
+    vi.mocked(apiClient.request).mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 404 },
+    });
 
     await expect(service.reject(42, jwtToken)).rejects.toThrow(
       "No matching status update endpoint found"
     );
+    expect(apiClient.request).toHaveBeenCalled();
   });
 });
