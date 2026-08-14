@@ -18,18 +18,9 @@ interface ApiApplication {
 
 type StatusAction = "approve" | "reject";
 type NormalizedStatus = "pending" | "approved" | "rejected";
-type UpdateMethod = "post" | "patch" | "put";
-
-interface UpdateAttempt {
-  method: UpdateMethod;
-  url: string;
-  data: unknown;
-}
 
 export class AdminApplicationService {
   private static readonly ADMIN_APPLICATIONS_ENDPOINT = "/job-applications/admin";
-  private static readonly JOB_APPLICATIONS_ENDPOINT = "/job-applications";
-  private static readonly LEGACY_APPLICATIONS_ENDPOINT = "/applications";
 
   private getAuthHeaders(jwtToken: string): { Authorization: string } {
     return { Authorization: `Bearer ${jwtToken}` };
@@ -80,8 +71,8 @@ export class AdminApplicationService {
     };
   }
 
-  private getStatusValue(action: StatusAction): "approved" | "rejected" {
-    return action === "approve" ? "approved" : "rejected";
+  private getStatusValue(action: StatusAction): "APPROVED" | "REJECTED" {
+    return action === "approve" ? "APPROVED" : "REJECTED";
   }
 
   async getAll(jwtToken?: string): Promise<Application[]> {
@@ -129,73 +120,26 @@ export class AdminApplicationService {
     return "";
   }
 
-  private async updateStatusWithFallbacks(
+  private async updateStatus(
     applicationId: number,
     action: StatusAction,
     jwtToken: string
   ): Promise<void> {
-    const statusValue = this.getStatusValue(action);
-    const headers = this.getAuthHeaders(jwtToken);
-    const methods: UpdateMethod[] = ["post", "patch", "put"];
-    const actionUrls = [
-      `${AdminApplicationService.JOB_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`,
-      `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`,
-      `${AdminApplicationService.LEGACY_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`,
-    ];
-    const statusUrls = [
-      `${AdminApplicationService.JOB_APPLICATIONS_ENDPOINT}/${applicationId}/status`,
-      `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/status`,
-      `${AdminApplicationService.LEGACY_APPLICATIONS_ENDPOINT}/${applicationId}/status`,
-    ];
+    const statusUrl = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/status`;
 
-    const attempts: UpdateAttempt[] = [];
-
-    for (const url of actionUrls) {
-      for (const method of methods) {
-        attempts.push({ method, url, data: {} });
-      }
-    }
-
-    for (const url of statusUrls) {
-      for (const method of methods) {
-        attempts.push({ method, url, data: { status: statusValue } });
-        attempts.push({ method, url, data: { action } });
-      }
-    }
-
-    let sawNotFound = false;
-
-    for (const attempt of attempts) {
-      try {
-        await apiClient.request({
-          method: attempt.method,
-          url: attempt.url,
-          data: attempt.data,
-          headers,
-        });
-        return;
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 404) {
-          sawNotFound = true;
-          continue;
-        }
-
-        throw error;
-      }
-    }
-
-    if (sawNotFound) {
-      throw new Error("No matching status update endpoint found");
-    }
-
-    throw new Error("Unable to update application status");
+    await apiClient.request({
+      method: "patch",
+      url: statusUrl,
+      data: { status: this.getStatusValue(action) },
+      headers: this.getAuthHeaders(jwtToken),
+    });
   }
 
   async approve(applicationId: number, jwtToken: string): Promise<void> {
-    await this.updateStatusWithFallbacks(applicationId, "approve", jwtToken);
+    await this.updateStatus(applicationId, "approve", jwtToken);
   }
 
   async reject(applicationId: number, jwtToken: string): Promise<void> {
-    await this.updateStatusWithFallbacks(applicationId, "reject", jwtToken);
+    await this.updateStatus(applicationId, "reject", jwtToken);
   }
 }
