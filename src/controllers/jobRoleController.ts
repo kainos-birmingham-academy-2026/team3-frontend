@@ -49,15 +49,8 @@ export class JobRoleController {
 
 
 	async getAll(req: Request, res: Response): Promise<void> {
-		const jwtToken = this.getJwtToken(req);
-
-		if (!jwtToken) {
-			res.redirect("/login");
-			return;
-		}
-
 		try {
-			const jobRoles = await this.jobRoleService.getAll(jwtToken);
+			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
 			res.render("pages/jobRoleList.njk", { jobRoles });
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -197,7 +190,7 @@ export class JobRoleController {
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Unable to load the apply page";
+					: "This page cannot be loaded right now. Please try again.";
 
 			res.status(500).render("pages/jobRoleApply.njk", {
 				canApply: false,
@@ -235,12 +228,7 @@ export class JobRoleController {
 
 			await this.jobRoleService.applyForRole(id, cvText, this.getJwtToken(req));
 
-			res.status(201).render("pages/jobRoleApply.njk", {
-				jobRoleId,
-				canApply: true,
-				successMessage: "Application submitted successfully.",
-				applicationStatus: "in progress",
-			});
+			res.redirect(303, `/job-role-list/${id}/apply/confirmation`);
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
 				return;
@@ -273,6 +261,13 @@ export class JobRoleController {
 		}
 	}
 
+	showApplicationConfirmation(req: Request, res: Response): void {
+		const id = this.getRoleIdParam(req);
+		res.render("pages/applicationReceivedConfirmation.njk", {
+			jobRoleId: id,
+		});
+	}
+
 	private handleUnauthorized(
 		req: Request,
 		res: Response,
@@ -298,6 +293,31 @@ export class JobRoleController {
 		});
 	}
 
+	async getApplications(req: Request, res: Response): Promise<void> {
+		try {
+			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
+			res.render("pages/jobApplicationAdmin.njk", {
+				applications: [],
+				jobRoles
+			});
+		} catch (error) {
+			if (this.handleUnauthorized(req, res, error)) {
+				return;
+			}
+			this.renderApplicationsError(res, error);
+		}
+	}
+
+	private renderApplicationsError(res: Response, error: unknown): void {
+		const errorMessage =
+			error instanceof Error ? error.message : "Unable to load applications";
+
+		res.status(500).render("pages/jobApplicationAdmin.njk", {
+			applications: [],
+			jobRoles: [],
+			errorMessage,
+		});
+	}
 
 	//fetch status, location, capability and band options from the backend to populate the dropdowns in the create job role
 	//not used in controller as show create form will call directly to service, but kept as a reference for future use if needed

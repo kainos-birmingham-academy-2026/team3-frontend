@@ -69,14 +69,12 @@ export class JobRoleService {
   }
 
   async getAll(jwtToken?: string): Promise<JobRole[]> {
-    if (!jwtToken) {
-      throw new Error("Not authenticated");
-    }
-
     try {
-      const response = await apiClient.get<ApiJobRole[]>("/job-roles", {
-        headers: { Authorization: `Bearer ${jwtToken}` },
-      });
+      const response = jwtToken
+        ? await apiClient.get<ApiJobRole[]>("/job-roles", {
+            headers: { Authorization: `Bearer ${jwtToken}` },
+          })
+        : await apiClient.get<ApiJobRole[]>("/job-roles");
 
       return response.data.map((jobRole) => this.mapJobRole(jobRole));
     } catch (error) {
@@ -86,7 +84,7 @@ export class JobRoleService {
           throw new Error("No job roles found");
         }
         if (status === 500) {
-          throw new Error("Backend server error");
+          throw new Error("Job roles cannot be loaded right now. Please try again in a moment.");
         }
       }
 
@@ -110,7 +108,7 @@ export class JobRoleService {
           throw new Error(`Job role with ID ${jobRoleId} not found`);
         }
         if (status === 500) {
-          throw new Error("Backend server error");
+          throw new Error("This job role cannot be loaded right now. Please try again in a moment.");
         }
       }
 
@@ -154,7 +152,7 @@ export class JobRoleService {
 
   async applyForRole(jobRoleId: string, cvText: string, jwtToken?: string): Promise<void> {
     if (!jwtToken) {
-      throw new Error("Not authenticated");
+      throw new Error("Please sign in to continue");
     }
 
     await apiClient.post(

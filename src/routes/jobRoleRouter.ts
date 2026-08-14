@@ -1,14 +1,157 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
+import axios from "axios";
 import { JobRoleController } from "../controllers/jobRoleController";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
 import { JobRoleService } from "../services/jobRoleService";
+import { AdminApplicationService } from "../services/adminApplicationService";
 
 const router = Router();
 const service = new JobRoleService();
 const controller = new JobRoleController(service);
+const adminApplicationService = new AdminApplicationService();
+type ApplicationAction = "approve" | "reject";
+
+function getSessionToken(req: Request): string {
+	return req.session.jwtToken ?? "";
+}
+
+function parseApplicationId(rawId: string | string[] | undefined): number | null {
+	const idParam = Array.isArray(rawId) ? rawId[0] : rawId;
+	const applicationId = Number.parseInt(idParam ?? "", 10);
+
+	if (Number.isNaN(applicationId)) {
+		return null;
+	}
+
+	return applicationId;
+}
+
+function getAxiosErrorMessage(error: unknown): string {
+	if (!axios.isAxiosError(error)) {
+		return error instanceof Error ? error.message : "Unknown error";
+	}
+
+	if (
+		typeof error.response?.data === "object" &&
+		error.response?.data !== null &&
+		"error" in error.response.data &&
+		typeof (error.response.data as { error?: unknown }).error === "string"
+	) {
+		return (error.response.data as { error: string }).error;
+	}
+
+	return error.message;
+}
+
+function parseApplicationAction(action: unknown): ApplicationAction | null {
+	if (action === "approve" || action === "reject") {
+		return action;
+	}
+
+	return null;
+}
 
 router.get("/", (_req, res) => {
 	res.render("pages/index.njk");
+});
+
+router.get("/job-applications/admin", requireAuth, requireAdmin, (req, res) => controller.getApplications(req, res));
+
+router.get("/job-applications/:applicationId/cv", requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
+			res.status(400).render("pages/404.njk");
+			return;
+		}
+
+		const jwtToken = getSessionToken(req);
+		const applications = await adminApplicationService.getAll(jwtToken);
+		const application = applications.find((item) => item.applicationId === applicationId);
+
+		if (!application) {
+			res.status(404).render("pages/404.njk");
+			return;
+		}
+
+		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
+		res.render("pages/applicationCv.njk", {
+			application,
+			cvText: cvText || application.cvText || "No CV text available for this application.",
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Failed to load CV";
+		res.status(500).render("pages/404.njk", {
+			errorMessage: message,
+		});
+	}
+});
+
+// API endpoint for fetching applications (called by client-side JavaScript)
+router.get("/api/job-applications/admin", requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const jwtToken = getSessionToken(req);
+		const applications = await adminApplicationService.getAll(jwtToken);
+		res.json(applications);
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Failed to fetch applications";
+		res.status(500).json({ error: message });
+	}
+});
+
+router.get("/api/job-applications/:applicationId/cv-text", requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
+			res.status(400).json({ error: "Invalid application ID" });
+			return;
+		}
+
+		const jwtToken = getSessionToken(req);
+		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
+		res.json({ cvText });
+	} catch (error) {
+		if (axios.isAxiosError(error)) {
+			res.status(error.response?.status ?? 500).json({ error: getAxiosErrorMessage(error) });
+			return;
+		}
+
+		const message = error instanceof Error ? error.message : "Failed to fetch CV text";
+		res.status(500).json({ error: message });
+	}
+});
+
+router.post("/api/job-applications/:applicationId/status", requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
+			res.status(400).json({ error: "Invalid application ID" });
+			return;
+		}
+
+		const action = parseApplicationAction(req.body?.action);
+		if (action === null) {
+			res.status(400).json({ error: "Invalid action. Use 'approve' or 'reject'." });
+			return;
+		}
+
+		const jwtToken = getSessionToken(req);
+		if (action === "approve") {
+			await adminApplicationService.approve(applicationId, jwtToken);
+		} else {
+			await adminApplicationService.reject(applicationId, jwtToken);
+		}
+
+		res.json({ success: true });
+	} catch (error) {
+		if (axios.isAxiosError(error)) {
+			res.status(error.response?.status ?? 500).json({ error: getAxiosErrorMessage(error) });
+			return;
+		}
+
+		const message = error instanceof Error ? error.message : "Failed to update application status";
+		res.status(500).json({ error: message });
+	}
 });
 
 router.get("/health", (_req, res) => {
@@ -28,10 +171,23 @@ router.get("/job-role-list/:id/apply", (req, res) => {
 
 	controller.showApplyForm(req, res);
 });
-
+router.post(
+	"/job-role-list/:id/apply",
+	requireAuth,
+	(req, res) => controller.submitApplication(req, res),
+);
+router.get(
+	"/job-role-list/:id/apply/confirmation",
+	requireAuth,
+	(req, res) => controller.showApplicationConfirmation(req, res),
+);
 
 router.get("/job-role-create", requireAuth, requireAdmin, (req, res) => controller.showCreateForm(req, res));
 router.post("/job-role-create", requireAuth, requireAdmin, (req, res) => controller.createJobRole(req, res));
 
+
+router.get("/teapot", (_req, res) => {
+	res.render("pages/teapot.njk");
+});
 
 export default router;

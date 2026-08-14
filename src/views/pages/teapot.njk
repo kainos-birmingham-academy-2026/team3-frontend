@@ -1,0 +1,115 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | I'm a Teapot{% endblock %}
+
+{% block content %}
+ <section class="teapot-section">
+  <div class="teapot-container">
+   <img src="/images/teapot.png" alt="Teapot Dinosaur" class="teapot-image" />
+   <h1>418</h1>
+   <h2>I'm a Teapot</h2>
+   <p class="teapot-message">This server is a teapot, not a coffee machine.</p>
+   
+   <p class="teapot-description">
+    According to RFC 2324, any attempt to brew coffee with a teapot should result in a 418 I'm a teapot status code. 
+    This is a humorous HTTP status code that celebrates the lighter side of web protocols.
+   </p>
+
+   <div class="teapot-actions">
+    <a class="button button-solid" href="/">Back to Home</a>
+    <a class="button button-outline" href="/job-role-list">View Job Roles</a>
+   </div>
+  </div>
+ </section>
+
+ <style>
+  .teapot-section {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   min-height: 60vh;
+   text-align: center;
+  }
+
+  .teapot-container {
+   max-width: 600px;
+   padding: 2rem;
+  }
+
+  .teapot-image {
+   max-width: 500px;
+   width: 100%;
+   height: auto;
+   margin-bottom: 2rem;
+   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.15));
+   border: 6px solid #2d5016;
+   border-radius: 12px;
+  }
+
+  .teapot-container h1 {
+   font-size: 6rem;
+   font-weight: 900;
+   color: #d97d2c;
+   margin: 0;
+   line-height: 1;
+  }
+
+  .teapot-container h2 {
+   font-size: 2.5rem;
+   color: #333;
+   margin: 0.5rem 0 1rem 0;
+  }
+
+  .teapot-message {
+   font-size: 1.3rem;
+   color: #666;
+   margin: 1.5rem 0;
+   font-style: italic;
+  }
+
+  .teapot-description {
+   font-size: 1rem;
+   color: #555;
+   line-height: 1.6;
+   margin: 2rem 0;
+  }
+
+  .teapot-actions {
+   display: flex;
+   gap: 1rem;
+   justify-content: center;
+   flex-wrap: wrap;
+   margin-top: 2rem;
+  }
+
+  .button {
+   padding: 0.75rem 1.5rem;
+   border-radius: 4px;
+   text-decoration: none;
+   font-weight: 600;
+   transition: all 0.3s ease;
+   display: inline-block;
+  }
+
+  .button-solid {
+   background-color: #d97d2c;
+   color: white;
+   border: 2px solid #d97d2c;
+  }
+
+  .button-solid:hover {
+   background-color: #b85f1f;
+   border-color: #b85f1f;
+  }
+
+  .button-outline {
+   background-color: transparent;
+   color: #d97d2c;
+   border: 2px solid #d97d2c;
+  }
+
+  .button-outline:hover {
+   background-color: #f5e6d3;
+  }
+ </style>
+{% endblock %}

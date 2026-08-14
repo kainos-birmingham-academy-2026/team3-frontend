@@ -226,4 +226,96 @@ describe("authApiService", () => {
       "Unexpected error",
     );
   });
+
+  it("should map ENOTFOUND network error for login", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ENOTFOUND",
+      response: undefined,
+    });
+
+    await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
+      "We cannot sign you in right now. Please try again in a moment.",
+    );
+  });
+
+  it("should map ECONNABORTED network error for login", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ECONNABORTED",
+      response: undefined,
+    });
+
+    await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
+      "We cannot sign you in right now. Please try again in a moment.",
+    );
+  });
+
+  it("should map ETIMEDOUT network error for login", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ETIMEDOUT",
+      response: undefined,
+    });
+
+    await expect(login("jane.doe@example.com", "password123")).rejects.toThrow(
+      "We cannot sign you in right now. Please try again in a moment.",
+    );
+  });
+
+  it("should map ENOTFOUND network error for registration", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ENOTFOUND",
+      response: undefined,
+    });
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow(
+      "We cannot create your account right now. Please try again in a moment.",
+    );
+  });
+
+  it("should map ECONNABORTED network error for registration", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ECONNABORTED",
+      response: undefined,
+    });
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow(
+      "We cannot create your account right now. Please try again in a moment.",
+    );
+  });
+
+  it("should map ETIMEDOUT network error for registration", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      code: "ETIMEDOUT",
+      response: undefined,
+    });
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow(
+      "We cannot create your account right now. Please try again in a moment.",
+    );
+  });
+
+  it("should handle error without status and code in login", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: undefined,
+      code: undefined,
+    });
+
+    await expect(login("jane.doe@example.com", "password123")).rejects.toThrow();
+  });
+
+  it("should handle error without status and code in register", async () => {
+    vi.mocked(apiClient.post).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: undefined,
+      code: undefined,
+    });
+
+    await expect(register("new@example.com", "password123")).rejects.toThrow();
+  });
 });

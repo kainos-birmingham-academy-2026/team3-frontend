@@ -42,6 +42,28 @@ describe("JobRoleService", () => {
     expect(result[0]?.capability).toBe("Software Engineering");
   });
 
+  it("should fetch public job roles without authorization header", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          jobRoleId: 1,
+          roleName: "Software Engineer",
+          locationName: "Birmingham",
+          capabilityName: "Software Engineering",
+          bandName: "Engineer",
+          closingDate: "2026-08-06T00:00:00.000Z",
+          status: "OPEN",
+        },
+      ],
+    });
+
+    const result = await service.getAll();
+
+    expect(apiClient.get).toHaveBeenCalledWith("/job-roles");
+    expect(result).toHaveLength(1);
+    expect(result[0]?.status).toBe("open");
+  });
+
   it("should keeps role status values from backend for view filtering", async () => {
     vi.mocked(apiClient.get).mockResolvedValueOnce({
       data: [
@@ -107,7 +129,9 @@ describe("JobRoleService", () => {
       response: { status: 500 },
     });
 
-    await expect(service.getAll(jwtToken)).rejects.toThrow("Backend server error");
+    await expect(service.getAll(jwtToken)).rejects.toThrow(
+      "Job roles cannot be loaded right now. Please try again in a moment.",
+    );
   });
 
   it("should map sharepointUrl to jobSpecUrl for getAll", async () => {
@@ -327,7 +351,9 @@ describe("JobRoleService", () => {
       response: { status: 500 },
     });
 
-    await expect(service.getById("123")).rejects.toThrow("Backend server error");
+    await expect(service.getById("123")).rejects.toThrow(
+      "This job role cannot be loaded right now. Please try again in a moment.",
+    );
   });
 
   it("should submit an application with cvText payload", async () => {
@@ -343,7 +369,137 @@ describe("JobRoleService", () => {
   });
 
   it("should throw when submitting an application without jwt token", async () => {
-    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Not authenticated");
+    await expect(service.applyForRole("3", "CV text")).rejects.toThrow("Please sign in to continue");
     expect(apiClient.post).not.toHaveBeenCalled();
+  });
+
+  it("should handle getById without jwtToken and retrieve public job role", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 5,
+        roleName: "Product Manager",
+        closingDate: "2026-09-15T00:00:00.000Z",
+        status: "OPEN",
+      },
+    });
+
+    const result = await service.getById("5");
+
+    expect(apiClient.get).toHaveBeenCalledWith("/job-roles/5");
+    expect(result.jobRoleId).toBe(5);
+    expect(result.roleName).toBe("Product Manager");
+  });
+
+  it("should handle getById 404 without jwtToken", async () => {
+    vi.mocked(apiClient.get).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 404 },
+    });
+
+    await expect(service.getById("999")).rejects.toThrow("Job role with ID 999 not found");
+  });
+
+  it("should re-throw non-axios errors in getAll", async () => {
+    vi.mocked(apiClient.get).mockRejectedValueOnce(new Error("Network timeout"));
+
+    await expect(service.getAll(jwtToken)).rejects.toThrow("Network timeout");
+  });
+
+  it("should re-throw non-axios errors in getById", async () => {
+    vi.mocked(apiClient.get).mockRejectedValueOnce(new Error("Unexpected error"));
+
+    await expect(service.getById("1")).rejects.toThrow("Unexpected error");
+  });
+
+  it("should use fallback jobSpecUrl when neither sharepointUrl nor jobSpecUrl provided", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        closingDate: "2026-08-06T00:00:00.000Z",
+        status: "OPEN",
+      },
+    });
+
+    const result = await service.getById("1");
+
+    expect(result.jobSpecUrl).toBeUndefined();
+  });
+
+  it("should use fallback openPositions when both numberOfOpenPositions and openPositions undefined", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        closingDate: "2026-08-06T00:00:00.000Z",
+        status: "OPEN",
+      },
+    });
+
+    const result = await service.getById("1");
+
+    expect(result.openPositions).toBeUndefined();
+  });
+
+  it("should use jobSpecUrl fallback instead of sharepointUrl when present", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        closingDate: "2026-08-06T00:00:00.000Z",
+        status: "OPEN",
+        jobSpecUrl: "https://spec.example.com/job",
+      },
+    });
+
+    const result = await service.getById("1");
+
+    expect(result.jobSpecUrl).toBe("https://spec.example.com/job");
+  });
+
+  it("should use bandId as string when bandName not provided", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        closingDate: "2026-08-06T00:00:00.000Z",
+        bandId: 5,
+      },
+    });
+
+    const result = await service.getById("1");
+
+    expect(result.band).toBe("5");
+  });
+
+  it("should use bandName when both bandName and bandId provided", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        closingDate: "2026-08-06T00:00:00.000Z",
+        bandName: "Senior Engineer",
+        bandId: 5,
+      },
+    });
+
+    const result = await service.getById("1");
+
+    expect(result.band).toBe("Senior Engineer");
+  });
+
+  it("should map openPositions when numberOfOpenPositions provided", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: {
+        jobRoleId: 1,
+        roleName: "Software Engineer",
+        closingDate: "2026-08-06T00:00:00.000Z",
+        numberOfOpenPositions: 4,
+      },
+    });
+
+    const result = await service.getById("1");
+
+    expect(result.openPositions).toBe(4);
   });
 });

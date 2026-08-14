@@ -14,6 +14,7 @@
     <a class="nav-link {% if currentPath == '/job-role-list' %}nav-link-active{% endif %}" href="/job-role-list">Job roles</a>
     {% if currentUserRole == 'ADMIN' %}
      <a class="nav-link {% if currentPath == '/job-role-create' %}nav-link-active{% endif %}" href="/job-role-create">Create role</a>
+     <a class="nav-link {% if currentPath == '/job-applications/admin' %}nav-link-active{% endif %}" href="{% if currentUserRole == 'ADMIN' %}/job-applications/admin{% else %}/login{% endif %}">Applications</a>
     {% endif %}
    </nav>
   {% endif %}
@@ -48,6 +49,7 @@
   const logoutBackdrop = document.getElementById("logout-modal-backdrop");
   const logoutCancel = document.getElementById("logout-modal-cancel");
   const logoutConfirm = document.getElementById("logout-modal-confirm");
+  const logoutModalFocusable = [logoutCancel, logoutConfirm];
 
   if (logoutTrigger && logoutBackdrop && logoutCancel && logoutConfirm) {
    const openModal = () => {
@@ -76,8 +78,42 @@
    });
 
    document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !logoutBackdrop.hidden) {
+    if (logoutBackdrop.hidden) {
+      return;
+    }
+
+    if (event.key === "Escape") {
       closeModal();
+      return;
+    }
+
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const activeElement = document.activeElement;
+    const firstFocusable = logoutModalFocusable[0];
+    const lastFocusable = logoutModalFocusable[logoutModalFocusable.length - 1];
+
+    if (!firstFocusable || !lastFocusable) {
+      return;
+    }
+
+    if (!logoutModalFocusable.includes(activeElement)) {
+      event.preventDefault();
+      firstFocusable.focus();
+      return;
+    }
+
+    if (event.shiftKey && activeElement === firstFocusable) {
+      event.preventDefault();
+      lastFocusable.focus();
+      return;
+    }
+
+    if (!event.shiftKey && activeElement === lastFocusable) {
+      event.preventDefault();
+      firstFocusable.focus();
     }
    });
   }
