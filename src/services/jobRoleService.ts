@@ -125,14 +125,22 @@ export class JobRoleService {
     if (!jwtToken) {
       throw new Error("Not authenticated");
     }
+    const toOptionalNumber = (value: string | number | undefined) => {
+      if (value === undefined || value === "") {
+        return undefined;
+      }
+
+      const numberValue = Number(value);
+      return Number.isFinite(numberValue) ? numberValue : undefined;
+    };
+
     const payload = {
       ...jobRoleData,
-      numberOfOpenPositions: Number(jobRoleData.numberOfOpenPositions),
-      capabilityId: Number(jobRoleData.capabilityId),
-      bandId: Number(jobRoleData.bandId),
-      locationId: Number(jobRoleData.locationId),
-      // The form allows a blank closing date; the API rejects an empty string.
-      closingDate: jobRoleData.closingDate ? jobRoleData.closingDate : undefined,
+      numberOfOpenPositions: toOptionalNumber(jobRoleData.numberOfOpenPositions),
+      capabilityId: toOptionalNumber(jobRoleData.capabilityId),
+      bandId: toOptionalNumber(jobRoleData.bandId),
+      locationId: toOptionalNumber(jobRoleData.locationId),
+      closingDate: jobRoleData.closingDate || undefined,
     };
 
     await apiClient.post("/job-roles/create", payload, {
