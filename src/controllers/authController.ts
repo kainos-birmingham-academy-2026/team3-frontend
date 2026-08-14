@@ -21,10 +21,14 @@ export class AuthController {
 		const successMessage = req.query?.registered === "1"
 			? "Account created. Please sign in."
 			: undefined;
+		const errorMessage = req.query?.expired === "1"
+			? "Your session has expired. Please log in again."
+			: undefined;
 
 		res.render("pages/login.njk", {
 			formValues: { email: "" },
 			successMessage,
+			errorMessage,
 		});
 	}
 

@@ -1,69 +1,71 @@
 {% extends "layouts/base.njk" %}
-
 {% block content %}
- <section class="page-hero">
-  <p class="eyebrow">Careers</p>
-  <h1>Open job roles</h1>
-  <p>Explore current opportunities and apply before the closing date.</p>
-  {% if currentUserRole == 'ADMIN' %}
-   <p><a class="button button-solid" href="/job-role-create">Create new role</a></p>
-  {% endif %}
- </section>
-
- {% set hasOpenRoles = false %}
- {% for jobRole in jobRoles %}
-  {% if jobRole.status == "open" %}
-   {% set hasOpenRoles = true %}
-  {% endif %}
- {% endfor %}
-
- {% if hasOpenRoles %}
-   <table class="job-role-table">
-     <thead>
-       <tr>
-        <th>Role Name</th>
-        <th>Location</th>
-        <th>Capability</th>
-        <th>Band</th>
-        <th>Closing Date</th>
-       </tr>
-     </thead>
-     <tbody>
-      {% for jobRole in jobRoles %}
-       {% if jobRole.status == "open" %}
-          <tr class="job-role-row-link" data-href="/job-role-list/{{ jobRole.jobRoleId }}" role="link" tabindex="0" aria-label="View details for {{ jobRole.roleName }}">
-          <td>{{ jobRole.roleName }}</td>
-         <td>{{ jobRole.location }}</td>
-         <td>{{ jobRole.capability }}</td>
-         <td>{{ jobRole.band }}</td>
-         <td>{{ jobRole.closingDate }}</td>
+  <section class="page-hero">
+    <p class="eyebrow">Careers</p>
+    <h1>Open job roles</h1>
+    <p>Explore current opportunities and apply before the closing date.</p>
+    {% if currentUserRole == 'ADMIN' %}
+      <p>
+        <a class="button button-solid" href="/job-role-create">Create new role</a>
+      </p>
+    {% endif %}
+  </section>
+  {% set hasOpenRoles = false %}
+  {% for jobRole in jobRoles %}
+    {% if jobRole.status == "open" %}
+      {% set hasOpenRoles = true %}
+    {% endif %}
+  {% endfor %}
+  {% if hasOpenRoles %}
+    <table class="job-role-table">
+      <thead>
+        <tr>
+          <th>Role Name</th>
+          <th>Location</th>
+          <th>Capability</th>
+          <th>Band</th>
+          <th>Closing Date</th>
         </tr>
-       {% endif %}
-      {% endfor %}
-     </tbody>
-   </table>
- {% else %}
-  <p class="empty-state">No open job roles found</p>
- {% endif %}
-
- <script>
-  document.querySelectorAll(".job-role-row-link").forEach((row) => {
-   row.addEventListener("click", () => {
-    const href = row.getAttribute("data-href");
-    if (href) {
-     window.location.href = href;
-    }
-   });
-
-   row.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-     event.preventDefault();
-     const href = row.getAttribute("data-href");
-     if (href) {
-      window.location.href = href;
-     }
-    }
-   });
-  });
- </script>
+      </thead>
+      <tbody>
+        {% for jobRole in jobRoles %}
+          {% if jobRole.status == "open" %}
+            <tr
+              class="job-role-row-link"
+              data-href="/job-role-list/{{ jobRole.jobRoleId }}"
+              role="link"
+              tabindex="0"
+              aria-label="View details for {{ jobRole.roleName }}">
+              <td>{{ jobRole.roleName }}</td>
+              <td>{{ jobRole.location }}</td>
+              <td>{{ jobRole.capability }}</td>
+              <td>{{ jobRole.band }}</td>
+              <td>{{ jobRole.closingDate }}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty-state">No open job roles found</p>
+  {% endif %}
+  <script>
+    document.querySelectorAll(".job-role-row-link").forEach((row) => {
+      row.addEventListener("click", () => {
+        const href = row.getAttribute("data-href");
+        if (href) {
+          window.location.href = href;
+        }
+      });
+      row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          const href = row.getAttribute("data-href");
+          if (href) {
+            window.location.href = href;
+          }
+        }
+      });
+    });
+  </script>
 {% endblock %}

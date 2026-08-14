@@ -1,79 +1,75 @@
 {% extends "layouts/base.njk" %}
-
 {% block title %}Kainos | Create job role{% endblock %}
-
 {% block content %}
- <section class="login-panel" aria-labelledby="create-job-role-title">
-  <h2 id="create-job-role-title">Create job role</h2>
-    <p class="form-footnote">This is a future-ready mock form aligned to the backend create contract.</p>
-
-  <form method="post" action="#" class="login-form" novalidate>
-   <div class="form-field">
-    <label for="roleName">Role name</label>
-        <input id="roleName" name="roleName" type="text" placeholder="e.g. Software Engineer" required />
-   </div>
-
-     <div class="form-field">
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3" required></textarea>
-     </div>
-
-     <div class="form-field">
-        <label for="responsibilities">Responsibilities</label>
-        <textarea id="responsibilities" name="responsibilities" rows="3" required></textarea>
-     </div>
-
-     <div class="form-field">
-        <label for="sharepointUrl">Job specification URL</label>
-        <input id="sharepointUrl" name="sharepointUrl" type="url" placeholder="https://..." required />
-     </div>
-
-     <div class="form-field">
-        <label for="numberOfOpenPositions">Number of open positions</label>
-        <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" min="1" required />
-     </div>
-
-     <div class="form-field">
-        <label for="closingDate">Closing date</label>
-        <input id="closingDate" name="closingDate" type="date" />
-     </div>
-
-     <div class="form-field">
-        <label for="capabilityId">Capability</label>
-        <select id="capabilityId" name="capabilityId" required>
-         <option value="">Select capability</option>
-         {% for capability in capabilityOptions | default([], true) %}
-            <option value="{{ capability.id }}">{{ capability.name }}</option>
-         {% endfor %}
-        </select>
-     </div>
-
-     <div class="form-field">
-        <label for="bandId">Band</label>
-        <select id="bandId" name="bandId" required>
-         <option value="">Select band</option>
-         {% for band in bandOptions | default([], true) %}
-            <option value="{{ band.id }}">{{ band.name }}</option>
-         {% endfor %}
-        </select>
-     </div>
-
-     <div class="form-field">
-        <label for="locationId">Location</label>
-        <select id="locationId" name="locationId" required>
-         <option value="">Select location</option>
-         {% for location in locationOptions | default([], true) %}
-            <option value="{{ location.id }}">{{ location.name }}</option>
-         {% endfor %}
-        </select>
-     </div>
-
-     <div class="form-field">
-        <label for="statusName">Status</label>
-        <input id="statusName" name="statusName" type="text" value="OPEN" readonly />
-     </div>
-
-   <button type="submit" class="button button-solid" disabled>Mock create (coming soon)</button>
-  </form>
- </section>
+   <section class="login-panel" aria-labelledby="create-job-role-title">
+      <h2 id="create-job-role-title">Create job role</h2>
+      {% if errorMessage %}
+         {% if errorMessage is string %}
+            <p class="form-alert" role="alert">{{ errorMessage }}</p>
+         {% else %}
+            {% for error in errorMessage %}
+               <p class="form-alert" role="alert">{{ error.message }}</p>
+            {% endfor %}
+         {% endif %}
+      {% endif %}
+      <form method="post" action="/job-role-create" class="login-form" novalidate>
+         <div class="form-field">
+            <label for="roleName">Role name</label>
+            <input id="roleName" name="roleName" type="text" placeholder="e.g. Software Engineer" required/>
+         </div>
+         <div class="form-field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" required></textarea>
+         </div>
+         <div class="form-field">
+            <label for="responsibilities">Responsibilities</label>
+            <textarea id="responsibilities" name="responsibilities" rows="3" required></textarea>
+         </div>
+         <div class="form-field">
+            <label for="sharepointUrl">Job specification URL</label>
+            <input id="sharepointUrl" name="sharepointUrl" type="url" placeholder="https://..." required/>
+         </div>
+         <div class="form-field">
+            <label for="numberOfOpenPositions">Number of open positions</label>
+            <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" min="1" required/>
+         </div>
+         <div class="form-field">
+            <label for="closingDate">Closing date</label>
+            <input id="closingDate" name="closingDate" type="date"/>
+            <p class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
+         </div>
+         <div class="form-field">
+            <label for="capabilityId">Capability</label>
+            <select id="capabilityId" name="capabilityId" required>
+               <option value="">Select capability</option>
+               {% for capability in capabilityOptions | default([], true) %}
+                  <option value="{{ capability.capabilityId }}">{{ capability.capabilityName }}</option>
+               {% endfor %}
+            </select>
+         </div>
+         <div class="form-field">
+            <label for="bandId">Band</label>
+            <select id="bandId" name="bandId" required>
+               <option value="">Select band</option>
+               {% for band in bandOptions | default([], true) %}
+                  <option value="{{ band.bandId }}">{{ band.bandName }}</option>
+               {% endfor %}
+            </select>
+         </div>
+         <div class="form-field">
+            <label for="locationId">Location</label>
+            <select id="locationId" name="locationId" required>
+               <option value="">Select location</option>
+               {% for location in locationOptions | default([], true) %}
+                  <option value="{{ location.locationId }}">{{ location.locationName }}</option>
+               {% endfor %}
+            </select>
+         </div>
+         <div class="form-field">
+            <label for="statusName">Status</label>
+            <input id="statusName" name="statusName" type="text" value="OPEN" readonly/>
+         </div>
+         <button type="submit" class="button button-solid">Create new role</button>
+      </form>
+   </section>
 {% endblock %}
