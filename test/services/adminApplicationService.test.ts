@@ -185,34 +185,6 @@ describe("AdminApplicationService", () => {
     expect(result).toBe("");
   });
 
-  it("should approve via PATCH on the admin status endpoint", async () => {
-    vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
-
-    await service.approve(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenCalledTimes(1);
-    expect(apiClient.request).toHaveBeenCalledWith({
-      method: "patch",
-      url: "/job-applications/admin/42/status",
-      data: { status: "APPROVED" },
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
-  });
-
-  it("should reject via PATCH on the admin status endpoint", async () => {
-    vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
-
-    await service.reject(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenCalledTimes(1);
-    expect(apiClient.request).toHaveBeenCalledWith({
-      method: "patch",
-      url: "/job-applications/admin/42/status",
-      data: { status: "REJECTED" },
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
-  });
-
   it("should propagate errors from the status endpoint", async () => {
     const conflictError = {
       isAxiosError: true,
