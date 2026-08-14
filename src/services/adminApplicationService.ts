@@ -1,6 +1,5 @@
 import apiClient from "../config/apiClient";
 import type { Application } from "../models/application";
-import axios from "axios";
 
 interface ApiApplication {
   applicationId: number;
@@ -92,79 +91,31 @@ export class AdminApplicationService {
   }
 
   async getCvTextById(applicationId: number, jwtToken: string): Promise<string> {
-    const headers = this.getAuthHeaders(jwtToken);
-    const cvEndpoint = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/cv-text`;
-
-    try {
-      const response = await apiClient.get<unknown>(cvEndpoint, { headers });
-      const cvText = this.extractCvTextFromUnknown(response.data);
-      if (cvText) {
-        return cvText;
-      }
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-        throw error;
-      }
-    }
-
-    try {
-      const applications = await this.getAll(jwtToken);
-      const application = applications.find((item) => item.applicationId === applicationId);
-      const listCvText = (application?.cvText ?? "").trim();
-      if (listCvText) {
-        return listCvText;
-      }
-    } catch {
-    }
-
-    return "";
+    const applications = await this.getAll(jwtToken);
+    const application = applications.find((item) => item.applicationId === applicationId);
+    return (application?.cvText ?? "").trim();
   }
 
-  private async updateStatusWithFallbacks(
+  private async updateStatus(
     applicationId: number,
     action: StatusAction,
     jwtToken: string
   ): Promise<void> {
-    const statusValue = this.getStatusValue(action);
-    const headers = this.getAuthHeaders(jwtToken);
-    const actionUrl = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/${action}`;
     const statusUrl = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/status`;
 
-    try {
-      await apiClient.request({
-        method: "post",
-        url: actionUrl,
-        data: {},
-        headers,
-      });
-      return;
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-        throw error;
-      }
-    }
-
-    try {
-      await apiClient.request({
-        method: "post",
-        url: statusUrl,
-        data: { status: statusValue },
-        headers,
-      });
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-        throw error;
-      }
-
-      throw new Error("No matching status update endpoint found");
-    }
+    await apiClient.request({
+      method: "patch",
+      url: statusUrl,
+      data: { status: this.getStatusValue(action) },
+      headers: this.getAuthHeaders(jwtToken),
+    });
   }
 
   async approve(applicationId: number, jwtToken: string): Promise<void> {
-    await this.updateStatusWithFallbacks(applicationId, "approve", jwtToken);
+    await this.updateStatus(applicationId, "approve", jwtToken);
   }
 
   async reject(applicationId: number, jwtToken: string): Promise<void> {
-    await this.updateStatusWithFallbacks(applicationId, "reject", jwtToken);
+    await this.updateStatus(applicationId, "reject", jwtToken);
   }
 }

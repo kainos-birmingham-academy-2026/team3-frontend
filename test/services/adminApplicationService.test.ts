@@ -91,156 +91,101 @@ describe("AdminApplicationService", () => {
     expect(result[1]?.status).toBe("rejected");
   });
 
-  it("should return cv text from first matching detail endpoint", async () => {
+  it("should return cv text for the matching application from the list", async () => {
     vi.mocked(apiClient.get).mockResolvedValueOnce({
-      data: {
-        cvText: "Detailed CV",
-      },
+      data: [
+        {
+          applicationId: 99,
+          applicantName: "A",
+          applicantEmail: "a@example.com",
+          roleName: "Engineer",
+          applicationDate: "2026-08-12T00:00:00.000Z",
+          status: "pending",
+          cvText: "Detailed CV",
+        },
+      ],
     });
 
     const result = await service.getCvTextById(99, jwtToken);
 
     expect(result).toBe("Detailed CV");
-    expect(apiClient.get).toHaveBeenCalledWith("/job-applications/admin/99/cv-text", {
+    expect(apiClient.get).toHaveBeenCalledWith("/job-applications/admin", {
       headers: { Authorization: `Bearer ${jwtToken}` },
     });
   });
 
-  it("should continue on 404 and fallback to list cv text", async () => {
-    vi.mocked(apiClient.get)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockResolvedValueOnce({
-        data: [
-          {
-            applicationId: 7,
-            applicantName: "A",
-            applicantEmail: "a@example.com",
-            roleName: "Engineer",
-            applicationDate: "2026-08-12T00:00:00.000Z",
-            status: "pending",
-            cvText: "Fallback CV",
-          },
-        ],
-      });
+  it("should read cv text from nested application payload in the list", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          applicationId: 7,
+          applicantName: "A",
+          applicantEmail: "a@example.com",
+          roleName: "Engineer",
+          applicationDate: "2026-08-12T00:00:00.000Z",
+          status: "pending",
+          application: { cvText: "Fallback CV" },
+        },
+      ],
+    });
 
     const result = await service.getCvTextById(7, jwtToken);
 
     expect(result).toBe("Fallback CV");
   });
 
-  it("should throw non-404 errors while fetching cv text", async () => {
+  it("should propagate errors while fetching the applications list", async () => {
     vi.mocked(apiClient.get).mockRejectedValueOnce({
       isAxiosError: true,
       response: { status: 500 },
       message: "server error",
     });
 
-    await expect(service.getCvTextById(7, jwtToken)).rejects.toMatchObject({
-      response: { status: 500 },
-    });
+    await expect(service.getCvTextById(7, jwtToken)).rejects.toThrow(
+      "Failed to fetch applications"
+    );
   });
 
-  it("should fallback to list data when detail endpoints return no cv text", async () => {
-    vi.mocked(apiClient.get).mockImplementation(async (url) => {
-      if (url === "/job-applications/admin") {
-        return {
-          data: [
-            {
-              applicationId: 7,
-              applicantName: "A",
-              applicantEmail: "a@example.com",
-              roleName: "Engineer",
-              applicationDate: "2026-08-12T00:00:00.000Z",
-              status: "pending",
-              cvText: "List CV text",
-            },
-          ],
-        };
-      }
-
-      return { data: { foo: "bar" } };
+  it("should return empty string when the application is not in the list", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          applicationId: 7,
+          applicantName: "A",
+          applicantEmail: "a@example.com",
+          roleName: "Engineer",
+          applicationDate: "2026-08-12T00:00:00.000Z",
+          status: "pending",
+          cvText: "List CV text",
+        },
+      ],
     });
-
-    const result = await service.getCvTextById(7, jwtToken);
-
-    expect(result).toBe("List CV text");
-  });
-
-  it("should return empty string when no cv text exists anywhere", async () => {
-    vi.mocked(apiClient.get)
-      .mockResolvedValue({ data: {} });
 
     const result = await service.getCvTextById(404, jwtToken);
 
     expect(result).toBe("");
   });
 
-  it("should call approve endpoint with admin-scoped path first", async () => {
-    vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
-
-    await service.approve(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenNthCalledWith(1, {
-      method: "post",
-      url: "/job-applications/admin/42/approve",
-      data: {},
-      headers: { Authorization: `Bearer ${jwtToken}` },
+  it("should return empty string when the matching application has no cv text", async () => {
+    vi.mocked(apiClient.get).mockResolvedValueOnce({
+      data: [
+        {
+          applicationId: 404,
+          applicantName: "A",
+          applicantEmail: "a@example.com",
+          roleName: "Engineer",
+          applicationDate: "2026-08-12T00:00:00.000Z",
+          status: "pending",
+        },
+      ],
     });
+
+    const result = await service.getCvTextById(404, jwtToken);
+
+    expect(result).toBe("");
   });
 
-  it("should fallback to status endpoint when action endpoint returns 404", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockResolvedValueOnce({ data: {} });
-
-    await service.approve(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenNthCalledWith(2, {
-      method: "post",
-      url: "/job-applications/admin/42/status",
-      data: { status: "approved" },
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
-  });
-
-  it("should call reject endpoint with admin-scoped path first", async () => {
-    vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
-
-    await service.reject(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenNthCalledWith(1, {
-      method: "post",
-      url: "/job-applications/admin/42/reject",
-      data: {},
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
-  });
-
-  it("should fallback reject to status endpoint when action endpoint returns 404", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockResolvedValueOnce({ data: {} });
-
-    await service.reject(42, jwtToken);
-
-    expect(apiClient.request).toHaveBeenNthCalledWith(2, {
-      method: "post",
-      url: "/job-applications/admin/42/status",
-      data: { status: "rejected" },
-      headers: { Authorization: `Bearer ${jwtToken}` },
-    });
-  });
-
-  it("should throw non-404 axios errors from action endpoint", async () => {
+  it("should propagate errors from the status endpoint", async () => {
     const conflictError = {
       isAxiosError: true,
       response: { status: 409 },
@@ -249,21 +194,5 @@ describe("AdminApplicationService", () => {
     vi.mocked(apiClient.request).mockRejectedValueOnce(conflictError);
 
     await expect(service.approve(42, jwtToken)).rejects.toBe(conflictError);
-  });
-
-  it("should throw endpoint discovery error when both endpoints return 404", async () => {
-    vi.mocked(apiClient.request)
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      })
-      .mockRejectedValueOnce({
-        isAxiosError: true,
-        response: { status: 404 },
-      });
-
-    await expect(service.reject(42, jwtToken)).rejects.toThrow(
-      "No matching status update endpoint found"
-    );
   });
 });
