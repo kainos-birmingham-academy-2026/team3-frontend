@@ -94,6 +94,23 @@
   <p>No job applications found.</p>
  </div>
 
+ <div class="popup-overlay" id="action-popup" hidden>
+  <div
+   class="popup-dialog"
+   role="dialog"
+   aria-modal="true"
+   aria-labelledby="popup-title"
+    aria-describedby="popup-message"
+  >
+   <h2 id="popup-title" class="popup-title"></h2>
+   <p id="popup-message" class="popup-message"></p>
+   <div class="popup-actions">
+    <button type="button" id="popup-cancel" class="button button-outline">Cancel</button>
+    <button type="button" id="popup-confirm" class="button button-solid">OK</button>
+   </div>
+  </div>
+ </div>
+
  <style>
   .admin-controls {
    display: flex;
@@ -403,6 +420,72 @@
    display: block;
   }
 
+  .popup-overlay {
+   position: fixed;
+   inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+    background: rgba(15, 24, 61, 0.48);
+  }
+
+  .popup-overlay[hidden] {
+   display: none;
+  }
+
+  .popup-dialog {
+    width: min(540px, 100%);
+    background: var(--kainos-white);
+    border: 1px solid #d9def0;
+    border-top: 6px solid var(--kainos-blue);
+    box-shadow: 0 22px 46px rgba(26, 41, 114, 0.26);
+    padding: 1.8rem;
+  }
+
+  .popup-title {
+    margin: 0 0 0.8rem;
+    font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+    line-height: 1.25;
+  }
+
+  .popup-message {
+   margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--kainos-text-muted);
+    }
+
+  .popup-actions {
+   margin-top: 1.25rem;
+   display: flex;
+   justify-content: flex-end;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+  }
+
+    .popup-confirm-success {
+     color: #ffffff;
+     background: #2e7d32;
+     border-color: #2e7d32;
+    }
+
+    .popup-confirm-success:hover {
+     background: #236227;
+     border-color: #236227;
+    }
+
+    .popup-confirm-danger {
+     color: #ffffff;
+     background: #c62828;
+     border-color: #c62828;
+    }
+
+    .popup-confirm-danger:hover {
+     background: #a61f1f;
+     border-color: #a61f1f;
+    }
+
   @media (max-width: 1024px) {
    .filter-controls {
     flex-direction: column;
@@ -484,7 +567,14 @@
   const tableContainer = document.getElementById("table-container");
   const summaryContainer = document.getElementById("summary-container");
   const emptyState = document.getElementById("empty-state");
+  const actionPopup = document.getElementById("action-popup");
+  const popupTitle = document.getElementById("popup-title");
+  const popupMessage = document.getElementById("popup-message");
+  const popupCancelButton = document.getElementById("popup-cancel");
+  const popupConfirmButton = document.getElementById("popup-confirm");
   const roleLocationByName = new Map();
+  let popupResolve = null;
+  let popupPreviousFocus = null;
 
   Array.from(roleFilter.options).forEach((option) => {
    if (!option.value) {
@@ -701,6 +791,78 @@
    bindRowActionListeners();
   }
 
+  function closePopup(result) {
+   actionPopup.hidden = true;
+    document.body.classList.remove("modal-open");
+   const resolver = popupResolve;
+   popupResolve = null;
+   if (popupPreviousFocus && typeof popupPreviousFocus.focus === "function") {
+    popupPreviousFocus.focus();
+   }
+   popupPreviousFocus = null;
+   if (resolver) {
+    resolver(result);
+   }
+  }
+
+  function showPopup({
+   title,
+   message,
+   confirmText,
+   cancelText = null,
+   confirmStyle = "default",
+  }) {
+   popupTitle.textContent = title;
+   popupMessage.textContent = message;
+   popupConfirmButton.textContent = confirmText;
+
+    popupConfirmButton.classList.remove(
+     "button-solid",
+     "button-danger-solid",
+     "popup-confirm-success",
+     "popup-confirm-danger"
+    );
+
+    if (confirmStyle === "success") {
+     popupConfirmButton.classList.add("popup-confirm-success");
+    } else if (confirmStyle === "danger") {
+     popupConfirmButton.classList.add("popup-confirm-danger");
+    } else {
+     popupConfirmButton.classList.add("button-solid");
+    }
+
+   if (cancelText) {
+    popupCancelButton.hidden = false;
+    popupCancelButton.textContent = cancelText;
+   } else {
+    popupCancelButton.hidden = true;
+   }
+
+   popupPreviousFocus = document.activeElement;
+   actionPopup.hidden = false;
+  document.body.classList.add("modal-open");
+   popupConfirmButton.focus();
+
+   return new Promise((resolve) => {
+    popupResolve = resolve;
+   });
+  }
+
+  popupConfirmButton.addEventListener("click", () => closePopup(true));
+  popupCancelButton.addEventListener("click", () => closePopup(false));
+
+  actionPopup.addEventListener("click", (event) => {
+   if (event.target === actionPopup) {
+    closePopup(false);
+   }
+  });
+
+  document.addEventListener("keydown", (event) => {
+   if (event.key === "Escape" && !actionPopup.hidden) {
+    closePopup(false);
+   }
+  });
+
   function bindRowActionListeners() {
    // View details buttons
    document.querySelectorAll(".btn-view").forEach((btn) => {
@@ -715,7 +877,7 @@
     btn.addEventListener("click", (e) => {
      e.preventDefault();
      const applicationId = btn.getAttribute("data-application-id");
-     hireApplication(applicationId);
+    hireApplication(applicationId);
     });
    });
 
@@ -723,7 +885,7 @@
     btn.addEventListener("click", (e) => {
      e.preventDefault();
      const applicationId = btn.getAttribute("data-application-id");
-     rejectApplication(applicationId);
+    rejectApplication(applicationId);
     });
    });
   }
@@ -804,71 +966,139 @@
    }
   }
 
-  function hireApplication(applicationId) {
-   if (confirm("Are you sure you want to hire this applicant?")) {
-    fetch(`/api/job-applications/${applicationId}/status`, {
+  async function hireApplication(applicationId) {
+   const shouldHire = await showPopup({
+    title: "Confirm Hire",
+    message: "Are you sure you want to hire this applicant?",
+    confirmText: "Hire",
+    cancelText: "Cancel",
+    confirmStyle: "success",
+   });
+
+   if (!shouldHire) {
+    return;
+   }
+
+   try {
+    const response = await fetch(`/api/job-applications/${applicationId}/status`, {
      method: "POST",
      headers: { "Content-Type": "application/json" },
      body: JSON.stringify({ action: "approve" }),
-    })
-     .then(async (response) => {
-      if (response.ok) {
-         updateApplicationStatusInView(applicationId, "hired");
-       alert("Applicant hired!");
-       loadApplications(); // Reload the table
-      } else if (response.status === 409) {
-         updateApplicationStatusInView(applicationId, "hired");
-       alert("Applicant is already hired.");
-       loadApplications();
-      } else {
-       const errorBody = await response
-        .json()
-        .catch(() => ({ error: "Failed to hire applicant" }));
-       const message =
-        errorBody && typeof errorBody.error === "string"
-         ? errorBody.error
-         : "Failed to hire applicant";
-       alert(`Failed to hire applicant: ${message}`);
-      }
-     })
-     .catch((error) => {
-      console.error("Error hiring applicant:", error);
-      alert("Error hiring applicant");
+    });
+
+    if (response.ok) {
+     updateApplicationStatusInView(applicationId, "hired");
+     await showPopup({
+      title: "Success",
+      message: "Applicant hired!",
+      confirmText: "OK",
+      confirmStyle: "default",
      });
+     loadApplications();
+     return;
+    }
+
+    if (response.status === 409) {
+     updateApplicationStatusInView(applicationId, "hired");
+     await showPopup({
+      title: "Already Updated",
+      message: "Applicant is already hired.",
+      confirmText: "OK",
+      confirmStyle: "default",
+     });
+     loadApplications();
+     return;
+    }
+
+    const errorBody = await response
+     .json()
+     .catch(() => ({ error: "Failed to hire applicant" }));
+    const message =
+     errorBody && typeof errorBody.error === "string"
+      ? errorBody.error
+      : "Failed to hire applicant";
+    await showPopup({
+     title: "Hire Failed",
+     message: `Failed to hire applicant: ${message}`,
+     confirmText: "OK",
+      confirmStyle: "default",
+    });
+   } catch (error) {
+    console.error("Error hiring applicant:", error);
+    await showPopup({
+     title: "Error",
+     message: "Error hiring applicant",
+     confirmText: "OK",
+      confirmStyle: "default",
+    });
    }
   }
 
-  function rejectApplication(applicationId) {
-   if (confirm("Are you sure you want to reject this application?")) {
-    fetch(`/api/job-applications/${applicationId}/status`, {
+  async function rejectApplication(applicationId) {
+   const shouldReject = await showPopup({
+    title: "Confirm Rejection",
+    message: "Are you sure you want to reject this application?",
+    confirmText: "Reject",
+    cancelText: "Cancel",
+    confirmStyle: "danger",
+   });
+
+   if (!shouldReject) {
+    return;
+   }
+
+   try {
+    const response = await fetch(`/api/job-applications/${applicationId}/status`, {
      method: "POST",
      headers: { "Content-Type": "application/json" },
      body: JSON.stringify({ action: "reject" }),
-    })
-     .then(async (response) => {
-      if (response.ok) {
-       updateApplicationStatusInView(applicationId, "rejected");
-       alert("Application rejected!");
-       loadApplications(); // Reload the table
-      } else if (response.status === 409) {
-       updateApplicationStatusInView(applicationId, "rejected");
-       alert("Application is already rejected.");
-       loadApplications();
-      } else {
-       const errorBody = await response
-        .json()
-        .catch(() => ({ error: "Failed to reject application" }));
-       const message =
-        errorBody && typeof errorBody.error === "string"
-         ? errorBody.error
-         : "Failed to reject application";
-       alert(`Failed to reject application: ${message}`);
-      }
-     })
-     .catch((error) => {
-      console.error("Error rejecting application:", error);
-      alert("Error rejecting application");
+    });
+
+    if (response.ok) {
+     updateApplicationStatusInView(applicationId, "rejected");
+     await showPopup({
+      title: "Success",
+      message: "Application rejected!",
+      confirmText: "OK",
+      confirmStyle: "default",
      });
+     loadApplications();
+     return;
+    }
+
+    if (response.status === 409) {
+     updateApplicationStatusInView(applicationId, "rejected");
+     await showPopup({
+      title: "Already Updated",
+      message: "Application is already rejected.",
+      confirmText: "OK",
+      confirmStyle: "default",
+     });
+     loadApplications();
+     return;
+    }
+
+    const errorBody = await response
+     .json()
+     .catch(() => ({ error: "Failed to reject application" }));
+    const message =
+     errorBody && typeof errorBody.error === "string"
+      ? errorBody.error
+      : "Failed to reject application";
+    await showPopup({
+     title: "Rejection Failed",
+     message: `Failed to reject application: ${message}`,
+     confirmText: "OK",
+      confirmStyle: "default",
+    });
+   } catch (error) {
+    console.error("Error rejecting application:", error);
+    await showPopup({
+     title: "Error",
+     message: "Error rejecting application",
+     confirmText: "OK",
+      confirmStyle: "default",
+    });
    }
   }
 
