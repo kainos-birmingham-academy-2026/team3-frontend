@@ -1,6 +1,5 @@
 import apiClient from "../config/apiClient";
 import type { Application } from "../models/application";
-import axios from "axios";
 
 interface ApiApplication {
   applicationId: number;
@@ -92,32 +91,9 @@ export class AdminApplicationService {
   }
 
   async getCvTextById(applicationId: number, jwtToken: string): Promise<string> {
-    const headers = this.getAuthHeaders(jwtToken);
-    const cvEndpoint = `${AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT}/${applicationId}/cv-text`;
-
-    try {
-      const response = await apiClient.get<unknown>(cvEndpoint, { headers });
-      const cvText = this.extractCvTextFromUnknown(response.data);
-      if (cvText) {
-        return cvText;
-      }
-    } catch (error) {
-      if (!axios.isAxiosError(error) || error.response?.status !== 404) {
-        throw error;
-      }
-    }
-
-    try {
-      const applications = await this.getAll(jwtToken);
-      const application = applications.find((item) => item.applicationId === applicationId);
-      const listCvText = (application?.cvText ?? "").trim();
-      if (listCvText) {
-        return listCvText;
-      }
-    } catch {
-    }
-
-    return "";
+    const applications = await this.getAll(jwtToken);
+    const application = applications.find((item) => item.applicationId === applicationId);
+    return (application?.cvText ?? "").trim();
   }
 
   private async updateStatus(
