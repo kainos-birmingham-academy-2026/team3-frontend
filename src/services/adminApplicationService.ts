@@ -70,8 +70,8 @@ export class AdminApplicationService {
     };
   }
 
-  private getStatusValue(action: StatusAction): "APPROVED" | "REJECTED" {
-    return action === "approve" ? "APPROVED" : "REJECTED";
+  private getStatusValue(action: StatusAction): "approved" | "rejected" {
+    return action === "approve" ? "approved" : "rejected";
   }
 
   async getAll(jwtToken?: string): Promise<Application[]> {
