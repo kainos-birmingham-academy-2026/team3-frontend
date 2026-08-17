@@ -291,6 +291,110 @@ describe("JobRoleController", () => {
     });
   });
 
+  it.each([
+    ["backend error", { error: "Closing date is invalid" }, "closingDate"],
+    ["backend message", { message: "Role data is incomplete" }, undefined],
+    ["generic validation", {}, undefined],
+  ])("should render the appropriate 400 message for %s", async (_label, responseData, expectedField) => {
+    const req = createRequest({
+      session: { jwtToken: "admin-token", userRole: "ADMIN" },
+    });
+    const res = createResponse();
+
+    jobRoleService.createJobRole.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 400, data: responseData },
+    });
+
+    await controller.createJobRole(req as unknown as Request, res);
+
+    const renderedError = vi.mocked(res.render).mock.calls[0]?.[1] as unknown as {
+      errorMessage: string | { field?: string; message: string }[];
+    };
+    expect(res.status).toHaveBeenCalledWith(400);
+    if ("error" in responseData) {
+      expect(renderedError.errorMessage).toEqual([
+        { field: expectedField, message: responseData.error },
+      ]);
+    } else if ("message" in responseData) {
+      expect(renderedError.errorMessage).toBe(responseData.message);
+    } else {
+      expect(renderedError.errorMessage).toBe("Please provide valid job role data.");
+    }
+  });
+
+  it.each([
+    [403, "You do not have permission to create a job role.", false],
+    [500, "The job role could not be created. Please try again.", true],
+  ])("should render the appropriate response for backend status %s", async (statusCode, errorMessage, canCreate) => {
+    const req = createRequest({
+      session: {
+        jwtToken: "admin-token",
+        userRole: "ADMIN",
+        dropdownOptions: {
+          statuses: [{ statusId: 1 }],
+          locations: [{ locationId: 2 }],
+          capabilities: [{ capabilityId: 3 }],
+          bands: [{ bandId: 4 }],
+        },
+      },
+    });
+    const res = createResponse();
+
+    jobRoleService.createJobRole.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: statusCode, data: {} },
+    });
+
+    await controller.createJobRole(req as unknown as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(statusCode);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", expect.objectContaining({
+      canCreate,
+      errorMessage,
+      capabilityOptions: [{ capabilityId: 3 }],
+      bandOptions: [{ bandId: 4 }],
+    }));
+  });
+
+  it("should render the service error when createJobRole throws a regular Error", async () => {
+    const req = createRequest({
+      session: { jwtToken: "admin-token", userRole: "ADMIN" },
+    });
+    const res = createResponse();
+
+    jobRoleService.createJobRole.mockRejectedValueOnce(new Error("Not authenticated"));
+
+    await controller.createJobRole(req as unknown as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", expect.objectContaining({
+      canCreate: true,
+      errorMessage: "Not authenticated",
+    }));
+  });
+
+  it("should render an error when loading create-form options fails", async () => {
+    const req = createRequest({
+      session: { jwtToken: "expired-token", userRole: "ADMIN" },
+    });
+    const res = createResponse();
+
+    jobRoleService.getAllStatuses.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 401 },
+    });
+
+    await controller.showCreateForm(req as unknown as Request, res);
+
+    expect(req.session.jwtToken).toBe("expired-token");
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
+      jobRoles: [],
+      errorMessage: "Failed to fetch dropdown options",
+    });
+  });
+
   it("should clear the session and redirect to login for an unauthorized create response", async () => {
     const req = createRequest({
       session: { jwtToken: "expired-token", userRole: "ADMIN" },
