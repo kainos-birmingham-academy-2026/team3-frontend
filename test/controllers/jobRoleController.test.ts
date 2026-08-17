@@ -1,18 +1,23 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JobRoleController } from "../../src/controllers/jobRoleController";
+import type { JobRoleService } from "../../src/services/jobRoleService";
 
 type TestRequest = {
   session: {
     jwtToken?: string;
     userRole?: "ADMIN" | "USER";
+    dropdownOptions?: {
+      statuses: unknown[];
+      locations: unknown[];
+      capabilities: unknown[];
+      bands: unknown[];
+    };
   };
   params?: {
     id?: string | string[];
   };
-  body?: {
-    cvText?: string;
-  };
+  body?: Record<string, unknown>;
 };
 
 function createRequest(partial: Partial<TestRequest> = {}): TestRequest {
@@ -40,10 +45,17 @@ describe("JobRoleController", () => {
   const jobRoleService = {
     getAll: vi.fn(),
     getById: vi.fn(),
-      applyForRole: vi.fn(),
+    applyForRole: vi.fn(),
+    createJobRole: vi.fn(),
+    getAllStatuses: vi.fn(),
+    getAllLocations: vi.fn(),
+    getAllCapabilities: vi.fn(),
+    getAllBands: vi.fn(),
   };
 
-  const controller = new JobRoleController(jobRoleService);
+  const controller = new JobRoleController(
+    jobRoleService as unknown as JobRoleService,
+  );
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -200,6 +212,102 @@ describe("JobRoleController", () => {
       jobRoles: [],
       errorMessage: "Unable to load job roles",
     });
+  });
+
+  it("should load dropdown options and render the create form", async () => {
+    const req = createRequest({
+      session: { jwtToken: "admin-token", userRole: "ADMIN" },
+    });
+    const res = createResponse();
+    const statuses = [{ statusId: 1, statusName: "OPEN" }];
+    const locations = [{ locationId: 2, locationName: "Birmingham" }];
+    const capabilities = [{ capabilityId: 3, capabilityName: "Engineering" }];
+    const bands = [{ bandId: 4, bandName: "Engineer" }];
+
+    jobRoleService.getAllStatuses.mockResolvedValueOnce(statuses);
+    jobRoleService.getAllLocations.mockResolvedValueOnce(locations);
+    jobRoleService.getAllCapabilities.mockResolvedValueOnce(capabilities);
+    jobRoleService.getAllBands.mockResolvedValueOnce(bands);
+
+    await controller.showCreateForm(req as unknown as Request, res);
+
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
+      canCreate: true,
+      capabilityOptions: capabilities,
+      bandOptions: bands,
+      locationOptions: locations,
+      statusOptions: statuses,
+    });
+    expect(req.session.dropdownOptions).toEqual({
+      statuses,
+      locations,
+      capabilities,
+      bands,
+    });
+  });
+
+  it("should create a job role and redirect to the job role list", async () => {
+    const req = createRequest({
+      session: { jwtToken: "admin-token", userRole: "ADMIN" },
+      body: { roleName: "Software Engineer", numberOfOpenPositions: "2" },
+    });
+    const res = createResponse();
+
+    jobRoleService.createJobRole.mockResolvedValueOnce(undefined);
+
+    await controller.createJobRole(req as unknown as Request, res);
+
+    expect(jobRoleService.createJobRole).toHaveBeenCalledWith(
+      { roleName: "Software Engineer", numberOfOpenPositions: "2" },
+      "admin-token",
+    );
+    expect(res.redirect).toHaveBeenCalledWith("/job-role-list");
+  });
+
+  it("should render backend validation errors when creating a job role fails", async () => {
+    const req = createRequest({
+      session: { jwtToken: "admin-token", userRole: "ADMIN" },
+    });
+    const res = createResponse();
+
+    jobRoleService.createJobRole.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: { errors: [{ field: "roleName", message: "Role name is required" }] },
+      },
+    });
+
+    await controller.createJobRole(req as unknown as Request, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
+      canCreate: true,
+      errorMessage: [{ field: "roleName", message: "Role name is required" }],
+      capabilityOptions: [],
+      bandOptions: [],
+      locationOptions: [],
+      statusOptions: [],
+    });
+  });
+
+  it("should clear the session and redirect to login for an unauthorized create response", async () => {
+    const req = createRequest({
+      session: { jwtToken: "expired-token", userRole: "ADMIN" },
+    });
+    const res = createResponse();
+
+    jobRoleService.createJobRole.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { status: 401 },
+    });
+
+    await controller.createJobRole(req as unknown as Request, res);
+
+    expect(req.session.jwtToken).toBeUndefined();
+    expect(req.session.userRole).toBeUndefined();
+    expect(res.redirect).toHaveBeenCalledWith("/login");
+    expect(res.render).not.toHaveBeenCalled();
   });
 
     it("should render apply form when role is open with available positions", async () => {
