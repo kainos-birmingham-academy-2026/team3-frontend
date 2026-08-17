@@ -4,12 +4,20 @@ import express from "express";
 import session from "express-session";
 import nunjucks from "nunjucks";
 import request from "supertest";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	afterAll,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
+import apiClient from "../../src/config/apiClient";
+import { JobRoleController } from "../../src/controllers/jobRoleController";
 import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
-import apiClient from "../../src/config/apiClient";
 import { AdminApplicationService } from "../../src/services/adminApplicationService";
-import { JobRoleController } from "../../src/controllers/jobRoleController";
 
 vi.mock("../../src/config/apiClient", () => ({
 	default: {
@@ -63,8 +71,12 @@ function createAdminApp(role: "ADMIN" | "USER" = "ADMIN"): Application {
 	);
 
 	adminApp.use(((req, _res, next) => {
-		(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).jwtToken = "admin-token";
-		(req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }).userRole = role;
+		(
+			req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+		).jwtToken = "admin-token";
+		(
+			req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
+		).userRole = role;
 		next();
 	}) as RequestHandler);
 
@@ -200,7 +212,9 @@ describe("routes", () => {
 	});
 
 	it("should redirect unauthenticated users from application confirmation page to 401 flow", async () => {
-		const response = await request(app).get("/job-role-list/1/apply/confirmation");
+		const response = await request(app).get(
+			"/job-role-list/1/apply/confirmation",
+		);
 
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/unauthorised");
@@ -234,6 +248,15 @@ describe("routes", () => {
 		}) as RequestHandler);
 
 		adminApp.use(router);
+		vi.mocked(apiClient.get)
+			.mockResolvedValueOnce({ data: [{ statusId: 1, statusName: "OPEN" }] })
+			.mockResolvedValueOnce({
+				data: [{ locationId: 2, locationName: "Birmingham" }],
+			})
+			.mockResolvedValueOnce({
+				data: [{ capabilityId: 3, capabilityName: "Engineering" }],
+			})
+			.mockResolvedValueOnce({ data: [{ bandId: 4, bandName: "Engineer" }] });
 
 		const response = await request(adminApp).get("/job-role-create");
 
@@ -243,6 +266,41 @@ describe("routes", () => {
 		expect(response.text).toContain('name="bandId"');
 		expect(response.text).toContain('name="locationId"');
 		expect(response.text).toContain('value="OPEN"');
+	});
+
+	it("should create a job role and redirect ADMIN to the job role list", async () => {
+		const adminApp = createAdminApp();
+		vi.mocked(apiClient.post).mockResolvedValueOnce({ data: {} });
+
+		const response = await request(adminApp).post("/job-role-create").send({
+			roleName: "Software Engineer",
+			description: "Build software products",
+			responsibilities: "Collaborate with the delivery team",
+			sharepointUrl: "https://example.com/spec",
+			numberOfOpenPositions: "2",
+			closingDate: "2026-12-31",
+			capabilityId: "1",
+			bandId: "2",
+			locationId: "3",
+		});
+
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/job-role-list");
+		expect(apiClient.post).toHaveBeenCalledWith(
+			"/job-roles/create",
+			expect.objectContaining({
+				roleName: "Software Engineer",
+				numberOfOpenPositions: 2,
+				capabilityId: 1,
+				bandId: 2,
+				locationId: 3,
+			}),
+			expect.objectContaining({
+				headers: expect.objectContaining({
+					Authorization: "Bearer admin-token",
+				}),
+			}),
+		);
 	});
 
 	it("should show access restricted page when USER accesses create page", async () => {
@@ -286,18 +344,23 @@ describe("routes", () => {
 	it("should render cv page for an existing application", async () => {
 		const adminApp = createAdminApp();
 
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce([
-			{
-				applicationId: 10,
-				applicantName: "A User",
-				applicantEmail: "a@example.com",
-				roleName: "Engineer",
-				applicationDate: "2026-08-01",
-				status: "pending",
-				cvText: "Cached text",
-			},
-		]);
-		vi.spyOn(AdminApplicationService.prototype, "getCvTextById").mockResolvedValueOnce("Full CV text");
+		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce(
+			[
+				{
+					applicationId: 10,
+					applicantName: "A User",
+					applicantEmail: "a@example.com",
+					roleName: "Engineer",
+					applicationDate: "2026-08-01",
+					status: "pending",
+					cvText: "Cached text",
+				},
+			],
+		);
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getCvTextById",
+		).mockResolvedValueOnce("Full CV text");
 
 		const response = await request(adminApp).get("/job-applications/10/cv");
 
@@ -309,14 +372,18 @@ describe("routes", () => {
 	it("should return 400 when cv page id is invalid", async () => {
 		const adminApp = createAdminApp();
 
-		const response = await request(adminApp).get("/job-applications/not-a-number/cv");
+		const response = await request(adminApp).get(
+			"/job-applications/not-a-number/cv",
+		);
 
 		expect(response.status).toBe(400);
 	});
 
 	it("should return 404 when cv page application is not found", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce([]);
+		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce(
+			[],
+		);
 
 		const response = await request(adminApp).get("/job-applications/999/cv");
 
@@ -325,7 +392,9 @@ describe("routes", () => {
 
 	it("should return 500 when cv page loading fails", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockRejectedValueOnce(new Error("boom"));
+		vi.spyOn(AdminApplicationService.prototype, "getAll").mockRejectedValueOnce(
+			new Error("boom"),
+		);
 
 		const response = await request(adminApp).get("/job-applications/10/cv");
 
@@ -334,9 +403,14 @@ describe("routes", () => {
 
 	it("should return cv text payload from api route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getCvTextById").mockResolvedValueOnce("Server CV");
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getCvTextById",
+		).mockResolvedValueOnce("Server CV");
 
-		const response = await request(adminApp).get("/api/job-applications/12/cv-text");
+		const response = await request(adminApp).get(
+			"/api/job-applications/12/cv-text",
+		);
 
 		expect(response.status).toBe(200);
 		expect(response.body.cvText).toBe("Server CV");
@@ -345,7 +419,9 @@ describe("routes", () => {
 	it("should return 400 for invalid cv-text api id", async () => {
 		const adminApp = createAdminApp();
 
-		const response = await request(adminApp).get("/api/job-applications/not-a-number/cv-text");
+		const response = await request(adminApp).get(
+			"/api/job-applications/not-a-number/cv-text",
+		);
 
 		expect(response.status).toBe(400);
 		expect(response.body.error).toBe("Invalid application ID");
@@ -353,13 +429,18 @@ describe("routes", () => {
 
 	it("should return axios error response from cv-text route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getCvTextById").mockRejectedValueOnce({
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getCvTextById",
+		).mockRejectedValueOnce({
 			isAxiosError: true,
 			message: "axios fail",
 			response: { status: 409, data: { error: "Conflict" } },
 		});
 
-		const response = await request(adminApp).get("/api/job-applications/12/cv-text");
+		const response = await request(adminApp).get(
+			"/api/job-applications/12/cv-text",
+		);
 
 		expect(response.status).toBe(409);
 		expect(response.body.error).toBe("Conflict");
@@ -367,9 +448,14 @@ describe("routes", () => {
 
 	it("should return generic error from cv-text route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getCvTextById").mockRejectedValueOnce(new Error("bad"));
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getCvTextById",
+		).mockRejectedValueOnce(new Error("bad"));
 
-		const response = await request(adminApp).get("/api/job-applications/12/cv-text");
+		const response = await request(adminApp).get(
+			"/api/job-applications/12/cv-text",
+		);
 
 		expect(response.status).toBe(500);
 		expect(response.body.error).toBe("bad");
@@ -377,7 +463,10 @@ describe("routes", () => {
 
 	it("should route job-applications admin to controller", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(JobRoleController.prototype, "getApplications").mockImplementationOnce(async (_req, res) => {
+		vi.spyOn(
+			JobRoleController.prototype,
+			"getApplications",
+		).mockImplementationOnce(async (_req, res) => {
 			res.status(200).send("ok");
 		});
 
@@ -389,16 +478,18 @@ describe("routes", () => {
 
 	it("should return applications list for admin api route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce([
-			{
-				applicationId: 1,
-				applicantName: "A",
-				applicantEmail: "a@example.com",
-				roleName: "Engineer",
-				applicationDate: "2026-08-01",
-				status: "pending",
-			},
-		]);
+		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce(
+			[
+				{
+					applicationId: 1,
+					applicantName: "A",
+					applicantEmail: "a@example.com",
+					roleName: "Engineer",
+					applicationDate: "2026-08-01",
+					status: "pending",
+				},
+			],
+		);
 
 		const response = await request(adminApp).get("/api/job-applications/admin");
 
@@ -408,7 +499,9 @@ describe("routes", () => {
 
 	it("should return 500 for admin api list failures", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockRejectedValueOnce(new Error("list failed"));
+		vi.spyOn(AdminApplicationService.prototype, "getAll").mockRejectedValueOnce(
+			new Error("list failed"),
+		);
 
 		const response = await request(adminApp).get("/api/job-applications/admin");
 
@@ -429,7 +522,10 @@ describe("routes", () => {
 
 	it("should approve application successfully", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "approve").mockResolvedValueOnce();
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"approve",
+		).mockResolvedValueOnce();
 
 		const response = await request(adminApp)
 			.post("/api/job-applications/22/status")
@@ -441,7 +537,10 @@ describe("routes", () => {
 
 	it("should return axios error from approve route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "approve").mockRejectedValueOnce({
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"approve",
+		).mockRejectedValueOnce({
 			isAxiosError: true,
 			message: "approve fail",
 			response: { status: 409, data: { error: "Already approved" } },
@@ -457,7 +556,10 @@ describe("routes", () => {
 
 	it("should return generic error from approve route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "approve").mockRejectedValueOnce(new Error("approve error"));
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"approve",
+		).mockRejectedValueOnce(new Error("approve error"));
 
 		const response = await request(adminApp)
 			.post("/api/job-applications/22/status")
@@ -480,7 +582,10 @@ describe("routes", () => {
 
 	it("should reject application successfully", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "reject").mockResolvedValueOnce();
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"reject",
+		).mockResolvedValueOnce();
 
 		const response = await request(adminApp)
 			.post("/api/job-applications/22/status")
@@ -492,11 +597,13 @@ describe("routes", () => {
 
 	it("should return axios error from reject route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "reject").mockRejectedValueOnce({
-			isAxiosError: true,
-			message: "reject fail",
-			response: { status: 409, data: { error: "Already rejected" } },
-		});
+		vi.spyOn(AdminApplicationService.prototype, "reject").mockRejectedValueOnce(
+			{
+				isAxiosError: true,
+				message: "reject fail",
+				response: { status: 409, data: { error: "Already rejected" } },
+			},
+		);
 
 		const response = await request(adminApp)
 			.post("/api/job-applications/22/status")
@@ -508,7 +615,9 @@ describe("routes", () => {
 
 	it("should return generic error from reject route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "reject").mockRejectedValueOnce(new Error("reject error"));
+		vi.spyOn(AdminApplicationService.prototype, "reject").mockRejectedValueOnce(
+			new Error("reject error"),
+		);
 
 		const response = await request(adminApp)
 			.post("/api/job-applications/22/status")
@@ -526,7 +635,9 @@ describe("routes", () => {
 			.send({ action: "hold" });
 
 		expect(response.status).toBe(400);
-		expect(response.body.error).toBe("Invalid action. Use 'approve' or 'reject'.");
+		expect(response.body.error).toBe(
+			"Invalid action. Use 'approve' or 'reject'.",
+		);
 	});
 
 	it("should return 200 for login page", async () => {

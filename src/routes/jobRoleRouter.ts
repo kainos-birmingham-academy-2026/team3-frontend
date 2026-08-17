@@ -182,13 +182,9 @@ router.get(
 	(req, res) => controller.showApplicationConfirmation(req, res),
 );
 
-router.get("/job-role-create", requireAuth, requireAdmin, (_req, res) => {
-	res.render("pages/jobRoleCreate.njk", {
-		capabilityOptions: [],
-		bandOptions: [],
-		locationOptions: [],
-	});
-});
+router.get("/job-role-create", requireAuth, requireAdmin, (req, res) => controller.showCreateForm(req, res));
+router.post("/job-role-create", requireAuth, requireAdmin, (req, res) => controller.createJobRole(req, res));
+
 
 router.get("/teapot", (_req, res) => {
 	res.render("pages/teapot.njk");

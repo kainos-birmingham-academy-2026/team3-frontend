@@ -502,4 +502,80 @@ describe("JobRoleService", () => {
 
     expect(result.openPositions).toBe(4);
   });
+
+  it("should create a job role with numeric fields and authorization", async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: {} });
+
+    await service.createJobRole(
+      {
+        roleName: "Software Engineer",
+        description: "Build software products",
+        responsibilities: "Collaborate with the delivery team",
+        sharepointUrl: "https://example.com/spec",
+        numberOfOpenPositions: "2",
+        closingDate: "2026-12-31",
+        capabilityId: "4",
+        bandId: 5,
+        locationId: "6",
+      },
+      jwtToken,
+    );
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      "/job-roles/create",
+      {
+        roleName: "Software Engineer",
+        description: "Build software products",
+        responsibilities: "Collaborate with the delivery team",
+        sharepointUrl: "https://example.com/spec",
+        numberOfOpenPositions: 2,
+        closingDate: "2026-12-31",
+        capabilityId: 4,
+        bandId: 5,
+        locationId: 6,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+  });
+
+  it("should omit empty optional numeric fields and closing date when creating a role", async () => {
+    vi.mocked(apiClient.post).mockResolvedValueOnce({ data: {} });
+
+    await service.createJobRole(
+      {
+        roleName: "Delivery Manager",
+        numberOfOpenPositions: "",
+        capabilityId: "",
+        bandId: undefined,
+        locationId: "",
+        closingDate: "",
+      },
+      jwtToken,
+    );
+
+    expect(apiClient.post).toHaveBeenCalledWith(
+      "/job-roles/create",
+      {
+        roleName: "Delivery Manager",
+        numberOfOpenPositions: undefined,
+        capabilityId: undefined,
+        bandId: undefined,
+        locationId: undefined,
+        closingDate: undefined,
+      },
+      expect.anything(),
+    );
+  });
+
+  it("should reject creating a job role without a JWT token", async () => {
+    await expect(
+      service.createJobRole({ roleName: "Software Engineer" }),
+    ).rejects.toThrow("Not authenticated");
+    expect(apiClient.post).not.toHaveBeenCalled();
+  });
 });
