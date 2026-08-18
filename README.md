@@ -102,16 +102,27 @@ Structure:
 
 ```text
 e2e/
+  api/
+    authApi.ts
   fixtures/
+    api.ts
     auth.ts
     home.ts
     test.ts
   pages/
     homePage.ts
     loginPage.ts
+    registerConfirmationPage.ts
     registerPage.ts
   specs/
     public-routes.spec.ts
+    register-and-login.spec.ts
+  support/
+    config.ts
+    db.ts
+    testUser.ts
+  globalSetup.ts
+  globalTeardown.ts
 playwright.config.ts
 ```
 
@@ -205,6 +216,25 @@ Creates a job role through the backend `POST /job-roles/create` endpoint.
 - On success: redirects to `/job-role-list`
 - On validation failure: re-renders the form with the backend validation messages
 - On insufficient permissions: renders the access restricted page
+- On an unauthorised backend response: clears the session and redirects to `/login`
+
+### `GET /job-role-edit/:id`
+
+Renders the edit form for an existing job role.
+
+- Requires an authenticated administrator session
+- Loads the selected role and its capability, band, and location options from the backend
+- Pre-populates the form with the role's current values
+- Allows an existing closing date in the past to remain selectable
+
+### `POST /job-role-edit`
+
+Updates a job role through the backend `PATCH /job-roles/:id` endpoint.
+
+- Requires an authenticated administrator session
+- On success: redirects to `/job-role-list/:id`
+- On validation failure: re-renders the form with the submitted values and backend validation messages
+- On insufficient permissions or a missing role: re-renders the form with an appropriate error
 - On an unauthorised backend response: clears the session and redirects to `/login`
 
 ### `GET /job-applications/admin`
