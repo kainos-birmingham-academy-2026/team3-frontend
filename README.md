@@ -104,6 +104,7 @@ Structure:
 e2e/
   fixtures/
     auth.ts
+    home.ts
     test.ts
   pages/
     homePage.ts
@@ -119,6 +120,7 @@ Good practices used:
 - Local app bootstrapping through `webServer` in `playwright.config.ts` so tests are reproducible in CI and local development.
 - Page Object Model for reusable selectors and assertions.
 - Composable, domain-specific fixtures that can be extended as new test areas are added.
+- Fixture modules are composed with Playwright's `mergeTests` utility.
 - Focused smoke coverage on critical public routes and health endpoint.
 - Smoke tests are tagged with `@smoke`, allowing coverage from multiple spec files to be run together.
 - Failure diagnostics enabled with traces, screenshots, and videos.

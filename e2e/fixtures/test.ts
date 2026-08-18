@@ -1,15 +1,7 @@
-import { expect } from '@playwright/test';
+import { expect, mergeTests } from '@playwright/test';
 import { authFixtures } from './auth';
-import { HomePage } from '../pages/homePage';
+import { homeFixtures } from './home';
 
-type PageFixtures = {
-  homePage: HomePage;
-};
-
-export const test = authFixtures.extend<PageFixtures>({
-  homePage: async ({ page }, use) => {
-    await use(new HomePage(page));
-  },
-});
+export const test = mergeTests(authFixtures, homeFixtures);
 
 export { expect };
