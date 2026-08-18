@@ -5,6 +5,11 @@ const appPort = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${appPort}`;
 const apiBaseURL = process.env.API_BASE_URL ?? 'http://localhost:4000';
 
+// TEMPORARY: CI has no Postgres or backend, so the database-backed journey is skipped there.
+// Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
+// originals once the backend is deployed remotely.
+const needsDatabase = !process.env.CI;
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -19,8 +24,16 @@ const apiBaseURL = process.env.API_BASE_URL ?? 'http://localhost:4000';
 export default defineConfig({
   testDir: './e2e/specs',
   testMatch: '**/*.spec.ts',
-  globalSetup: './e2e/globalSetup.ts',
-  globalTeardown: './e2e/globalTeardown.ts',
+  // globalSetup: './e2e/globalSetup.ts',
+  // globalTeardown: './e2e/globalTeardown.ts',
+  // TEMPORARY
+  testIgnore: needsDatabase ? undefined : '**/register-and-login.spec.ts',
+  ...(needsDatabase
+    ? {
+        globalSetup: './e2e/globalSetup.ts',
+        globalTeardown: './e2e/globalTeardown.ts',
+      }
+    : {}),
   timeout: 30_000,
   expect: {
     timeout: 5_000,
@@ -57,14 +70,27 @@ export default defineConfig({
   ],
 
   webServer: [
-    {
-      command: 'npm run dev',
-      cwd: '../team3-backend',
-      url: `${apiBaseURL}/health`,
-      reuseExistingServer: !process.env.CI,
-      stdout: 'pipe',
-      stderr: 'pipe',
-    },
+    // {
+    //   command: 'npm run dev',
+    //   cwd: '../team3-backend',
+    //   url: `${apiBaseURL}/health`,
+    //   reuseExistingServer: !process.env.CI,
+    //   stdout: 'pipe',
+    //   stderr: 'pipe',
+    // },
+    // TEMPORARY
+    ...(needsDatabase
+      ? [
+          {
+            command: 'npm run dev',
+            cwd: '../team3-backend',
+            url: `${apiBaseURL}/health`,
+            reuseExistingServer: !process.env.CI,
+            stdout: 'pipe' as const,
+            stderr: 'pipe' as const,
+          },
+        ]
+      : []),
     {
       command: 'npm run dev',
       url: baseURL,
