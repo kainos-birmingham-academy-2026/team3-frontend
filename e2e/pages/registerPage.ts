@@ -8,6 +8,7 @@ export class RegisterPage {
   }
 
   async expectLoaded(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/register$/);
     await expect(this.page).toHaveTitle(/Kainos \| Register/);
     await expect(this.page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
   }
@@ -17,5 +18,15 @@ export class RegisterPage {
     await expect(this.page.getByLabel('Password', { exact: true })).toBeVisible();
     await expect(this.page.getByLabel('Confirm password')).toBeVisible();
     await expect(this.page.getByRole('button', { name: 'Create account' })).toBeVisible();
+  }
+
+  async fillForm(email: string, password: string, confirmPassword = password): Promise<void> {
+    await this.page.getByLabel('Email').fill(email);
+    await this.page.getByLabel('Password', { exact: true }).fill(password);
+    await this.page.getByLabel('Confirm password').fill(confirmPassword);
+  }
+
+  async submit(): Promise<void> {
+    await this.page.getByRole('button', { name: 'Create account' }).click();
   }
 }
