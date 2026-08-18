@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures/test';
 
-test.describe('Public route smoke tests', () => {
+test.describe('Public route smoke tests', { tag: '@smoke' }, () => {
   test('home page renders core hero and actions', async ({ homePage }) => {
     await homePage.goto();
     await homePage.expectLoaded();
@@ -41,7 +41,7 @@ test.describe('Public route smoke tests', () => {
   });
 });
 
-test('home header sign-in link navigates to login', async ({ page, loginPage }) => {
+test('home header sign-in link navigates to login @smoke', async ({ page, loginPage }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Sign in' }).click();
   await loginPage.expectLoaded();

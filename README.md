@@ -89,6 +89,7 @@ npm start
 - `npm run test:coverage` - Generate a coverage report.
 - `npm run test:ui` - Execute UI unit tests.
 - `npm run e2e` - Run Playwright end-to-end tests in headless mode.
+- `npm run e2e:smoke` - Run Playwright tests tagged as smoke tests.
 - `npm run e2e:headed` - Run Playwright tests with a visible browser.
 - `npm run e2e:ui` - Open Playwright UI mode for interactive debugging.
 - `npm run e2e:report` - Open the latest Playwright HTML report.
@@ -102,10 +103,12 @@ Structure:
 ```text
 e2e/
   fixtures/
+    auth.ts
     test.ts
   pages/
-    authPages.ts
     homePage.ts
+    loginPage.ts
+    registerPage.ts
   specs/
     public-routes.spec.ts
 playwright.config.ts
@@ -115,7 +118,9 @@ Good practices used:
 
 - Local app bootstrapping through `webServer` in `playwright.config.ts` so tests are reproducible in CI and local development.
 - Page Object Model for reusable selectors and assertions.
+- Composable, domain-specific fixtures that can be extended as new test areas are added.
 - Focused smoke coverage on critical public routes and health endpoint.
+- Smoke tests are tagged with `@smoke`, allowing coverage from multiple spec files to be run together.
 - Failure diagnostics enabled with traces, screenshots, and videos.
 - Multi-browser coverage across Chromium, Firefox, and WebKit.
 
