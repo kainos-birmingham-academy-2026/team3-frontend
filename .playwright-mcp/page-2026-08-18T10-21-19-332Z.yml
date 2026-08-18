@@ -1,0 +1,65 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Kainos home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img "Kainos logo" [ref=e5]
+      - navigation "Main navigation" [ref=e6]:
+        - link "Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+        - link "Job roles" [ref=e8] [cursor=pointer]:
+          - /url: /job-role-list
+      - link "Sign in" [ref=e9] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - paragraph [ref=e13]: Kainos
+        - heading "True partners change the world together" [level=1] [ref=e14]
+        - paragraph [ref=e15]: We are on a mission to make people's lives better through technology. Explore open opportunities and join teams delivering meaningful digital transformation.
+        - generic [ref=e16]:
+          - link "View job roles" [ref=e17] [cursor=pointer]:
+            - /url: /job-role-list
+          - link "Contact us" [ref=e18] [cursor=pointer]:
+            - /url: https://www.kainos.com/contact-us
+      - region "Service areas" [ref=e19]:
+        - article [ref=e20]:
+          - heading "Digital Services" [level=2] [ref=e21]
+          - paragraph [ref=e22]: Build digital services and engineering capabilities that support continuous growth.
+          - link "Discover Digital Services" [ref=e23] [cursor=pointer]:
+            - /url: https://www.kainos.com/digital-services
+        - article [ref=e24]:
+          - heading "Workday" [level=2] [ref=e25]
+          - paragraph [ref=e26]: Deploy and optimize Workday with trusted expertise across your organization.
+          - link "Discover Workday" [ref=e27] [cursor=pointer]:
+            - /url: https://www.kainos.com/workday
+  - contentinfo [ref=e28]:
+    - paragraph [ref=e32]: THINKING BEYOND LIMITATIONS
+    - generic [ref=e33]:
+      - generic [ref=e34]:
+        - heading "Contact" [level=2] [ref=e35]
+        - paragraph [ref=e36]:
+          - text: "Email:"
+          - link "hello@kainos.com" [ref=e37] [cursor=pointer]:
+            - /url: mailto:hello@kainos.com
+        - paragraph [ref=e38]:
+          - text: "Phone:"
+          - link "+44 (0) 28 9032 2000" [ref=e39] [cursor=pointer]:
+            - /url: tel:+442890322000
+      - generic [ref=e40]:
+        - heading "Office" [level=2] [ref=e41]
+        - paragraph [ref=e42]: Kainos House
+        - paragraph [ref=e43]: 4-6 Upper Crescent
+        - paragraph [ref=e44]: Belfast BT7 1NT
+      - generic [ref=e45]:
+        - heading "Explore" [level=2] [ref=e46]
+        - paragraph [ref=e47]:
+          - link "About us" [ref=e48] [cursor=pointer]:
+            - /url: https://www.kainos.com/about-us
+        - paragraph [ref=e49]:
+          - link "Insights" [ref=e50] [cursor=pointer]:
+            - /url: https://www.kainos.com/insights
+        - paragraph [ref=e51]:
+          - link "Careers" [ref=e52] [cursor=pointer]:
+            - /url: https://careers.kainos.com/gb/en
+    - paragraph [ref=e54]: Copyright © 2026 Kainos. All rights reserved.
