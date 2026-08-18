@@ -1,6 +1,26 @@
 import { expect, test } from '../fixtures/test';
 
 test.describe('Admin hiring workflow', { tag: '@admin' }, () => {
+  test.beforeAll(async () => {
+    // Reset database to ensure fresh state
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    
+    try {
+      await execAsync('npx prisma migrate reset --force', {
+        cwd: process.cwd(),
+      });
+      
+      // Seed the database
+      await execAsync('npx prisma db seed', {
+        cwd: process.cwd(),
+      });
+    } catch (error) {
+      console.warn('Database reset/seed warning:', error);
+    }
+  });
+
   test('successfully hire an applicant', async ({
     page,
     loginPage,
