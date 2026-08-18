@@ -1,5 +1,5 @@
-import { resetDatabase } from './support/db';
+import { resetDatabase } from "./support/db";
 
 export default function globalTeardown(): void {
-  resetDatabase();
+	resetDatabase();
 }

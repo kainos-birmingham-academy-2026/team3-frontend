@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { getUserRoleFromToken } from "../../src/services/tokenPayloadService";
 
 function createTokenWithPayload(payload: Record<string, unknown>): string {
-	const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+	const header = Buffer.from(
+		JSON.stringify({ alg: "HS256", typ: "JWT" }),
+	).toString("base64url");
 	const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
 	return `${header}.${body}.signature`;
 }
@@ -31,7 +33,9 @@ describe("getUserRoleFromToken", () => {
 	});
 
 	it("should return undefined when JWT payload is malformed", () => {
-		const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+		const header = Buffer.from(
+			JSON.stringify({ alg: "HS256", typ: "JWT" }),
+		).toString("base64url");
 		const malformedPayload = "invalid-base64-&*#$";
 		const token = `${header}.${malformedPayload}.signature`;
 
@@ -39,7 +43,9 @@ describe("getUserRoleFromToken", () => {
 	});
 
 	it("should return undefined when payload JSON is invalid", () => {
-		const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+		const header = Buffer.from(
+			JSON.stringify({ alg: "HS256", typ: "JWT" }),
+		).toString("base64url");
 		const invalidJson = Buffer.from("not-json").toString("base64url");
 		const token = `${header}.${invalidJson}.signature`;
 
@@ -53,7 +59,9 @@ describe("getUserRoleFromToken", () => {
 	});
 
 	it("should return undefined when payload part is missing", () => {
-		const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+		const header = Buffer.from(
+			JSON.stringify({ alg: "HS256", typ: "JWT" }),
+		).toString("base64url");
 		const token = `${header}..signature`;
 
 		expect(getUserRoleFromToken(token)).toBeUndefined();

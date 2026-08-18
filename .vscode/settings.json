@@ -1,5 +1,5 @@
 {
-    "prisma.pinToPrisma6": true,
-    "prisma-smart-formatter.typescript.defaultFormatter": "TypeScriptTeam.native-preview",
-    "prisma-smart-formatter.prisma.defaultFormatter": "Prisma.prisma"
+	"prisma.pinToPrisma6": true,
+	"prisma-smart-formatter.typescript.defaultFormatter": "TypeScriptTeam.native-preview",
+	"prisma-smart-formatter.prisma.defaultFormatter": "Prisma.prisma"
 }
