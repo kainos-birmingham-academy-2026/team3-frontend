@@ -12,7 +12,6 @@ test.describe('Admin hiring workflow', { tag: '@admin' }, () => {
         cwd: process.cwd(),
       });
       
-      // Seed the database
       await execAsync('npx prisma db seed', {
         cwd: process.cwd(),
       });
