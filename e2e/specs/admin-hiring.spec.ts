@@ -2,6 +2,11 @@ import { expect, test } from '../fixtures/test';
 
 test.describe('Admin hiring workflow', { tag: '@admin' }, () => {
   test.beforeAll(async () => {
+    // Skip database setup in CI
+    if (process.env.CI) {
+      return;
+    }
+
     // Reset database to ensure fresh state
     const { exec } = await import('child_process');
     const { promisify } = await import('util');
