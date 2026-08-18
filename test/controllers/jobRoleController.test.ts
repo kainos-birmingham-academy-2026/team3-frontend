@@ -451,7 +451,11 @@ describe("JobRoleController", () => {
 			params: { id: "7" },
 		});
 		const res = createResponse();
-		const jobRole = { jobRoleId: 7, roleName: "Lead Engineer" };
+		const jobRole = {
+			jobRoleId: 7,
+			roleName: "Lead Engineer",
+			closingDate: "2000-01-01",
+		};
 		jobRoleService.getById.mockResolvedValueOnce(jobRole);
 		jobRoleService.getAllStatuses.mockResolvedValueOnce([]);
 		jobRoleService.getAllLocations.mockResolvedValueOnce([{ locationId: 1 }]);
@@ -470,7 +474,7 @@ describe("JobRoleController", () => {
 				locationOptions: [{ locationId: 1 }],
 				capabilityOptions: [{ capabilityId: 2 }],
 				bandOptions: [{ bandId: 3 }],
-				minClosingDate: expect.any(String),
+				minClosingDate: "2000-01-01",
 			}),
 		);
 	});
@@ -498,6 +502,7 @@ describe("JobRoleController", () => {
 			roleName: "",
 			sharepointUrl: "https://example.com/spec",
 			numberOfOpenPositions: "2",
+			closingDate: "2000-01-01",
 		};
 		const req = createRequest({
 			session: { jwtToken: "admin-token", userRole: "ADMIN" },
@@ -527,6 +532,7 @@ describe("JobRoleController", () => {
 					openPositions: "2",
 				}),
 				errorMessage: [{ field: "roleName", message: "Role name is required" }],
+				minClosingDate: "2000-01-01",
 			}),
 		);
 	});

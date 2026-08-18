@@ -104,4 +104,12 @@ describe("jobRoleList", () => {
 		expect(html).not.toContain('href="/job-role-create"');
 		expect(html).not.toContain("Create new role");
 	});
+
+	it("should only use keyboard row navigation when the row has focus", () => {
+		const html = renderView([]);
+
+		expect(html).toContain(
+			'event.target === row && (event.key === "Enter" || event.key === " ")',
+		);
+	});
 });

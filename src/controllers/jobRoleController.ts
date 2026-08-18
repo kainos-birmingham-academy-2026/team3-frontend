@@ -27,6 +27,15 @@ export class JobRoleController {
 		return jobRole.status === "open" && (jobRole.openPositions ?? 0) > 0;
 	}
 
+	private getEditMinClosingDate(closingDate?: string): string {
+		const today = new Date().toISOString().split("T")[0];
+		const currentClosingDate = closingDate?.split("T")[0];
+
+		return currentClosingDate && currentClosingDate < today
+			? currentClosingDate
+			: today;
+	}
+
 	private async getDropdownOptions(): Promise<{
 		statuses: StatusOption[];
 		locations: LocationOption[];
@@ -176,7 +185,7 @@ export class JobRoleController {
 				capabilityOptions: dropdownOptions.capabilities,
 				bandOptions: dropdownOptions.bands,
 				locationOptions: dropdownOptions.locations,
-				minClosingDate: new Date().toISOString().split("T")[0],
+				minClosingDate: this.getEditMinClosingDate(jobRole.closingDate),
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -237,7 +246,7 @@ export class JobRoleController {
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
 				bandOptions: req.session.dropdownOptions?.bands ?? [],
 				locationOptions: req.session.dropdownOptions?.locations ?? [],
-				minClosingDate: new Date().toISOString().split("T")[0],
+				minClosingDate: this.getEditMinClosingDate(jobRoleData.closingDate),
 			});
 		}
 	}
