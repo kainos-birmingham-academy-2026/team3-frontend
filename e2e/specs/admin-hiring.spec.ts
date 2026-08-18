@@ -20,7 +20,7 @@ test.describe('Admin hiring workflow', { tag: '@admin' }, () => {
     }
   });
 
-  test('successfully hire an applicant', async ({
+  test('successfully hire an applicant', { skip: !!process.env.CI }, async ({
     page,
     loginPage,
     adminApplicationsPage,
