@@ -8,6 +8,7 @@ export class RegisterPage {
   }
 
   async expectLoaded(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/register$/);
     await expect(this.page).toHaveTitle(/Kainos \| Register/);
     await expect(this.page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
   }

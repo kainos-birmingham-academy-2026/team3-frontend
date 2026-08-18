@@ -8,6 +8,7 @@ export class LoginPage {
   }
 
   async expectLoaded(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/login$/);
     await expect(this.page).toHaveTitle(/Kainos \| Sign in/);
     await expect(this.page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   }

@@ -4,6 +4,7 @@ export class RegisterConfirmationPage {
   constructor(private readonly page: Page) {}
 
   async expectLoaded(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/register\/confirmation$/);
     await expect(this.page).toHaveTitle(/Kainos \| Account created/);
     await expect(
       this.page.getByRole('heading', { name: 'Registration successful' }),

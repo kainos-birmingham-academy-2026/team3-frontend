@@ -8,6 +8,7 @@ export class HomePage {
   }
 
   async expectLoaded(): Promise<void> {
+    await expect(this.page).toHaveURL(/\/$/);
     await expect(this.page).toHaveTitle(/Kainos \| Home/);
     await expect(
       this.page.getByRole('heading', {

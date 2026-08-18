@@ -41,8 +41,8 @@ test.describe('Public route smoke tests', { tag: '@smoke' }, () => {
   });
 });
 
-test('home header sign-in link navigates to login @smoke', async ({ page, loginPage }) => {
-  await page.goto('/');
-  await page.getByRole('link', { name: 'Sign in' }).click();
+test('home header sign-in link navigates to login @smoke', async ({ homePage, loginPage }) => {
+  await homePage.goto();
+  await homePage.clickSignIn();
   await loginPage.expectLoaded();
 });
