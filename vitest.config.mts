@@ -1,8 +1,13 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
 	test: {
-		exclude: ["e2e/**", "playwright-report/**", "test-results/**"],
+		exclude: [
+			...configDefaults.exclude,
+			"e2e/**",
+			"playwright-report/**",
+			"test-results/**",
+		],
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "html"],
