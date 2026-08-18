@@ -291,7 +291,7 @@ describe("jobRoleDetail", () => {
 		expect(html).toContain("2026-08-06");
 	});
 
-	it("should show the edit action only to admins", () => {
+	it("should show admin actions with a keyboard-contained delete dialog", () => {
 		const jobRole: JobRole = {
 			jobRoleId: 1,
 			roleName: "Lead Software Engineer",
@@ -300,9 +300,16 @@ describe("jobRoleDetail", () => {
 			band: "Senior Engineer",
 			closingDate: "2099-12-31",
 			status: "open",
+			openPositions: 1,
 		};
 
-		expect(renderView(jobRole, "ADMIN")).toContain('href="/job-role-edit/1"');
+		const adminHtml = renderView(jobRole, "ADMIN");
+
+		expect(adminHtml).toContain('class="job-role-actions"');
+		expect(adminHtml).toContain('href="/job-role-edit/1"');
+		expect(adminHtml).toContain('event.key === "Tab"');
+		expect(adminHtml).toContain("lastFocusableElement.focus()");
+		expect(adminHtml).toContain("firstFocusableElement.focus()");
 		expect(renderView(jobRole, "USER")).not.toContain(
 			'href="/job-role-edit/1"',
 		);

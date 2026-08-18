@@ -48,6 +48,7 @@ describe("JobRoleController", () => {
 		applyForRole: vi.fn(),
 		createJobRole: vi.fn(),
 		updateJobRole: vi.fn(),
+		deleteJobRole: vi.fn(),
 		getAllStatuses: vi.fn(),
 		getAllLocations: vi.fn(),
 		getAllCapabilities: vi.fn(),
@@ -494,6 +495,68 @@ describe("JobRoleController", () => {
 			"admin-token",
 		);
 		expect(res.redirect).toHaveBeenCalledWith("/job-role-list/7");
+	});
+
+	it("should delete a job role and redirect to the job role list", async () => {
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			params: { id: "7" },
+		});
+		const res = createResponse();
+		jobRoleService.deleteJobRole.mockResolvedValueOnce(undefined);
+
+		await controller.deleteJobRole(req as unknown as Request, res);
+
+		expect(jobRoleService.deleteJobRole).toHaveBeenCalledWith(
+			"7",
+			"admin-token",
+		);
+		expect(res.redirect).toHaveBeenCalledWith(303, "/job-role-list");
+	});
+
+	it.each([
+		[403, "You do not have permission to delete this job role."],
+		[404, "Job role not found."],
+	])(
+		"should render a %s API error when deleting a job role",
+		async (statusCode, errorMessage) => {
+			const req = createRequest({
+				session: { jwtToken: "admin-token", userRole: "ADMIN" },
+				params: { id: "7" },
+			});
+			const res = createResponse();
+			jobRoleService.deleteJobRole.mockRejectedValueOnce({
+				isAxiosError: true,
+				response: { status: statusCode },
+			});
+
+			await controller.deleteJobRole(req as unknown as Request, res);
+
+			expect(res.status).toHaveBeenCalledWith(statusCode);
+			expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
+				jobRoles: [],
+				errorMessage,
+			});
+		},
+	);
+
+	it("should render a service error when deleting a job role", async () => {
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			params: { id: "7" },
+		});
+		const res = createResponse();
+		jobRoleService.deleteJobRole.mockRejectedValueOnce(
+			new Error("Delete service unavailable"),
+		);
+
+		await controller.deleteJobRole(req as unknown as Request, res);
+
+		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
+			jobRoles: [],
+			errorMessage: "Delete service unavailable",
+		});
 	});
 
 	it("should preserve submitted values and API validation errors", async () => {

@@ -1,0 +1,73 @@
+<div class="confirmation-modal-backdrop" id="delete-role-modal-backdrop" hidden>
+  <div class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="delete-role-modal-title" aria-describedby="delete-role-modal-message">
+    <h2 id="delete-role-modal-title">Delete job role?</h2>
+    <p id="delete-role-modal-message">You are about to delete <strong id="delete-role-name"></strong>. This cannot be undone.</p>
+    <form method="post" id="delete-role-form" class="confirmation-modal-actions">
+      <button type="button" class="button button-outline" id="delete-role-cancel">Cancel</button>
+      <button type="submit" class="button button-danger-solid">Delete role</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const deleteRoleTriggers = document.querySelectorAll(".delete-role-trigger");
+  const deleteRoleBackdrop = document.getElementById("delete-role-modal-backdrop");
+  const deleteRoleForm = document.getElementById("delete-role-form");
+  const deleteRoleName = document.getElementById("delete-role-name");
+  const deleteRoleCancel = document.getElementById("delete-role-cancel");
+  let activeDeleteRoleTrigger = null;
+
+  if (deleteRoleTriggers.length && deleteRoleBackdrop && deleteRoleForm && deleteRoleName && deleteRoleCancel) {
+    const closeDeleteRoleModal = () => {
+      deleteRoleBackdrop.hidden = true;
+      document.body.classList.remove("modal-open");
+      activeDeleteRoleTrigger?.focus();
+    };
+
+    deleteRoleTriggers.forEach((trigger) => {
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        activeDeleteRoleTrigger = trigger;
+        deleteRoleName.textContent = trigger.dataset.roleName ?? "this role";
+        deleteRoleForm.action = `/job-role-list/${trigger.dataset.roleId}/delete`;
+        deleteRoleBackdrop.hidden = false;
+        document.body.classList.add("modal-open");
+        deleteRoleCancel.focus();
+      });
+    });
+
+    deleteRoleCancel.addEventListener("click", closeDeleteRoleModal);
+    deleteRoleBackdrop.addEventListener("click", (event) => {
+      if (event.target === deleteRoleBackdrop) {
+        closeDeleteRoleModal();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (deleteRoleBackdrop.hidden) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        closeDeleteRoleModal();
+        return;
+      }
+
+      if (event.key === "Tab") {
+        const focusableElements = Array.from(
+          deleteRoleBackdrop.querySelectorAll("button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"),
+        );
+        const firstFocusableElement = focusableElements[0];
+        const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === firstFocusableElement) {
+          event.preventDefault();
+          lastFocusableElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastFocusableElement) {
+          event.preventDefault();
+          firstFocusableElement.focus();
+        }
+      }
+    });
+  }
+</script>

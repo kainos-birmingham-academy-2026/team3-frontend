@@ -16,7 +16,10 @@
           {% endif %}
         </div>
         {% if currentUserRole == 'ADMIN' %}
-          <a href="/job-role-edit/{{ jobRoleId.jobRoleId }}" class="button button-solid">Edit role</a>
+          <div class="job-role-actions">
+            <a href="/job-role-edit/{{ jobRoleId.jobRoleId }}" class="button button-solid">Edit role</a>
+            <button type="button" class="button button-danger-solid delete-role-trigger" data-role-id="{{ jobRoleId.jobRoleId }}" data-role-name="{{ jobRoleId.roleName }}">Delete role</button>
+          </div>
         {% endif %}
       </div>
 
@@ -89,6 +92,9 @@
         </div>
       {% endif %}
     </article>
+    {% if currentUserRole == 'ADMIN' %}
+      {% include "components/deleteRoleConfirmation.njk" %}
+    {% endif %}
   {% else %}
     <div class="error-message">
       <p>Job role not found.</p>

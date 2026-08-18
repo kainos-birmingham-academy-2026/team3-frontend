@@ -25,7 +25,6 @@
           <th>Capability</th>
           <th>Band</th>
           <th>Closing Date</th>
-          {% if currentUserRole == 'ADMIN' %}<th>Actions</th>{% endif %}
         </tr>
       </thead>
       <tbody>
@@ -42,9 +41,6 @@
               <td>{{ jobRole.capability }}</td>
               <td>{{ jobRole.band }}</td>
               <td>{{ jobRole.closingDate }}</td>
-              {% if currentUserRole == 'ADMIN' %}
-                <td><a href="/job-role-edit/{{ jobRole.jobRoleId }}">Edit</a></td>
-              {% endif %}
             </tr>
           {% endif %}
         {% endfor %}
@@ -55,24 +51,20 @@
   {% endif %}
   <script>
     document.querySelectorAll(".job-role-row-link").forEach((row) => {
-      row.addEventListener("click", () => {
+      const navigateToRole = () => {
         const href = row.getAttribute("data-href");
         if (href) {
           window.location.href = href;
         }
-      });
+      };
+
+      row.addEventListener("click", navigateToRole);
       row.addEventListener("keydown", (event) => {
-        if (event.target === row && (event.key === "Enter" || event.key === " ")) {
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          const href = row.getAttribute("data-href");
-          if (href) {
-            window.location.href = href;
-          }
+          navigateToRole();
         }
       });
-    });
-    document.querySelectorAll(".job-role-row-link a").forEach((link) => {
-      link.addEventListener("click", (event) => event.stopPropagation());
     });
   </script>
 {% endblock %}

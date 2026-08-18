@@ -95,7 +95,9 @@ describe("jobRoleList", () => {
 
 		expect(html).toContain('href="/job-role-create"');
 		expect(html).toContain("Create new role");
-		expect(html).toContain('href="/job-role-edit/1"');
+		expect(html).not.toContain("<th>Actions</th>");
+		expect(html).not.toContain('href="/job-role-edit/1"');
+		expect(html).not.toContain("delete-role-trigger");
 	});
 
 	it("should hide create action for non-admin users", () => {
@@ -105,11 +107,10 @@ describe("jobRoleList", () => {
 		expect(html).not.toContain("Create new role");
 	});
 
-	it("should only use keyboard row navigation when the row has focus", () => {
+	it("should support mouse and keyboard row navigation", () => {
 		const html = renderView([]);
 
-		expect(html).toContain(
-			'event.target === row && (event.key === "Enter" || event.key === " ")',
-		);
+		expect(html).toContain('row.addEventListener("click", navigateToRole)');
+		expect(html).toContain('event.key === "Enter" || event.key === " "');
 	});
 });
