@@ -2,11 +2,13 @@ import { test as base } from '@playwright/test';
 import { LoginPage } from '../pages/loginPage';
 import { RegisterConfirmationPage } from '../pages/registerConfirmationPage';
 import { RegisterPage } from '../pages/registerPage';
+import { AdminApplicationsPage } from '../pages/adminApplicationsPage';
 
 type AuthFixtures = {
   loginPage: LoginPage;
   registerPage: RegisterPage;
   registerConfirmationPage: RegisterConfirmationPage;
+  adminApplicationsPage: AdminApplicationsPage;
 };
 
 export const authFixtures = base.extend<AuthFixtures>({
@@ -18,5 +20,9 @@ export const authFixtures = base.extend<AuthFixtures>({
   },
   registerConfirmationPage: async ({ page }, use) => {
     await use(new RegisterConfirmationPage(page));
+
+  },
+  adminApplicationsPage: async ({ page }, use) => {
+    await use(new AdminApplicationsPage(page));
   },
 });
