@@ -17,4 +17,14 @@ export class LoginPage {
     await expect(this.page.getByLabel('Password')).toBeVisible();
     await expect(this.page.getByRole('button', { name: 'Sign in' })).toBeVisible();
   }
+
+  async clickCreateAccount(): Promise<void> {
+    await this.page.getByRole('link', { name: 'Create an account' }).click();
+  }
+
+  async signIn(email: string, password: string): Promise<void> {
+    await this.page.getByLabel('Email').fill(email);
+    await this.page.getByLabel('Password').fill(password);
+    await this.page.getByRole('button', { name: 'Sign in' }).click();
+  }
 }

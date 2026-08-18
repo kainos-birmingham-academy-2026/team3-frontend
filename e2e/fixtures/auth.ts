@@ -1,10 +1,12 @@
 import { test as base } from '@playwright/test';
 import { LoginPage } from '../pages/loginPage';
+import { RegisterConfirmationPage } from '../pages/registerConfirmationPage';
 import { RegisterPage } from '../pages/registerPage';
 
 type AuthFixtures = {
   loginPage: LoginPage;
   registerPage: RegisterPage;
+  registerConfirmationPage: RegisterConfirmationPage;
 };
 
 export const authFixtures = base.extend<AuthFixtures>({
@@ -13,5 +15,8 @@ export const authFixtures = base.extend<AuthFixtures>({
   },
   registerPage: async ({ page }, use) => {
     await use(new RegisterPage(page));
+  },
+  registerConfirmationPage: async ({ page }, use) => {
+    await use(new RegisterConfirmationPage(page));
   },
 });

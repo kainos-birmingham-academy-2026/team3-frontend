@@ -18,4 +18,14 @@ export class RegisterPage {
     await expect(this.page.getByLabel('Confirm password')).toBeVisible();
     await expect(this.page.getByRole('button', { name: 'Create account' })).toBeVisible();
   }
+
+  async fillForm(email: string, password: string, confirmPassword = password): Promise<void> {
+    await this.page.getByLabel('Email').fill(email);
+    await this.page.getByLabel('Password', { exact: true }).fill(password);
+    await this.page.getByLabel('Confirm password').fill(confirmPassword);
+  }
+
+  async submit(): Promise<void> {
+    await this.page.getByRole('button', { name: 'Create account' }).click();
+  }
 }
