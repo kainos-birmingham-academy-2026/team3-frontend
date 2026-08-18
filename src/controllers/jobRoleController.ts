@@ -8,6 +8,7 @@ import type {
 	LocationOption,
 	SchemaError,
 	StatusOption,
+	UpdateJobRoleInput,
 } from "../models/jobRole";
 import type { JobRoleService } from "../services/jobRoleService";
 
@@ -156,6 +157,87 @@ export class JobRoleController {
 				bandOptions: req.session.dropdownOptions?.bands ?? [],
 				locationOptions: req.session.dropdownOptions?.locations ?? [],
 				statusOptions: req.session.dropdownOptions?.statuses ?? [],
+			});
+		}
+	}
+
+	async showEditForm(req: Request, res: Response): Promise<void> {
+		try {
+			const [jobRole, dropdownOptions] = await Promise.all([
+				this.jobRoleService.getById(
+					this.getRoleIdParam(req),
+					this.getJwtToken(req),
+				),
+				this.getDropdownOptions(),
+			]);
+			req.session.dropdownOptions = dropdownOptions;
+			res.render("pages/jobRoleEdit.njk", {
+				jobRole,
+				capabilityOptions: dropdownOptions.capabilities,
+				bandOptions: dropdownOptions.bands,
+				locationOptions: dropdownOptions.locations,
+				minClosingDate: new Date().toISOString().split("T")[0],
+			});
+		} catch (error) {
+			if (this.handleUnauthorized(req, res, error)) {
+				return;
+			}
+			this.renderApiError(res, error);
+		}
+	}
+
+	async updateJobRole(req: Request, res: Response): Promise<void> {
+		const jobRoleData = req.body as UpdateJobRoleInput;
+		try {
+			await this.jobRoleService.updateJobRole(
+				jobRoleData,
+				this.getJwtToken(req),
+			);
+			res.redirect(`/job-role-list/${jobRoleData.jobRoleId}`);
+		} catch (error) {
+			if (this.handleUnauthorized(req, res, error)) {
+				return;
+			}
+
+			let errorMessage: string | SchemaError[] = "Unable to update job role";
+			let statusCode = 500;
+
+			if (axios.isAxiosError(error)) {
+				statusCode = error.response?.status ?? 500;
+				const responseData = error.response?.data as {
+					errors?: SchemaError[];
+					error?: string;
+					message?: string;
+				};
+
+				if (statusCode === 400) {
+					errorMessage =
+						responseData?.errors ??
+						responseData?.error ??
+						responseData?.message ??
+						"Please provide valid job role data.";
+				} else if (statusCode === 403) {
+					errorMessage = "You do not have permission to update this job role.";
+				} else if (statusCode === 404) {
+					errorMessage = "Job role not found.";
+				} else if (statusCode >= 500) {
+					errorMessage = "The job role could not be updated. Please try again.";
+				}
+			} else if (error instanceof Error) {
+				errorMessage = error.message;
+			}
+
+			res.status(statusCode).render("pages/jobRoleEdit.njk", {
+				jobRole: {
+					...jobRoleData,
+					jobSpecUrl: jobRoleData.sharepointUrl,
+					openPositions: jobRoleData.numberOfOpenPositions,
+				},
+				errorMessage,
+				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
+				bandOptions: req.session.dropdownOptions?.bands ?? [],
+				locationOptions: req.session.dropdownOptions?.locations ?? [],
+				minClosingDate: new Date().toISOString().split("T")[0],
 			});
 		}
 	}

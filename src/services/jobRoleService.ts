@@ -7,6 +7,7 @@ import type {
 	JobRole,
 	LocationOption,
 	StatusOption,
+	UpdateJobRoleInput,
 } from "../models/jobRole";
 
 interface ApiJobRole {
@@ -33,6 +34,28 @@ interface ApiJobRole {
 }
 
 export class JobRoleService {
+	private mapWritePayload(jobRoleData: CreateJobRoleInput) {
+		const toOptionalNumber = (value: string | number | undefined) => {
+			if (value === undefined || value === "") {
+				return undefined;
+			}
+
+			const numberValue = Number(value);
+			return Number.isFinite(numberValue) ? numberValue : undefined;
+		};
+
+		return {
+			...jobRoleData,
+			numberOfOpenPositions: toOptionalNumber(
+				jobRoleData.numberOfOpenPositions,
+			),
+			capabilityId: toOptionalNumber(jobRoleData.capabilityId),
+			bandId: toOptionalNumber(jobRoleData.bandId),
+			locationId: toOptionalNumber(jobRoleData.locationId),
+			closingDate: jobRoleData.closingDate || undefined,
+		};
+	}
+
 	private mapStatus(jobRole: ApiJobRole): string {
 		const status = jobRole.status ?? jobRole.statusName;
 		return status ? status.toLowerCase() : "unknown";
@@ -130,25 +153,7 @@ export class JobRoleService {
 		if (!jwtToken) {
 			throw new Error("Not authenticated");
 		}
-		const toOptionalNumber = (value: string | number | undefined) => {
-			if (value === undefined || value === "") {
-				return undefined;
-			}
-
-			const numberValue = Number(value);
-			return Number.isFinite(numberValue) ? numberValue : undefined;
-		};
-
-		const payload = {
-			...jobRoleData,
-			numberOfOpenPositions: toOptionalNumber(
-				jobRoleData.numberOfOpenPositions,
-			),
-			capabilityId: toOptionalNumber(jobRoleData.capabilityId),
-			bandId: toOptionalNumber(jobRoleData.bandId),
-			locationId: toOptionalNumber(jobRoleData.locationId),
-			closingDate: jobRoleData.closingDate || undefined,
-		};
+		const payload = this.mapWritePayload(jobRoleData);
 
 		await apiClient.post("/job-roles/create", payload, {
 			headers: {
@@ -156,6 +161,27 @@ export class JobRoleService {
 				"Content-Type": "application/json",
 			},
 		});
+	}
+
+	async updateJobRole(
+		jobRoleData: UpdateJobRoleInput,
+		jwtToken?: string,
+	): Promise<void> {
+		if (!jwtToken) {
+			throw new Error("Not authenticated");
+		}
+
+		const { jobRoleId, ...editableFields } = jobRoleData;
+		await apiClient.patch(
+			`/job-roles/${jobRoleId}`,
+			this.mapWritePayload(editableFields),
+			{
+				headers: {
+					Authorization: `Bearer ${jwtToken}`,
+					"Content-Type": "application/json",
+				},
+			},
+		);
 	}
 
 	async applyForRole(

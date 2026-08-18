@@ -231,6 +231,12 @@ router.get("/job-role-create", requireAuth, requireAdmin, (req, res) =>
 router.post("/job-role-create", requireAuth, requireAdmin, (req, res) =>
 	controller.createJobRole(req, res),
 );
+router.get("/job-role-edit/:id", requireAuth, requireAdmin, (req, res) =>
+	controller.showEditForm(req, res),
+);
+router.post("/job-role-edit", requireAuth, requireAdmin, (req, res) =>
+	controller.updateJobRole(req, res),
+);
 
 router.get("/teapot", (_req, res) => {
 	res.render("pages/teapot.njk");

@@ -1,0 +1,112 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - link "Kainos home" [ref=f1e4] [cursor=pointer]:
+        - /url: /
+        - img "Kainos logo" [ref=f1e5]
+      - navigation "Main navigation" [ref=f1e6]:
+        - link "Home" [ref=f1e7] [cursor=pointer]:
+          - /url: /
+        - link "Job roles" [ref=f1e8] [cursor=pointer]:
+          - /url: /job-role-list
+      - link "Sign in" [ref=f1e9] [cursor=pointer]:
+        - /url: /login
+  - main [ref=f1e10]:
+    - generic [ref=f1e11]:
+      - generic [ref=f1e12]:
+        - paragraph [ref=f1e13]: Careers
+        - heading "Open job roles" [level=1] [ref=f1e14]
+        - paragraph [ref=f1e15]: Explore current opportunities and apply before the closing date.
+      - table [ref=f1e16]:
+        - rowgroup [ref=f1e17]:
+          - row [ref=f1e18]:
+            - columnheader "Role Name" [ref=f1e19]
+            - columnheader "Location" [ref=f1e20]
+            - columnheader "Capability" [ref=f1e21]
+            - columnheader "Band" [ref=f1e22]
+            - columnheader "Closing Date" [ref=f1e23]
+        - rowgroup [ref=f1e24]:
+          - link "View details for Senior Software Engineer" [ref=f1e25] [cursor=pointer]:
+            - cell "Senior Software Engineer" [ref=f1e26]
+            - cell "Glasgow" [ref=f1e27]
+            - cell "Software Engineering" [ref=f1e28]
+            - cell "Senior Engineer" [ref=f1e29]
+            - cell "2026-10-15" [ref=f1e30]
+          - link "View details for Lead Software Engineer" [ref=f1e31] [cursor=pointer]:
+            - cell "Lead Software Engineer" [ref=f1e32]
+            - cell "Birmingham" [ref=f1e33]
+            - cell "Software Engineering" [ref=f1e34]
+            - cell "Lead Engineer" [ref=f1e35]
+            - cell "2026-09-05" [ref=f1e36]
+          - link "View details for Senior Cloud Engineer" [ref=f1e37] [cursor=pointer]:
+            - cell "Senior Cloud Engineer" [ref=f1e38]
+            - cell "Glasgow" [ref=f1e39]
+            - cell "Cloud & Infrastructure" [ref=f1e40]
+            - cell "Senior Engineer" [ref=f1e41]
+            - cell "2026-10-20" [ref=f1e42]
+          - link "View details for Trainee Software Engineer" [ref=f1e43] [cursor=pointer]:
+            - cell "Trainee Software Engineer" [ref=f1e44]
+            - cell "Belfast" [ref=f1e45]
+            - cell "Software Engineering" [ref=f1e46]
+            - cell "Trainee" [ref=f1e47]
+            - cell "2026-08-31" [ref=f1e48]
+          - link "View details for Associate Software Engineer" [ref=f1e49] [cursor=pointer]:
+            - cell "Associate Software Engineer" [ref=f1e50]
+            - cell "London" [ref=f1e51]
+            - cell "Software Engineering" [ref=f1e52]
+            - cell "Associate" [ref=f1e53]
+            - cell "2026-11-01" [ref=f1e54]
+          - link "View details for DevOps Engineer" [ref=f1e55] [cursor=pointer]:
+            - cell "DevOps Engineer" [ref=f1e56]
+            - cell "Birmingham" [ref=f1e57]
+            - cell "Cloud & Infrastructure" [ref=f1e58]
+            - cell "Engineer" [ref=f1e59]
+            - cell "2026-08-20" [ref=f1e60]
+          - link "View details for Software Engineer" [ref=f1e61] [cursor=pointer]:
+            - cell "Software Engineer" [ref=f1e62]
+            - cell "Belfast" [ref=f1e63]
+            - cell "Software Engineering" [ref=f1e64]
+            - cell "Engineer" [ref=f1e65]
+            - cell "2026-09-30" [ref=f1e66]
+          - link "View details for Senior Cyber Security Engineer" [ref=f1e67] [cursor=pointer]:
+            - cell "Senior Cyber Security Engineer" [ref=f1e68]
+            - cell "Remote" [ref=f1e69]
+            - cell "Cyber Security" [ref=f1e70]
+            - cell "Senior Engineer" [ref=f1e71]
+            - cell "2026-10-05" [ref=f1e72]
+          - link "View details for Cyber Security Engineer" [ref=f1e73] [cursor=pointer]:
+            - cell "Cyber Security Engineer" [ref=f1e74]
+            - cell "London" [ref=f1e75]
+            - cell "Cyber Security" [ref=f1e76]
+            - cell "Engineer" [ref=f1e77]
+            - cell "2026-09-25" [ref=f1e78]
+  - contentinfo [ref=f1e79]:
+    - paragraph [ref=f1e83]: THINKING BEYOND LIMITATIONS
+    - generic [ref=f1e84]:
+      - generic [ref=f1e85]:
+        - heading "Contact" [level=2] [ref=f1e86]
+        - paragraph [ref=f1e87]:
+          - text: "Email:"
+          - link "hello@kainos.com" [ref=f1e88] [cursor=pointer]:
+            - /url: mailto:hello@kainos.com
+        - paragraph [ref=f1e89]:
+          - text: "Phone:"
+          - link "+44 (0) 28 9032 2000" [ref=f1e90] [cursor=pointer]:
+            - /url: tel:+442890322000
+      - generic [ref=f1e91]:
+        - heading "Office" [level=2] [ref=f1e92]
+        - paragraph [ref=f1e93]: Kainos House
+        - paragraph [ref=f1e94]: 4-6 Upper Crescent
+        - paragraph [ref=f1e95]: Belfast BT7 1NT
+      - generic [ref=f1e96]:
+        - heading "Explore" [level=2] [ref=f1e97]
+        - paragraph [ref=f1e98]:
+          - link "About us" [ref=f1e99] [cursor=pointer]:
+            - /url: https://www.kainos.com/about-us
+        - paragraph [ref=f1e100]:
+          - link "Insights" [ref=f1e101] [cursor=pointer]:
+            - /url: https://www.kainos.com/insights
+        - paragraph [ref=f1e102]:
+          - link "Careers" [ref=f1e103] [cursor=pointer]:
+            - /url: https://careers.kainos.com/gb/en
+    - paragraph [ref=f1e105]: Copyright © 2026 Kainos. All rights reserved.

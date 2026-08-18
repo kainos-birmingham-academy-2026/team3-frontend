@@ -6,6 +6,7 @@ vi.mock("../../src/config/apiClient", () => ({
 	default: {
 		get: vi.fn(),
 		post: vi.fn(),
+		patch: vi.fn(),
 	},
 }));
 
@@ -595,5 +596,53 @@ describe("JobRoleService", () => {
 			service.createJobRole({ roleName: "Software Engineer" }),
 		).rejects.toThrow("Not authenticated");
 		expect(apiClient.post).not.toHaveBeenCalled();
+	});
+
+	it("should update a job role with converted numeric fields and authorization", async () => {
+		vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} });
+
+		await service.updateJobRole(
+			{
+				jobRoleId: "7",
+				roleName: "Lead Engineer",
+				description: "Lead delivery",
+				responsibilities: "Coach engineers",
+				sharepointUrl: "https://example.com/lead-role",
+				numberOfOpenPositions: "3",
+				closingDate: "2099-12-31",
+				capabilityId: "4",
+				bandId: "5",
+				locationId: "6",
+			},
+			jwtToken,
+		);
+
+		expect(apiClient.patch).toHaveBeenCalledWith(
+			"/job-roles/7",
+			{
+				roleName: "Lead Engineer",
+				description: "Lead delivery",
+				responsibilities: "Coach engineers",
+				sharepointUrl: "https://example.com/lead-role",
+				numberOfOpenPositions: 3,
+				closingDate: "2099-12-31",
+				capabilityId: 4,
+				bandId: 5,
+				locationId: 6,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${jwtToken}`,
+					"Content-Type": "application/json",
+				},
+			},
+		);
+	});
+
+	it("should reject updating a job role without a JWT token", async () => {
+		await expect(service.updateJobRole({ jobRoleId: 7 })).rejects.toThrow(
+			"Not authenticated",
+		);
+		expect(apiClient.patch).not.toHaveBeenCalled();
 	});
 });

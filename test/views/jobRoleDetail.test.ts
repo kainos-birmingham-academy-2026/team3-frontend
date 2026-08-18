@@ -15,12 +15,15 @@ const environment = new nunjucks.Environment(
 	new nunjucks.FileSystemLoader(viewsPath),
 );
 
-function renderView(jobRoleId: JobRole): string {
+function renderView(jobRoleId: JobRole, currentUserRole?: string): string {
 	if (!template.length) {
 		throw new Error("Template should not be empty");
 	}
 
-	return environment.render("pages/jobRoleDetail.njk", { jobRoleId });
+	return environment.render("pages/jobRoleDetail.njk", {
+		jobRoleId,
+		currentUserRole,
+	});
 }
 
 describe("jobRoleDetail", () => {
@@ -286,5 +289,22 @@ describe("jobRoleDetail", () => {
 		expect(html).toContain("Software Engineering");
 		expect(html).toContain("Closing Date");
 		expect(html).toContain("2026-08-06");
+	});
+
+	it("should show the edit action only to admins", () => {
+		const jobRole: JobRole = {
+			jobRoleId: 1,
+			roleName: "Lead Software Engineer",
+			location: "Birmingham",
+			capability: "Software Engineering",
+			band: "Senior Engineer",
+			closingDate: "2099-12-31",
+			status: "open",
+		};
+
+		expect(renderView(jobRole, "ADMIN")).toContain('href="/job-role-edit/1"');
+		expect(renderView(jobRole, "USER")).not.toContain(
+			'href="/job-role-edit/1"',
+		);
 	});
 });
