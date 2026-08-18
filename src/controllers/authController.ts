@@ -18,12 +18,14 @@ export class AuthController {
 			return;
 		}
 
-		const successMessage = req.query?.registered === "1"
-			? "Account created. Please sign in."
-			: undefined;
-		const errorMessage = req.query?.expired === "1"
-			? "Your session has expired. Please log in again."
-			: undefined;
+		const successMessage =
+			req.query?.registered === "1"
+				? "Account created. Please sign in."
+				: undefined;
+		const errorMessage =
+			req.query?.expired === "1"
+				? "Your session has expired. Please log in again."
+				: undefined;
 
 		res.render("pages/login.njk", {
 			formValues: { email: "" },
@@ -118,7 +120,8 @@ export class AuthController {
 
 		if (!isStrongPassword(password)) {
 			res.status(400).render("pages/register.njk", {
-				errorMessage: "Password must be more than 8 characters and include upper, lower and special characters",
+				errorMessage:
+					"Password must be more than 8 characters and include upper, lower and special characters",
 				formValues: { email },
 			});
 			return;

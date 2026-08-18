@@ -1,9 +1,10 @@
 /// <reference types="node" />
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 const appPort = Number(process.env.PORT ?? 3000);
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${appPort}`;
-const apiBaseURL = process.env.API_BASE_URL ?? 'http://localhost:4000';
+const baseURL =
+	process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${appPort}`;
+const apiBaseURL = process.env.API_BASE_URL ?? "http://localhost:4000";
 
 // TEMPORARY: CI has no Postgres or backend, so the database-backed journey is skipped there.
 // Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
@@ -22,87 +23,88 @@ const needsDatabase = !process.env.CI;
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './e2e/specs',
-  testMatch: '**/*.spec.ts',
-  // globalSetup: './e2e/globalSetup.ts',
-  // globalTeardown: './e2e/globalTeardown.ts',
-  // TEMPORARY
-  testIgnore: needsDatabase ? undefined : '**/register-and-login.spec.ts',
-  ...(needsDatabase
-    ? {
-        globalSetup: './e2e/globalSetup.ts',
-        globalTeardown: './e2e/globalTeardown.ts',
-      }
-    : {}),
-  timeout: 30_000,
-  expect: {
-    timeout: 5_000,
-  },
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  outputDir: 'test-results/playwright-artifacts',
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-  ],
-  use: {
-    baseURL,
-    trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-  },
+	testDir: "./e2e/specs",
+	testMatch: "**/*.spec.ts",
+	// globalSetup: './e2e/globalSetup.ts',
+	// globalTeardown: './e2e/globalTeardown.ts',
+	// TEMPORARY
+	testIgnore: needsDatabase ? undefined : "**/register-and-login.spec.ts",
+	...(needsDatabase
+		? {
+				globalSetup: "./e2e/globalSetup.ts",
+				globalTeardown: "./e2e/globalTeardown.ts",
+			}
+		: {}),
+	timeout: 30_000,
+	expect: {
+		timeout: 5_000,
+	},
+	fullyParallel: true,
+	forbidOnly: !!process.env.CI,
+	retries: process.env.CI ? 2 : 0,
+	workers: process.env.CI ? 1 : undefined,
+	outputDir: "test-results/playwright-artifacts",
+	reporter: [
+		["list"],
+		["html", { outputFolder: "playwright-report", open: "never" }],
+	],
+	use: {
+		baseURL,
+		trace: "retain-on-failure",
+		screenshot: "only-on-failure",
+		video: "retain-on-failure",
+	},
 
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+	projects: [
+		{
+			name: "chromium",
+			use: { ...devices["Desktop Chrome"] },
+		},
+		{
+			name: "firefox",
+			use: { ...devices["Desktop Firefox"] },
+		},
+		{
+			name: "webkit",
+			use: { ...devices["Desktop Safari"] },
+		},
+	],
 
-  webServer: [
-    // {
-    //   command: 'npm run dev',
-    //   cwd: '../team3-backend',
-    //   url: `${apiBaseURL}/health`,
-    //   reuseExistingServer: !process.env.CI,
-    //   stdout: 'pipe',
-    //   stderr: 'pipe',
-    // },
-    // TEMPORARY
-    ...(needsDatabase
-      ? [
-          {
-            command: 'npm run dev',
-            cwd: '../team3-backend',
-            url: `${apiBaseURL}/health`,
-            reuseExistingServer: !process.env.CI,
-            stdout: 'pipe' as const,
-            stderr: 'pipe' as const,
-          },
-        ]
-      : []),
-    {
-      command: 'npm run dev',
-      url: baseURL,
-      reuseExistingServer: !process.env.CI,
-      stdout: 'pipe',
-      stderr: 'pipe',
-      env: {
-        ...process.env,
-        NODE_ENV: 'test',
-        PORT: String(appPort),
-        SESSION_SECRET: process.env.SESSION_SECRET ?? 'playwright-session-secret',
-      },
-    },
-  ],
+	webServer: [
+		// {
+		//   command: 'npm run dev',
+		//   cwd: '../team3-backend',
+		//   url: `${apiBaseURL}/health`,
+		//   reuseExistingServer: !process.env.CI,
+		//   stdout: 'pipe',
+		//   stderr: 'pipe',
+		// },
+		// TEMPORARY
+		...(needsDatabase
+			? [
+					{
+						command: "npm run dev",
+						cwd: "../team3-backend",
+						url: `${apiBaseURL}/health`,
+						reuseExistingServer: !process.env.CI,
+						stdout: "pipe" as const,
+						stderr: "pipe" as const,
+					},
+				]
+			: []),
+		{
+			command: "npm run dev",
+			url: baseURL,
+			reuseExistingServer: !process.env.CI,
+			stdout: "pipe",
+			stderr: "pipe",
+			env: {
+				...process.env,
+				NODE_ENV: "test",
+				PORT: String(appPort),
+				SESSION_SECRET:
+					process.env.SESSION_SECRET ?? "playwright-session-secret",
+			},
+		},
+	],
 });

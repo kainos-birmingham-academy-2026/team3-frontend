@@ -32,5 +32,5 @@ export function getUserRoleFromToken(token: string): UserRole | undefined {
 		return undefined;
 	} catch {
 		return undefined;
- 	}
+	}
 }

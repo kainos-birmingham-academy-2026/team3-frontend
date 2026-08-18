@@ -1,22 +1,22 @@
-import { test as base } from '@playwright/test';
-import { LoginPage } from '../pages/loginPage';
-import { RegisterConfirmationPage } from '../pages/registerConfirmationPage';
-import { RegisterPage } from '../pages/registerPage';
+import { test as base } from "@playwright/test";
+import { LoginPage } from "../pages/loginPage";
+import { RegisterConfirmationPage } from "../pages/registerConfirmationPage";
+import { RegisterPage } from "../pages/registerPage";
 
 type AuthFixtures = {
-  loginPage: LoginPage;
-  registerPage: RegisterPage;
-  registerConfirmationPage: RegisterConfirmationPage;
+	loginPage: LoginPage;
+	registerPage: RegisterPage;
+	registerConfirmationPage: RegisterConfirmationPage;
 };
 
 export const authFixtures = base.extend<AuthFixtures>({
-  loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page));
-  },
-  registerPage: async ({ page }, use) => {
-    await use(new RegisterPage(page));
-  },
-  registerConfirmationPage: async ({ page }, use) => {
-    await use(new RegisterConfirmationPage(page));
-  },
+	loginPage: async ({ page }, use) => {
+		await use(new LoginPage(page));
+	},
+	registerPage: async ({ page }, use) => {
+		await use(new RegisterPage(page));
+	},
+	registerConfirmationPage: async ({ page }, use) => {
+		await use(new RegisterConfirmationPage(page));
+	},
 });

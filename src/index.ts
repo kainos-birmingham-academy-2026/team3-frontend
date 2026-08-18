@@ -16,10 +16,10 @@ nunjucks.configure(
 		path.join(process.cwd(), "node_modules", "dist"),
 	],
 	{
-	  autoescape: true,
-	  express: app,
-	  watch: false,
-	  noCache: isDev,
+		autoescape: true,
+		express: app,
+		watch: false,
+		noCache: isDev,
 	},
 );
 
@@ -64,4 +64,4 @@ app.use((_req, res) => {
 
 app.listen(port, () => {
 	console.log(`Frontend running at http://localhost:${port}`);
-} );
+});

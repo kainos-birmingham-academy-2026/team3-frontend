@@ -33,20 +33,31 @@ export async function login(email: string, password: string): Promise<string> {
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
 			const status = error.response?.status;
-			const networkErrorCodes = new Set(["ECONNREFUSED", "ENOTFOUND", "ECONNABORTED", "ETIMEDOUT"]);
+			const networkErrorCodes = new Set([
+				"ECONNREFUSED",
+				"ENOTFOUND",
+				"ECONNABORTED",
+				"ETIMEDOUT",
+			]);
 
 			if (!status && error.code && networkErrorCodes.has(error.code)) {
-				throw new Error("We cannot sign you in right now. Please try again in a moment.");
+				throw new Error(
+					"We cannot sign you in right now. Please try again in a moment.",
+				);
 			}
 
 			if (status === 400 || status === 401) {
 				throw new Error("Invalid email or password");
 			}
 			if (status === 404) {
-				throw new Error("We cannot sign you in right now. Please try again in a moment.");
+				throw new Error(
+					"We cannot sign you in right now. Please try again in a moment.",
+				);
 			}
 			if (status === 500) {
-				throw new Error("We cannot sign you in right now. Please try again in a moment.");
+				throw new Error(
+					"We cannot sign you in right now. Please try again in a moment.",
+				);
 			}
 		}
 
@@ -65,10 +76,17 @@ export async function register(email: string, password: string): Promise<void> {
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
 			const status = error.response?.status;
-			const networkErrorCodes = new Set(["ECONNREFUSED", "ENOTFOUND", "ECONNABORTED", "ETIMEDOUT"]);
+			const networkErrorCodes = new Set([
+				"ECONNREFUSED",
+				"ENOTFOUND",
+				"ECONNABORTED",
+				"ETIMEDOUT",
+			]);
 
 			if (!status && error.code && networkErrorCodes.has(error.code)) {
-				throw new Error("We cannot create your account right now. Please try again in a moment.");
+				throw new Error(
+					"We cannot create your account right now. Please try again in a moment.",
+				);
 			}
 
 			if (status === 400) {
@@ -80,11 +98,15 @@ export async function register(email: string, password: string): Promise<void> {
 			}
 
 			if (status === 404) {
-				throw new Error("We cannot create your account right now. Please try again in a moment.");
+				throw new Error(
+					"We cannot create your account right now. Please try again in a moment.",
+				);
 			}
 
 			if (status === 500) {
-				throw new Error("We cannot create your account right now. Please try again in a moment.");
+				throw new Error(
+					"We cannot create your account right now. Please try again in a moment.",
+				);
 			}
 		}
 
