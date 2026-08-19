@@ -1,27 +1,20 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export class AdminApplicationsPage {
-  constructor(private readonly page: Page) {}
+  private readonly applicationReviewHeading: Locator;
+  private readonly firstHireButton: Locator;
+  private readonly pendingApplications: Locator;
+  private readonly confirmButton: Locator;
+  private readonly successMessage: Locator;
 
-  // Locators
-  private getApplicationReviewHeading() {
-    return this.page.getByRole('heading', { name: 'Application Review' });
-  }
-
-  private getFirstHireButton() {
-    return this.page.locator('.btn-hire').first();
-  }
-
-  private getPendingApplications() {
-    return this.page.locator('.status-pending');
-  }
-
-  private getConfirmButton() {
-    return this.page.locator('#popup-confirm');
-  }
-
-  private getSuccessMessage() {
-    return this.page.getByText('Applicant hired!');
+  constructor(private readonly page: Page) {
+    this.applicationReviewHeading = page.getByRole('heading', {
+      name: 'Application Review',
+    });
+    this.firstHireButton = page.locator('.btn-hire').first();
+    this.pendingApplications = page.locator('.status-pending');
+    this.confirmButton = page.locator('#popup-confirm');
+    this.successMessage = page.getByText('Applicant hired!');
   }
 
   // Methods
@@ -30,25 +23,24 @@ export class AdminApplicationsPage {
   }
 
   async expectLoaded(): Promise<void> {
-    await expect(this.getApplicationReviewHeading()).toBeVisible();
+    await expect(this.applicationReviewHeading).toBeVisible();
   }
 
   async clickFirstHireButton(): Promise<void> {
-    const hireButton = this.getFirstHireButton();
-    await expect(hireButton).toBeVisible();
-    await hireButton.click();
+    await expect(this.firstHireButton).toBeVisible();
+    await this.firstHireButton.click();
   }
 
   async confirmHiring(): Promise<void> {
-    await this.getConfirmButton().click();
+    await this.confirmButton.click();
   }
 
   async expectSuccessMessage(): Promise<void> {
-    await expect(this.getSuccessMessage()).toBeVisible();
+    await expect(this.successMessage).toBeVisible();
   }
 
   async confirmPendingApplicationExists(): Promise<void> {
-    const pending = await this.getPendingApplications().count();
+    const pending = await this.pendingApplications.count();
     expect(pending).toBeGreaterThan(0);
   }
 }

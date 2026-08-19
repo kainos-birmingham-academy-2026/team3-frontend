@@ -31,15 +31,13 @@ test.describe('Admin hiring workflow', { tag: '@admin' }, () => {
     adminApplicationsPage,
   }) => {
     await loginPage.goto();
-    await page.getByLabel('Email').fill('test@example.com');
-    await page.getByLabel('Password').fill('password');
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await loginPage.signIn('test@example.com', 'password');
 
     await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {
 
     });
 
-    await page.getByRole('link', { name: /applications/i }).click();
+    await adminApplicationsPage.goto();
     await adminApplicationsPage.expectLoaded();
 
     await adminApplicationsPage.confirmPendingApplicationExists();
