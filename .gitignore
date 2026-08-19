@@ -37,4 +37,4 @@ examples/
 /playwright/.cache/
 /playwright/.auth/
 /.playwright-mcp/
-/e2e/specs/.bdd-gen/
+/e2e/specs/e2e/
