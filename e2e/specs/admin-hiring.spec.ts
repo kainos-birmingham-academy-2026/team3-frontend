@@ -1,51 +1,49 @@
-import { expect, test } from '../fixtures/test';
+import { expect, test } from "../fixtures/test";
 
-test.describe('Admin hiring workflow', { tag: '@admin' }, () => {
-  test.beforeAll(async () => {
-    // Skip database setup in CI
-    if (process.env.CI) {
-      return;
-    }
+test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
+	test.beforeAll(async () => {
+		// Skip database setup in CI
+		if (process.env.CI) {
+			return;
+		}
 
-    // Reset database to ensure fresh state
-    const { exec } = await import('child_process');
-    const { promisify } = await import('util');
-    const execAsync = promisify(exec);
-    
-    try {
-      await execAsync('npx prisma migrate reset --force', {
-        cwd: process.cwd(),
-      });
-      
-      await execAsync('npx prisma db seed', {
-        cwd: process.cwd(),
-      });
-    } catch (error) {
-      console.warn('Database reset/seed warning:', error);
-    }
-  });
+		// Reset database to ensure fresh state
+		const { exec } = await import("child_process");
+		const { promisify } = await import("util");
+		const execAsync = promisify(exec);
 
-  test('successfully hire an applicant', { skip: !!process.env.CI }, async ({
-    page,
-    loginPage,
-    adminApplicationsPage,
-  }) => {
-    await loginPage.goto();
-    await loginPage.signIn('test@example.com', 'password');
+		try {
+			await execAsync("npx prisma migrate reset --force", {
+				cwd: process.cwd(),
+			});
 
-    await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {
+			await execAsync("npx prisma db seed", {
+				cwd: process.cwd(),
+			});
+		} catch (error) {
+			console.warn("Database reset/seed warning:", error);
+		}
+	});
 
-    });
+	test("successfully hire an applicant", { skip: !!process.env.CI }, async ({
+		page,
+		loginPage,
+		adminApplicationsPage,
+	}) => {
+		await loginPage.goto();
+		await loginPage.signIn("test@example.com", "password");
 
-    await adminApplicationsPage.goto();
-    await adminApplicationsPage.expectLoaded();
+		await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {});
 
-    await adminApplicationsPage.confirmPendingApplicationExists();
+		await adminApplicationsPage.goto();
+		await adminApplicationsPage.expectLoaded();
 
-    await adminApplicationsPage.clickFirstHireButton();
+		await adminApplicationsPage.confirmPendingApplicationExists();
 
-    await adminApplicationsPage.confirmHiring();
+		await adminApplicationsPage.clickFirstHireButton();
 
-    await adminApplicationsPage.expectSuccessMessage();
-  });
+		await adminApplicationsPage.confirmHiring();
+
+		await adminApplicationsPage.expectSuccessMessage();
+	});
 });
