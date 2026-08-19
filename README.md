@@ -145,6 +145,17 @@ npm run e2e
 npm run e2e:report
 ```
 
+### BDD E2E tests
+
+The registration and sign-in BDD suite uses Gherkin feature files in
+`e2e/bdd/features` and TypeScript step definitions in `e2e/bdd/steps`. It
+shares the same fixtures and Playwright configuration as the existing E2E
+specifications.
+
+```bash
+npm run e2e:bdd
+```
+
 ## Routes
 
 ### `GET /`
