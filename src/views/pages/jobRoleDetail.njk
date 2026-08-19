@@ -15,6 +15,9 @@
             </span>
           {% endif %}
         </div>
+        {% if currentUserRole == 'ADMIN' %}
+          <a href="/job-role-edit/{{ jobRoleId.jobRoleId }}" class="button button-solid">Edit role</a>
+        {% endif %}
       </div>
 
       {% if jobRoleId.description %}

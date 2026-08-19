@@ -23,6 +23,7 @@ vi.mock("../../src/config/apiClient", () => ({
 	default: {
 		get: vi.fn(),
 		post: vi.fn(),
+		patch: vi.fn(),
 	},
 }));
 
@@ -338,6 +339,81 @@ describe("routes", () => {
 		expect(response.text).toContain("Access restricted");
 		expect(response.text).toContain(
 			"You do not have permission to access this page.",
+		);
+	});
+
+	it("should redirect unauthenticated users from the edit page", async () => {
+		const response = await request(app).get("/job-role-edit/1");
+
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/unauthorised");
+	});
+
+	it("should render a pre-populated edit form for an admin", async () => {
+		const adminApp = createAdminApp();
+		vi.mocked(apiClient.get).mockImplementation(async (url) => {
+			const responses: Record<string, unknown> = {
+				"/job-roles/1": {
+					jobRoleId: 1,
+					roleName: "Software Engineer",
+					description: "Build software",
+					responsibilities: "Deliver features",
+					sharepointUrl: "https://example.com/spec",
+					numberOfOpenPositions: 2,
+					closingDate: "2099-12-31T00:00:00.000Z",
+					capabilityName: "Engineering",
+					bandName: "Engineer",
+					locationName: "Birmingham",
+					statusName: "OPEN",
+				},
+				"/job-roles/statuses": [{ statusId: 1, statusName: "OPEN" }],
+				"/job-roles/locations": [{ locationId: 2, locationName: "Birmingham" }],
+				"/job-roles/capabilities": [
+					{ capabilityId: 3, capabilityName: "Engineering" },
+				],
+				"/job-roles/bands": [{ bandId: 4, bandName: "Engineer" }],
+			};
+			return { data: responses[String(url)] };
+		});
+
+		const response = await request(adminApp).get("/job-role-edit/1");
+
+		expect(response.status).toBe(200);
+		expect(response.text).toContain('value="Software Engineer"');
+		expect(response.text).toContain('value="3" selected');
+		expect(response.text).toContain('value="4" selected');
+		expect(response.text).toContain('value="2" selected');
+	});
+
+	it("should update a job role and redirect an admin to its detail page", async () => {
+		const adminApp = createAdminApp();
+		vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} });
+
+		const response = await request(adminApp).post("/job-role-edit").send({
+			jobRoleId: "1",
+			roleName: "Lead Engineer",
+			description: "Lead delivery",
+			responsibilities: "Coach engineers",
+			sharepointUrl: "https://example.com/lead-role",
+			numberOfOpenPositions: "3",
+			capabilityId: "1",
+			bandId: "2",
+			locationId: "3",
+		});
+
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/job-role-list/1");
+		expect(apiClient.patch).toHaveBeenCalledWith(
+			"/job-roles/1",
+			expect.objectContaining({
+				roleName: "Lead Engineer",
+				numberOfOpenPositions: 3,
+			}),
+			expect.objectContaining({
+				headers: expect.objectContaining({
+					Authorization: "Bearer admin-token",
+				}),
+			}),
 		);
 	});
 

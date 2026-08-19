@@ -47,6 +47,7 @@ describe("JobRoleController", () => {
 		getById: vi.fn(),
 		applyForRole: vi.fn(),
 		createJobRole: vi.fn(),
+		updateJobRole: vi.fn(),
 		getAllStatuses: vi.fn(),
 		getAllLocations: vi.fn(),
 		getAllCapabilities: vi.fn(),
@@ -442,6 +443,98 @@ describe("JobRoleController", () => {
 		expect(req.session.userRole).toBeUndefined();
 		expect(res.redirect).toHaveBeenCalledWith("/login");
 		expect(res.render).not.toHaveBeenCalled();
+	});
+
+	it("should load the job role and options into the edit form", async () => {
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			params: { id: "7" },
+		});
+		const res = createResponse();
+		const jobRole = {
+			jobRoleId: 7,
+			roleName: "Lead Engineer",
+			closingDate: "2000-01-01",
+		};
+		jobRoleService.getById.mockResolvedValueOnce(jobRole);
+		jobRoleService.getAllStatuses.mockResolvedValueOnce([]);
+		jobRoleService.getAllLocations.mockResolvedValueOnce([{ locationId: 1 }]);
+		jobRoleService.getAllCapabilities.mockResolvedValueOnce([
+			{ capabilityId: 2 },
+		]);
+		jobRoleService.getAllBands.mockResolvedValueOnce([{ bandId: 3 }]);
+
+		await controller.showEditForm(req as unknown as Request, res);
+
+		expect(jobRoleService.getById).toHaveBeenCalledWith("7", "admin-token");
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobRoleEdit.njk",
+			expect.objectContaining({
+				jobRole,
+				locationOptions: [{ locationId: 1 }],
+				capabilityOptions: [{ capabilityId: 2 }],
+				bandOptions: [{ bandId: 3 }],
+				minClosingDate: "2000-01-01",
+			}),
+		);
+	});
+
+	it("should update a job role and redirect to its detail page", async () => {
+		const body = { jobRoleId: "7", roleName: "Lead Engineer" };
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			body,
+		});
+		const res = createResponse();
+
+		await controller.updateJobRole(req as unknown as Request, res);
+
+		expect(jobRoleService.updateJobRole).toHaveBeenCalledWith(
+			body,
+			"admin-token",
+		);
+		expect(res.redirect).toHaveBeenCalledWith("/job-role-list/7");
+	});
+
+	it("should preserve submitted values and API validation errors", async () => {
+		const body = {
+			jobRoleId: "7",
+			roleName: "",
+			sharepointUrl: "https://example.com/spec",
+			numberOfOpenPositions: "2",
+			closingDate: "2000-01-01",
+		};
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			body,
+		});
+		const res = createResponse();
+		jobRoleService.updateJobRole.mockRejectedValueOnce({
+			isAxiosError: true,
+			response: {
+				status: 400,
+				data: {
+					errors: [{ field: "roleName", message: "Role name is required" }],
+				},
+			},
+		});
+
+		await controller.updateJobRole(req as unknown as Request, res);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobRoleEdit.njk",
+			expect.objectContaining({
+				jobRole: expect.objectContaining({
+					jobRoleId: "7",
+					roleName: "",
+					jobSpecUrl: "https://example.com/spec",
+					openPositions: "2",
+				}),
+				errorMessage: [{ field: "roleName", message: "Role name is required" }],
+				minClosingDate: "2000-01-01",
+			}),
+		);
 	});
 
 	it("should render apply form when role is open with available positions", async () => {

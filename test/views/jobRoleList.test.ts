@@ -78,10 +78,24 @@ describe("jobRoleList", () => {
 	});
 
 	it("should show create action for admins", () => {
-		const html = renderView([], "ADMIN");
+		const html = renderView(
+			[
+				{
+					jobRoleId: 1,
+					roleName: "Software Engineer",
+					location: "Birmingham",
+					capability: "Engineering",
+					band: "Engineer",
+					closingDate: "2099-12-31",
+					status: "open",
+				},
+			],
+			"ADMIN",
+		);
 
 		expect(html).toContain('href="/job-role-create"');
 		expect(html).toContain("Create new role");
+		expect(html).toContain('href="/job-role-edit/1"');
 	});
 
 	it("should hide create action for non-admin users", () => {
@@ -89,5 +103,13 @@ describe("jobRoleList", () => {
 
 		expect(html).not.toContain('href="/job-role-create"');
 		expect(html).not.toContain("Create new role");
+	});
+
+	it("should only use keyboard row navigation when the row has focus", () => {
+		const html = renderView([]);
+
+		expect(html).toContain(
+			'event.target === row && (event.key === "Enter" || event.key === " ")',
+		);
 	});
 });

@@ -27,6 +27,10 @@ export interface CreateJobRoleInput {
 	locationId?: string | number;
 }
 
+export interface UpdateJobRoleInput extends CreateJobRoleInput {
+	jobRoleId: string | number;
+}
+
 export interface StatusOption {
 	statusId: number;
 	statusName: string;
