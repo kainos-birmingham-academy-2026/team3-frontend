@@ -9,7 +9,7 @@ const apiBaseURL = process.env.API_BASE_URL ?? "http://localhost:4000";
 const bddTestDir = defineBddConfig({
 	features: "e2e/bdd/features/**/*.feature",
 	steps: ["e2e/bdd/steps/**/*.ts", "e2e/bdd/fixtures/test.ts"],
-	outputDir: "e2e/specs/.bdd-gen",
+	outputDir: "e2e/specs",
 });
 
 // TEMPORARY: CI has no Postgres or backend, so the database-backed journey is skipped there.
@@ -34,12 +34,17 @@ export default defineConfig({
 	// globalSetup: './e2e/globalSetup.ts',
 	// globalTeardown: './e2e/globalTeardown.ts',
 	// TEMPORARY
-	testIgnore: needsDatabase
-		? undefined
-		: [
-				"**/register-and-login.spec.ts",
-				"**/admin-hiring.spec.ts",
-			],
+	testIgnore: [
+		"**/.bdd-gen/**",
+		...(needsDatabase
+			? []
+			: [
+					"**/register-and-login.spec.ts",
+					"**/admin-hiring.spec.ts",
+					"**/view-job-roles.spec.ts",
+					"**/e2e/bdd/**",
+				]),
+	],
 	...(needsDatabase
 		? {
 				globalSetup: "./e2e/globalSetup.ts",

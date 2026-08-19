@@ -11,7 +11,7 @@
 		"test:ui": "vitest run --ui",
 		"test:coverage": "vitest run --coverage",
 		"e2e": "bddgen && playwright test",
-		"e2e:bdd": "bddgen && playwright test e2e/specs/.bdd-gen",
+		"e2e:bdd": "bddgen && playwright test e2e/specs/e2e/bdd",
 		"e2e:smoke": "playwright test --grep @smoke",
 		"e2e:headed": "playwright test --headed",
 		"e2e:ui": "playwright test --ui",
