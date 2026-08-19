@@ -398,7 +398,9 @@ describe("JobRoleService", () => {
 	});
 
 	it("should throw when deleting a job role without a token", async () => {
-		await expect(service.deleteJobRole("3")).rejects.toThrow("Not authenticated");
+		await expect(service.deleteJobRole("3")).rejects.toThrow(
+			"Not authenticated",
+		);
 		expect(apiClient.delete).not.toHaveBeenCalled();
 	});
 
