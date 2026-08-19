@@ -237,8 +237,11 @@ router.get("/job-role-edit/:id", requireAuth, requireAdmin, (req, res) =>
 router.post("/job-role-edit", requireAuth, requireAdmin, (req, res) =>
 	controller.updateJobRole(req, res),
 );
-router.post("/job-role-list/:id/delete", requireAuth, requireAdmin, (req, res) =>
-	controller.deleteJobRole(req, res),
+router.post(
+	"/job-role-list/:id/delete",
+	requireAuth,
+	requireAdmin,
+	(req, res) => controller.deleteJobRole(req, res),
 );
 
 router.get("/teapot", (_req, res) => {
