@@ -36,11 +36,7 @@ export default defineConfig({
 	// TEMPORARY
 	testIgnore: needsDatabase
 		? undefined
-<<<<<<< HEAD
-		: ["**/register-and-login.spec.ts", "**/admin-hiring.spec.ts"],
-=======
-		: ["**/register-and-login.spec.ts", "**/.bdd-gen/**"],
->>>>>>> 9afb05a (added BDD coverage for the registration and login flow)
+		: ["**/register-and-login.spec.ts", "**/admin-hiring.spec.ts", "**/.bdd-gen/**"],
 	...(needsDatabase
 		? {
 				globalSetup: "./e2e/globalSetup.ts",
