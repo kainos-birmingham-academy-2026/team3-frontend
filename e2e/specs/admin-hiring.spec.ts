@@ -1,4 +1,4 @@
-import { expect, test } from "../fixtures/test";
+import { test } from "../fixtures/test";
 
 test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 	test.beforeAll(async () => {
@@ -8,8 +8,8 @@ test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 		}
 
 		// Reset database to ensure fresh state
-		const { exec } = await import("child_process");
-		const { promisify } = await import("util");
+		const { exec } = await import("node:child_process");
+		const { promisify } = await import("node:util");
 		const execAsync = promisify(exec);
 
 		try {
@@ -25,7 +25,7 @@ test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 		}
 	});
 
-	test("successfully hire an applicant", { skip: !!process.env.CI }, async ({
+	test("successfully hire an applicant", async ({
 		page,
 		loginPage,
 		adminApplicationsPage,

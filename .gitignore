@@ -38,3 +38,4 @@ examples/
 /playwright/.auth/
 /.playwright-mcp/
 /e2e/specs/e2e/
+/e2e/specs/.bdd-gen/
