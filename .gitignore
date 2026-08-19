@@ -36,8 +36,5 @@ examples/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
-<<<<<<< HEAD
 /.playwright-mcp/
-=======
 /e2e/specs/.bdd-gen/
->>>>>>> 9afb05a (added BDD coverage for the registration and login flow)
