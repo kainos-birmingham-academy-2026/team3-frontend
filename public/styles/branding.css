@@ -205,6 +205,50 @@ body.modal-open {
 	flex-wrap: wrap;
 }
 
+.confirmation-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: grid;
+	place-items: center;
+	padding: 1.25rem;
+	background: rgba(15, 24, 61, 0.48);
+}
+
+.confirmation-modal-backdrop[hidden] {
+	display: none;
+}
+
+.confirmation-modal {
+	width: min(540px, 100%);
+	background: var(--kainos-white);
+	border: 1px solid #d9def0;
+	border-top: 6px solid #c62828;
+	box-shadow: 0 22px 46px rgba(26, 41, 114, 0.26);
+	padding: 1.8rem;
+}
+
+.confirmation-modal h2 {
+	margin: 0 0 0.8rem;
+	font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+	line-height: 1.25;
+}
+
+.confirmation-modal p {
+	margin: 0;
+	font-size: 1.02rem;
+	line-height: 1.65;
+	color: var(--kainos-text-muted);
+}
+
+.confirmation-modal-actions {
+	margin-top: 1.25rem;
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+}
+
 .button-solid {
 	color: var(--kainos-white);
 	background: var(--kainos-blue);
@@ -316,6 +360,24 @@ body.modal-open {
 .job-role-row-link:focus-visible {
 	outline: 3px solid rgba(40, 53, 131, 0.35);
 	outline-offset: -2px;
+}
+
+.job-role-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	flex-wrap: wrap;
+}
+
+.job-role-actions .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 7.25rem;
+	min-height: 2.9rem;
+	font-family: inherit;
+	line-height: 1.2;
+	white-space: nowrap;
 }
 
 .empty-state {
@@ -811,6 +873,8 @@ body.modal-open {
 
 .cta-section {
 	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
 	gap: 1rem;
 	margin-top: 2rem;
 	padding-top: 2rem;

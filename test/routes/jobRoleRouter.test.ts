@@ -24,6 +24,7 @@ vi.mock("../../src/config/apiClient", () => ({
 		get: vi.fn(),
 		post: vi.fn(),
 		patch: vi.fn(),
+		delete: vi.fn(),
 	},
 }));
 
@@ -71,13 +72,14 @@ function createAdminApp(role: "ADMIN" | "USER" = "ADMIN"): Application {
 		}),
 	);
 
-	adminApp.use(((req, _res, next) => {
+	adminApp.use(((req, res, next) => {
 		(
 			req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
 		).jwtToken = "admin-token";
 		(
 			req.session as { jwtToken?: string; userRole?: "ADMIN" | "USER" }
 		).userRole = role;
+		res.locals.currentUserRole = role;
 		next();
 	}) as RequestHandler);
 
@@ -415,6 +417,35 @@ describe("routes", () => {
 				}),
 			}),
 		);
+	});
+
+	it("should show delete controls only on the admin role detail page", async () => {
+		const adminApp = createAdminApp();
+
+		const [listResponse, detailResponse] = await Promise.all([
+			request(adminApp).get("/job-role-list"),
+			request(adminApp).get("/job-role-list/1"),
+		]);
+
+		expect(listResponse.status).toBe(200);
+		expect(listResponse.text).not.toContain("delete-role-trigger");
+		expect(listResponse.text).not.toContain('id="delete-role-modal-backdrop"');
+		expect(detailResponse.status).toBe(200);
+		expect(detailResponse.text).toContain("Delete role");
+		expect(detailResponse.text).toContain('id="delete-role-form"');
+	});
+
+	it("should delete a job role and redirect an admin to the job role list", async () => {
+		const adminApp = createAdminApp();
+		vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: {} });
+
+		const response = await request(adminApp).post("/job-role-list/1/delete");
+
+		expect(response.status).toBe(303);
+		expect(response.headers.location).toBe("/job-role-list");
+		expect(apiClient.delete).toHaveBeenCalledWith("/job-roles/1", {
+			headers: { Authorization: "Bearer admin-token" },
+		});
 	});
 
 	it("should render cv page for an existing application", async () => {

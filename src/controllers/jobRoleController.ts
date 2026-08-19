@@ -251,6 +251,39 @@ export class JobRoleController {
 		}
 	}
 
+	async deleteJobRole(req: Request, res: Response): Promise<void> {
+		try {
+			await this.jobRoleService.deleteJobRole(
+				this.getRoleIdParam(req),
+				this.getJwtToken(req),
+			);
+			res.redirect(303, "/job-role-list");
+		} catch (error) {
+			if (this.handleUnauthorized(req, res, error)) {
+				return;
+			}
+
+			let errorMessage = "The job role could not be deleted. Please try again.";
+			let statusCode = 500;
+
+			if (axios.isAxiosError(error)) {
+				statusCode = error.response?.status ?? 500;
+				if (statusCode === 403) {
+					errorMessage = "You do not have permission to delete this job role.";
+				} else if (statusCode === 404) {
+					errorMessage = "Job role not found.";
+				}
+			} else if (error instanceof Error) {
+				errorMessage = error.message;
+			}
+
+			res.status(statusCode).render("pages/jobRoleList.njk", {
+				jobRoles: [],
+				errorMessage,
+			});
+		}
+	}
+
 	async showApplyForm(req: Request, res: Response): Promise<void> {
 		try {
 			const id = this.getRoleIdParam(req);

@@ -83,7 +83,7 @@ npm start
 - `npm run build` - Compile TypeScript into `dist/`.
 - `npm start` - Run the compiled app from `dist/index.js`.
 - `npm run lint` - Check for style issues.
-- `npm run lint:fix` - Run lint checks and apply safe fixes.
+- `npm run lint:fix` - Format files, apply safe lint fixes, and organize imports with Biome.
 - `npm test` - Execute unit tests.
 - `npm run test:watch` - Run unit tests in watch mode.
 - `npm run test:coverage` - Generate a coverage report.
@@ -169,6 +169,8 @@ Example response:
 Renders the job role page using backend API data.
 
 - Loads job roles for authenticated or unauthenticated visitors
+- Opens a role's detail page when its table row is selected with a mouse, Enter, or Space
+- Keeps Edit and Delete actions off the list to provide a compact, accessible table
 - Sends the session JWT token to the backend when one is available
 - If backend responds with `401`, redirects to `/login`
 - If backend errors, renders the page with an error state
@@ -178,6 +180,7 @@ Renders the job role page using backend API data.
 Renders the details for a selected job role.
 
 - Loads the role details from the backend
+- Shows Edit and Delete actions at the top of the page for administrators
 - If backend responds with `401`, clears the session and redirects to `/login`
 - If the role cannot be loaded, renders an error state
 
@@ -235,6 +238,16 @@ Updates a job role through the backend `PATCH /job-roles/:id` endpoint.
 - On success: redirects to `/job-role-list/:id`
 - On validation failure: re-renders the form with the submitted values and backend validation messages
 - On insufficient permissions or a missing role: re-renders the form with an appropriate error
+- On an unauthorised backend response: clears the session and redirects to `/login`
+
+### `POST /job-role-list/:id/delete`
+
+Deletes a job role through the backend `DELETE /job-roles/:id` endpoint.
+
+- Requires an authenticated administrator session
+- Is submitted from the confirmation dialog on the job role detail page
+- On success: redirects to `/job-role-list`
+- On insufficient permissions or a missing role: renders the job role list with an appropriate error
 - On an unauthorised backend response: clears the session and redirects to `/login`
 
 ### `GET /job-applications/admin`
