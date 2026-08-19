@@ -39,7 +39,6 @@ export default defineConfig({
 		: [
 				"**/register-and-login.spec.ts",
 				"**/admin-hiring.spec.ts",
-				"**/.bdd-gen/**",
 			],
 	...(needsDatabase
 		? {
