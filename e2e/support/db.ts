@@ -45,7 +45,7 @@ export async function deleteUserByEmail(email: string): Promise<void> {
 export function resetDatabase(): void {
 	execFileSync(
 		"npx",
-		["prisma", "migrate", "reset", "--force", "--skip-generate"],
+		["prisma", "migrate", "reset", "--force"],
 		{
 			cwd: backendDir,
 			stdio: "inherit",

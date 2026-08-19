@@ -1,10 +1,16 @@
 /// <reference types="node" />
 import { defineConfig, devices } from "@playwright/test";
+import { defineBddConfig } from "playwright-bdd";
 
 const appPort = Number(process.env.PORT ?? 3000);
 const baseURL =
 	process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${appPort}`;
 const apiBaseURL = process.env.API_BASE_URL ?? "http://localhost:4000";
+const bddTestDir = defineBddConfig({
+	features: "e2e/bdd/features/**/*.feature",
+	steps: ["e2e/bdd/steps/**/*.ts", "e2e/bdd/fixtures/test.ts"],
+	outputDir: "e2e/specs/.bdd-gen",
+});
 
 // TEMPORARY: CI has no Postgres or backend, so the database-backed journey is skipped there.
 // Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
@@ -23,14 +29,18 @@ const needsDatabase = !process.env.CI;
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-	testDir: "./e2e/specs",
-	testMatch: "**/*.spec.ts",
+	testDir: bddTestDir,
+	testMatch: ["**/*.spec.ts", "**/*.spec.js"],
 	// globalSetup: './e2e/globalSetup.ts',
 	// globalTeardown: './e2e/globalTeardown.ts',
 	// TEMPORARY
 	testIgnore: needsDatabase
 		? undefined
+<<<<<<< HEAD
 		: ["**/register-and-login.spec.ts", "**/admin-hiring.spec.ts"],
+=======
+		: ["**/register-and-login.spec.ts", "**/.bdd-gen/**"],
+>>>>>>> 9afb05a (added BDD coverage for the registration and login flow)
 	...(needsDatabase
 		? {
 				globalSetup: "./e2e/globalSetup.ts",
