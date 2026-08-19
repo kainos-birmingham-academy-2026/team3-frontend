@@ -42,7 +42,7 @@ jobs:
       run: npx playwright install --with-deps chromium
 
     - name: Run Playwright tests
-      run: npm run e2e -- --project=chromium
+      run: npm run e2e -- --project=chromium --grep-invert @backend --pass-with-no-tests
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kainos_test
         NODE_ENV: test

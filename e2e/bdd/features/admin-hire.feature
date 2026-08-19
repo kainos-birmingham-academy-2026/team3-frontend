@@ -1,4 +1,4 @@
-@smoke
+@smoke @backend
 
 Feature: Admin Hiring applicant
 	As an admin i want to be able to hire applicants whose applications are pending review

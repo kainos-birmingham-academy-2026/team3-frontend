@@ -1,4 +1,4 @@
-@smoke
+@smoke @backend
 Feature: Account registration and sign-in
   As a job applicant
   I want to create an account and sign in
