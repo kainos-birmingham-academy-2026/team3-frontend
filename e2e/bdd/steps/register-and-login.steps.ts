@@ -23,7 +23,7 @@ When(
 );
 
 Then(
-	"I should see the registration confirmation",
+	"my account should have been created successfully",
 	async ({ registerConfirmationPage }) => {
 		await registerConfirmationPage.expectLoaded();
 	},
@@ -38,7 +38,7 @@ When(
 	},
 );
 
-Then("I should see the signed-in home page", async ({ homePage, page }) => {
+Then("I should be signed in successfully", async ({ homePage, page }) => {
 	await homePage.expectLoaded();
 	await homePage.expectSignedIn();
 	await expect(page).toHaveURL(/\/$/);

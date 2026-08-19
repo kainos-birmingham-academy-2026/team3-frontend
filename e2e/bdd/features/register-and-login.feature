@@ -7,6 +7,6 @@ Feature: Account registration and sign-in
   Scenario: A new applicant registers and signs in
     Given I am a signed-out visitor
     When I create an account with valid credentials
-    Then I should see the registration confirmation
+    Then my account should have been created successfully
     When I sign in with my new account
-    Then I should see the signed-in home page
+    Then I should be signed in successfully
