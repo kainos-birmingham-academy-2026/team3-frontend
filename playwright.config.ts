@@ -28,7 +28,9 @@ export default defineConfig({
 	// globalSetup: './e2e/globalSetup.ts',
 	// globalTeardown: './e2e/globalTeardown.ts',
 	// TEMPORARY
-	testIgnore: needsDatabase ? undefined : "**/register-and-login.spec.ts",
+	testIgnore: needsDatabase
+		? undefined
+		: ["**/register-and-login.spec.ts", "**/admin-hiring.spec.ts"],
 	...(needsDatabase
 		? {
 				globalSetup: "./e2e/globalSetup.ts",
