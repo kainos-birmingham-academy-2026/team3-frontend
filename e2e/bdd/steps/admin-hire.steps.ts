@@ -26,16 +26,14 @@ Before(async () => {
 	}
 });
 
-Given("i have an admin account already registered", async ({ adminHireWorld }) => {
-	// This flow relies on the seeded admin account.
-	expect(adminHireWorld.adminEmail).toBeTruthy();
-});
-
-When("i login to my administrator account", async ({
+Given("I am logged in as an administrator", async ({
 	loginPage,
 	page,
 	adminHireWorld,
 }) => {
+	// This flow relies on the seeded admin account.
+	expect(adminHireWorld.adminEmail).toBeTruthy();
+
 	await loginPage.goto();
 	await loginPage.signIn(
 		adminHireWorld.adminEmail,
@@ -45,40 +43,29 @@ When("i login to my administrator account", async ({
 	await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {});
 });
 
-Then(
-	"an application tab appears which takes me to the admin application portal",
-	async ({ page, adminApplicationsPage }) => {
+When(
+	"I review a pending application",
+	async ({ page, adminApplicationsPage, adminHireWorld }) => {
 		const applicationsLink = page.getByRole("link", { name: /applications/i });
 		await expect(applicationsLink).toBeVisible();
 		await applicationsLink.click();
 		await adminApplicationsPage.expectLoaded();
-	},
-);
 
-Then(
-	"on the applications table under the column labelled \"Action\"",
-	async ({ page, adminApplicationsPage, adminHireWorld }) => {
-		await adminApplicationsPage.expectLoaded();
-
-		adminHireWorld.pendingBeforeHire = await page.locator(".status-pending").count();
+		adminHireWorld.pendingBeforeHire = await page
+			.locator(".status-pending")
+			.count();
 		expect(adminHireWorld.pendingBeforeHire).toBeGreaterThan(0);
 	},
 );
 
-When("i click on the hire button", async ({ adminApplicationsPage }) => {
+When("I hire the applicant", async ({ adminApplicationsPage, page }) => {
 	await adminApplicationsPage.clickFirstHireButton();
-});
-
-Then("recieve a popup to confirm", async ({ page }) => {
 	await expect(page.locator("#popup-confirm")).toBeVisible();
-});
-
-Then("recieve a success message", async ({ adminApplicationsPage }) => {
 	await adminApplicationsPage.confirmHiring();
 	await adminApplicationsPage.expectSuccessMessage();
 });
 
-Then("applicant status goes from pending -> hired.", async ({ page, adminHireWorld }) => {
+Then("the applicant status should change from pending to hired", async ({ page, adminHireWorld }) => {
 	if (typeof adminHireWorld.pendingBeforeHire === "number") {
 		const pendingAfterHire = await page.locator(".status-pending").count();
 		expect(pendingAfterHire).toBeLessThan(adminHireWorld.pendingBeforeHire);
