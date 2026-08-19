@@ -1,9 +1,9 @@
-import { Router, type Request } from "express";
 import axios from "axios";
+import { type Request, Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
-import { JobRoleService } from "../services/jobRoleService";
 import { AdminApplicationService } from "../services/adminApplicationService";
+import { JobRoleService } from "../services/jobRoleService";
 
 const router = Router();
 const service = new JobRoleService();
@@ -15,7 +15,9 @@ function getSessionToken(req: Request): string {
 	return req.session.jwtToken ?? "";
 }
 
-function parseApplicationId(rawId: string | string[] | undefined): number | null {
+function parseApplicationId(
+	rawId: string | string[] | undefined,
+): number | null {
 	const idParam = Array.isArray(rawId) ? rawId[0] : rawId;
 	const applicationId = Number.parseInt(idParam ?? "", 10);
 
@@ -55,104 +57,149 @@ router.get("/", (_req, res) => {
 	res.render("pages/index.njk");
 });
 
-router.get("/job-applications/admin", requireAuth, requireAdmin, (req, res) => controller.getApplications(req, res));
+router.get("/job-applications/admin", requireAuth, requireAdmin, (req, res) =>
+	controller.getApplications(req, res),
+);
 
-router.get("/job-applications/:applicationId/cv", requireAuth, requireAdmin, async (req, res) => {
-	try {
-		const applicationId = parseApplicationId(req.params.applicationId);
-		if (applicationId === null) {
-			res.status(400).render("pages/404.njk");
-			return;
+router.get(
+	"/job-applications/:applicationId/cv",
+	requireAuth,
+	requireAdmin,
+	async (req, res) => {
+		try {
+			const applicationId = parseApplicationId(req.params.applicationId);
+			if (applicationId === null) {
+				res.status(400).render("pages/404.njk");
+				return;
+			}
+
+			const jwtToken = getSessionToken(req);
+			const applications = await adminApplicationService.getAll(jwtToken);
+			const application = applications.find(
+				(item) => item.applicationId === applicationId,
+			);
+
+			if (!application) {
+				res.status(404).render("pages/404.njk");
+				return;
+			}
+
+			const cvText = await adminApplicationService.getCvTextById(
+				applicationId,
+				jwtToken,
+			);
+			res.render("pages/applicationCv.njk", {
+				application,
+				cvText:
+					cvText ||
+					application.cvText ||
+					"No CV text available for this application.",
+			});
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to load CV";
+			res.status(500).render("pages/404.njk", {
+				errorMessage: message,
+			});
 		}
-
-		const jwtToken = getSessionToken(req);
-		const applications = await adminApplicationService.getAll(jwtToken);
-		const application = applications.find((item) => item.applicationId === applicationId);
-
-		if (!application) {
-			res.status(404).render("pages/404.njk");
-			return;
-		}
-
-		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
-		res.render("pages/applicationCv.njk", {
-			application,
-			cvText: cvText || application.cvText || "No CV text available for this application.",
-		});
-	} catch (error) {
-		const message = error instanceof Error ? error.message : "Failed to load CV";
-		res.status(500).render("pages/404.njk", {
-			errorMessage: message,
-		});
-	}
-});
+	},
+);
 
 // API endpoint for fetching applications (called by client-side JavaScript)
-router.get("/api/job-applications/admin", requireAuth, requireAdmin, async (req, res) => {
-	try {
-		const jwtToken = getSessionToken(req);
-		const applications = await adminApplicationService.getAll(jwtToken);
-		res.json(applications);
-	} catch (error) {
-		const message = error instanceof Error ? error.message : "Failed to fetch applications";
-		res.status(500).json({ error: message });
-	}
-});
-
-router.get("/api/job-applications/:applicationId/cv-text", requireAuth, requireAdmin, async (req, res) => {
-	try {
-		const applicationId = parseApplicationId(req.params.applicationId);
-		if (applicationId === null) {
-			res.status(400).json({ error: "Invalid application ID" });
-			return;
+router.get(
+	"/api/job-applications/admin",
+	requireAuth,
+	requireAdmin,
+	async (req, res) => {
+		try {
+			const jwtToken = getSessionToken(req);
+			const applications = await adminApplicationService.getAll(jwtToken);
+			res.json(applications);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Failed to fetch applications";
+			res.status(500).json({ error: message });
 		}
+	},
+);
 
-		const jwtToken = getSessionToken(req);
-		const cvText = await adminApplicationService.getCvTextById(applicationId, jwtToken);
-		res.json({ cvText });
-	} catch (error) {
-		if (axios.isAxiosError(error)) {
-			res.status(error.response?.status ?? 500).json({ error: getAxiosErrorMessage(error) });
-			return;
+router.get(
+	"/api/job-applications/:applicationId/cv-text",
+	requireAuth,
+	requireAdmin,
+	async (req, res) => {
+		try {
+			const applicationId = parseApplicationId(req.params.applicationId);
+			if (applicationId === null) {
+				res.status(400).json({ error: "Invalid application ID" });
+				return;
+			}
+
+			const jwtToken = getSessionToken(req);
+			const cvText = await adminApplicationService.getCvTextById(
+				applicationId,
+				jwtToken,
+			);
+			res.json({ cvText });
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				res
+					.status(error.response?.status ?? 500)
+					.json({ error: getAxiosErrorMessage(error) });
+				return;
+			}
+
+			const message =
+				error instanceof Error ? error.message : "Failed to fetch CV text";
+			res.status(500).json({ error: message });
 		}
+	},
+);
 
-		const message = error instanceof Error ? error.message : "Failed to fetch CV text";
-		res.status(500).json({ error: message });
-	}
-});
+router.post(
+	"/api/job-applications/:applicationId/status",
+	requireAuth,
+	requireAdmin,
+	async (req, res) => {
+		try {
+			const applicationId = parseApplicationId(req.params.applicationId);
+			if (applicationId === null) {
+				res.status(400).json({ error: "Invalid application ID" });
+				return;
+			}
 
-router.post("/api/job-applications/:applicationId/status", requireAuth, requireAdmin, async (req, res) => {
-	try {
-		const applicationId = parseApplicationId(req.params.applicationId);
-		if (applicationId === null) {
-			res.status(400).json({ error: "Invalid application ID" });
-			return;
+			const action = parseApplicationAction(req.body?.action);
+			if (action === null) {
+				res
+					.status(400)
+					.json({ error: "Invalid action. Use 'approve' or 'reject'." });
+				return;
+			}
+
+			const jwtToken = getSessionToken(req);
+			if (action === "approve") {
+				await adminApplicationService.approve(applicationId, jwtToken);
+			} else {
+				await adminApplicationService.reject(applicationId, jwtToken);
+			}
+
+			res.json({ success: true });
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				res
+					.status(error.response?.status ?? 500)
+					.json({ error: getAxiosErrorMessage(error) });
+				return;
+			}
+
+			const message =
+				error instanceof Error
+					? error.message
+					: "Failed to update application status";
+			res.status(500).json({ error: message });
 		}
-
-		const action = parseApplicationAction(req.body?.action);
-		if (action === null) {
-			res.status(400).json({ error: "Invalid action. Use 'approve' or 'reject'." });
-			return;
-		}
-
-		const jwtToken = getSessionToken(req);
-		if (action === "approve") {
-			await adminApplicationService.approve(applicationId, jwtToken);
-		} else {
-			await adminApplicationService.reject(applicationId, jwtToken);
-		}
-
-		res.json({ success: true });
-	} catch (error) {
-		if (axios.isAxiosError(error)) {
-			res.status(error.response?.status ?? 500).json({ error: getAxiosErrorMessage(error) });
-			return;
-		}
-
-		const message = error instanceof Error ? error.message : "Failed to update application status";
-		res.status(500).json({ error: message });
-	}
-});
+	},
+);
 
 router.get("/health", (_req, res) => {
 	res.status(200).send({
@@ -161,7 +208,7 @@ router.get("/health", (_req, res) => {
 	});
 });
 
-router.get("/job-role-list", (req,res) => controller.getAll(req, res));
+router.get("/job-role-list", (req, res) => controller.getAll(req, res));
 router.get("/job-role-list/:id", (req, res) => controller.getById(req, res));
 router.get("/job-role-list/:id/apply", (req, res) => {
 	if (!req.session.jwtToken) {
@@ -171,20 +218,19 @@ router.get("/job-role-list/:id/apply", (req, res) => {
 
 	controller.showApplyForm(req, res);
 });
-router.post(
-	"/job-role-list/:id/apply",
-	requireAuth,
-	(req, res) => controller.submitApplication(req, res),
+router.post("/job-role-list/:id/apply", requireAuth, (req, res) =>
+	controller.submitApplication(req, res),
 );
-router.get(
-	"/job-role-list/:id/apply/confirmation",
-	requireAuth,
-	(req, res) => controller.showApplicationConfirmation(req, res),
+router.get("/job-role-list/:id/apply/confirmation", requireAuth, (req, res) =>
+	controller.showApplicationConfirmation(req, res),
 );
 
-router.get("/job-role-create", requireAuth, requireAdmin, (req, res) => controller.showCreateForm(req, res));
-router.post("/job-role-create", requireAuth, requireAdmin, (req, res) => controller.createJobRole(req, res));
-
+router.get("/job-role-create", requireAuth, requireAdmin, (req, res) =>
+	controller.showCreateForm(req, res),
+);
+router.post("/job-role-create", requireAuth, requireAdmin, (req, res) =>
+	controller.createJobRole(req, res),
+);
 
 router.get("/teapot", (_req, res) => {
 	res.render("pages/teapot.njk");

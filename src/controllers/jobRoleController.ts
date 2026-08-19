@@ -12,7 +12,7 @@ import type {
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
-	constructor(private jobRoleService: JobRoleService) { }
+	constructor(private jobRoleService: JobRoleService) {}
 
 	private getJwtToken(req: Request): string | undefined {
 		return req.session.jwtToken;
@@ -25,7 +25,6 @@ export class JobRoleController {
 	private canApplyForRole(jobRole: JobRole): boolean {
 		return jobRole.status === "open" && (jobRole.openPositions ?? 0) > 0;
 	}
-
 
 	private async getDropdownOptions(): Promise<{
 		statuses: StatusOption[];
@@ -46,7 +45,6 @@ export class JobRoleController {
 			throw new Error("Failed to fetch dropdown options");
 		}
 	}
-
 
 	async getAll(req: Request, res: Response): Promise<void> {
 		try {
@@ -98,7 +96,10 @@ export class JobRoleController {
 	async createJobRole(req: Request, res: Response): Promise<void> {
 		try {
 			const jobRoleData = req.body as CreateJobRoleInput;
-			await this.jobRoleService.createJobRole(jobRoleData, this.getJwtToken(req));
+			await this.jobRoleService.createJobRole(
+				jobRoleData,
+				this.getJwtToken(req),
+			);
 			res.redirect("/job-role-list");
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -158,8 +159,6 @@ export class JobRoleController {
 			});
 		}
 	}
-
-
 
 	async showApplyForm(req: Request, res: Response): Promise<void> {
 		try {
@@ -298,7 +297,7 @@ export class JobRoleController {
 			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
 			res.render("pages/jobApplicationAdmin.njk", {
 				applications: [],
-				jobRoles
+				jobRoles,
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -356,6 +355,4 @@ export class JobRoleController {
 			throw new Error("Failed to fetch job role bands");
 		}
 	}
-
-
 }

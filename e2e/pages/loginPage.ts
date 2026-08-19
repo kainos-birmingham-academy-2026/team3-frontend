@@ -1,31 +1,48 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export class LoginPage {
-  constructor(private readonly page: Page) {}
+	private readonly url = "/login";
+	private readonly title = /Kainos \| Sign in/;
 
-  async goto(): Promise<void> {
-    await this.page.goto('/login');
-  }
+	private readonly heading: Locator;
+	private readonly emailField: Locator;
+	private readonly passwordField: Locator;
+	private readonly signInButton: Locator;
+	private readonly createAccountLink: Locator;
 
-  async expectLoaded(): Promise<void> {
-    await expect(this.page).toHaveURL(/\/login$/);
-    await expect(this.page).toHaveTitle(/Kainos \| Sign in/);
-    await expect(this.page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
-  }
+	constructor(private readonly page: Page) {
+		this.heading = page.getByRole("heading", { name: "Welcome back" });
+		this.emailField = page.getByLabel("Email");
+		this.passwordField = page.getByLabel("Password");
+		this.signInButton = page.getByRole("button", { name: "Sign in" });
+		this.createAccountLink = page.getByRole("link", {
+			name: "Create an account",
+		});
+	}
 
-  async expectFormFields(): Promise<void> {
-    await expect(this.page.getByLabel('Email')).toBeVisible();
-    await expect(this.page.getByLabel('Password')).toBeVisible();
-    await expect(this.page.getByRole('button', { name: 'Sign in' })).toBeVisible();
-  }
+	async goto(): Promise<void> {
+		await this.page.goto(this.url);
+	}
 
-  async clickCreateAccount(): Promise<void> {
-    await this.page.getByRole('link', { name: 'Create an account' }).click();
-  }
+	async expectLoaded(): Promise<void> {
+		await expect(this.page).toHaveURL(/\/login$/);
+		await expect(this.page).toHaveTitle(this.title);
+		await expect(this.heading).toBeVisible();
+	}
 
-  async signIn(email: string, password: string): Promise<void> {
-    await this.page.getByLabel('Email').fill(email);
-    await this.page.getByLabel('Password').fill(password);
-    await this.page.getByRole('button', { name: 'Sign in' }).click();
-  }
+	async expectFormFields(): Promise<void> {
+		await expect(this.emailField).toBeVisible();
+		await expect(this.passwordField).toBeVisible();
+		await expect(this.signInButton).toBeVisible();
+	}
+
+	async clickCreateAccount(): Promise<void> {
+		await this.createAccountLink.click();
+	}
+
+	async signIn(email: string, password: string): Promise<void> {
+		await this.emailField.fill(email);
+		await this.passwordField.fill(password);
+		await this.signInButton.click();
+	}
 }

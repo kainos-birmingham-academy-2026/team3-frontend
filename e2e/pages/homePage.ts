@@ -1,38 +1,51 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export class HomePage {
-  constructor(private readonly page: Page) {}
+	private readonly url = "/";
+	private readonly title = /Kainos \| Home/;
 
-  async goto(): Promise<void> {
-    await this.page.goto('/');
-  }
+	private readonly heading: Locator;
+	private readonly viewJobRolesLink: Locator;
+	private readonly contactUsLink: Locator;
+	private readonly signInLink: Locator;
+	private readonly signOutTrigger: Locator;
 
-  async expectLoaded(): Promise<void> {
-    await expect(this.page).toHaveURL(/\/$/);
-    await expect(this.page).toHaveTitle(/Kainos \| Home/);
-    await expect(
-      this.page.getByRole('heading', {
-        name: 'True partners change the world together',
-      }),
-    ).toBeVisible();
-  }
+	constructor(private readonly page: Page) {
+		this.heading = page.getByRole("heading", {
+			name: "True partners change the world together",
+		});
+		this.viewJobRolesLink = page.getByRole("link", { name: "View job roles" });
+		this.contactUsLink = page.getByRole("link", { name: "Contact us" });
+		this.signInLink = page.getByRole("link", { name: "Sign in" });
+		this.signOutTrigger = page.locator("#logout-trigger");
+	}
 
-  async expectPrimaryActions(): Promise<void> {
-    await expect(this.page.getByRole('link', { name: 'View job roles' })).toBeVisible();
-    await expect(this.page.getByRole('link', { name: 'Contact us' })).toBeVisible();
-  }
+	async goto(): Promise<void> {
+		await this.page.goto(this.url);
+	}
 
-  async expectSignedOut(): Promise<void> {
-    await expect(this.page.getByRole('link', { name: 'Sign in' })).toBeVisible();
-    await expect(this.page.locator('#logout-trigger')).toHaveCount(0);
-  }
+	async expectLoaded(): Promise<void> {
+		await expect(this.page).toHaveURL(/\/$/);
+		await expect(this.page).toHaveTitle(this.title);
+		await expect(this.heading).toBeVisible();
+	}
 
-  async expectSignedIn(): Promise<void> {
-    await expect(this.page.locator('#logout-trigger')).toBeVisible();
-    await expect(this.page.getByRole('link', { name: 'Sign in' })).toHaveCount(0);
-  }
+	async expectPrimaryActions(): Promise<void> {
+		await expect(this.viewJobRolesLink).toBeVisible();
+		await expect(this.contactUsLink).toBeVisible();
+	}
 
-  async clickSignIn(): Promise<void> {
-    await this.page.getByRole('link', { name: 'Sign in' }).click();
-  }
+	async expectSignedOut(): Promise<void> {
+		await expect(this.signInLink).toBeVisible();
+		await expect(this.signOutTrigger).toHaveCount(0);
+	}
+
+	async expectSignedIn(): Promise<void> {
+		await expect(this.signOutTrigger).toBeVisible();
+		await expect(this.signInLink).toHaveCount(0);
+	}
+
+	async clickSignIn(): Promise<void> {
+		await this.signInLink.click();
+	}
 }
