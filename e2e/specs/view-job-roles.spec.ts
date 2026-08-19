@@ -1,12 +1,15 @@
-import { test } from "../fixtures/test";
+import { expect, test } from "../fixtures/test";
 
 test.describe("View open job roles", () => {
 	test("shows open roles and hides closed roles", async ({
 		jobRoleListPage,
+		page,
 	}) => {
 		await jobRoleListPage.goto();
-		await jobRoleListPage.expectLoaded();
-		await jobRoleListPage.expectRoleVisible("Software Engineer");
-		await jobRoleListPage.expectRoleHidden("Delivery Manager");
+		await expect(page).toHaveURL(/\/job-role-list$/);
+		await expect(page).toHaveTitle("Kainos Careers");
+		await expect(jobRoleListPage.getHeading()).toBeVisible();
+		await expect(jobRoleListPage.getRoleRow("Software Engineer")).toBeVisible();
+		await expect(jobRoleListPage.getRoleRow("Delivery Manager")).toHaveCount(0);
 	});
 });

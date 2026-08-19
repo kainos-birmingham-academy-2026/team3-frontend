@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { test } from "../fixtures/test";
 
@@ -7,18 +8,17 @@ Given("open and closed job roles are available", async () => {
 	// The Playwright global setup resets and seeds the database before this scenario.
 });
 
-When("I view the job roles list", async ({ jobRoleListPage }) => {
+When("I view the job roles list", async ({ jobRoleListPage, page }) => {
 	await jobRoleListPage.goto();
-	await jobRoleListPage.expectLoaded();
+	await expect(page).toHaveURL(/\/job-role-list$/);
+	await expect(page).toHaveTitle("Kainos Careers");
+	await expect(jobRoleListPage.getHeading()).toBeVisible();
 });
 
 Then(
-	"I should see the available open job roles",
+	"I should only see the available open job roles",
 	async ({ jobRoleListPage }) => {
-		await jobRoleListPage.expectRoleVisible("Software Engineer");
+		await expect(jobRoleListPage.getRoleRow("Software Engineer")).toBeVisible();
+		await expect(jobRoleListPage.getRoleRow("Delivery Manager")).toHaveCount(0);
 	},
 );
-
-Then("I should not see closed job roles", async ({ jobRoleListPage }) => {
-	await jobRoleListPage.expectRoleHidden("Delivery Manager");
-});

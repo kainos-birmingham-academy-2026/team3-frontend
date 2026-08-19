@@ -1,4 +1,4 @@
-import { test } from "../fixtures/test";
+import { expect, test } from "../fixtures/test";
 
 test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 	test.beforeAll(async () => {
@@ -36,14 +36,17 @@ test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 		await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {});
 
 		await adminApplicationsPage.goto();
-		await adminApplicationsPage.expectLoaded();
-
-		await adminApplicationsPage.confirmPendingApplicationExists();
+		await expect(
+			adminApplicationsPage.getApplicationReviewHeading(),
+		).toBeVisible();
+		expect(
+			await adminApplicationsPage.getPendingApplications().count(),
+		).toBeGreaterThan(0);
 
 		await adminApplicationsPage.clickFirstHireButton();
 
 		await adminApplicationsPage.confirmHiring();
 
-		await adminApplicationsPage.expectSuccessMessage();
+		await expect(adminApplicationsPage.getSuccessMessage()).toBeVisible();
 	});
 });

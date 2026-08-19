@@ -34,14 +34,17 @@ export default defineConfig({
 	// globalSetup: './e2e/globalSetup.ts',
 	// globalTeardown: './e2e/globalTeardown.ts',
 	// TEMPORARY
-	testIgnore: needsDatabase
-		? undefined
-		: [
-				"**/register-and-login.spec.ts",
-				"**/admin-hiring.spec.ts",
-				"**/view-job-roles.spec.ts",
-				"**/e2e/bdd/**",
-			],
+	testIgnore: [
+		"**/.bdd-gen/**",
+		...(needsDatabase
+			? []
+			: [
+					"**/register-and-login.spec.ts",
+					"**/admin-hiring.spec.ts",
+					"**/view-job-roles.spec.ts",
+					"**/e2e/bdd/**",
+				]),
+	],
 	...(needsDatabase
 		? {
 				globalSetup: "./e2e/globalSetup.ts",

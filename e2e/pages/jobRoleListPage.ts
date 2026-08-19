@@ -1,8 +1,7 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 export class JobRoleListPage {
 	private readonly url = "/job-role-list";
-	private readonly title = "Kainos Careers";
 	private readonly heading: Locator;
 
 	constructor(private readonly page: Page) {
@@ -13,21 +12,11 @@ export class JobRoleListPage {
 		await this.page.goto(this.url);
 	}
 
-	async expectLoaded(): Promise<void> {
-		await expect(this.page).toHaveURL(/\/job-role-list$/);
-		await expect(this.page).toHaveTitle(this.title);
-		await expect(this.heading).toBeVisible();
+	getHeading(): Locator {
+		return this.heading;
 	}
 
-	async expectRoleVisible(roleName: string): Promise<void> {
-		await expect(this.roleRow(roleName)).toBeVisible();
-	}
-
-	async expectRoleHidden(roleName: string): Promise<void> {
-		await expect(this.roleRow(roleName)).toHaveCount(0);
-	}
-
-	private roleRow(roleName: string): Locator {
+	getRoleRow(roleName: string): Locator {
 		return this.page.getByRole("link", {
 			name: `View details for ${roleName}`,
 			exact: true,
