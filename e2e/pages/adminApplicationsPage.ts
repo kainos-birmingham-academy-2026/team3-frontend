@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export class AdminApplicationsPage {
 	private readonly applicationReviewHeading: Locator;
@@ -22,6 +22,10 @@ export class AdminApplicationsPage {
 		await this.page.goto("/job-applications/admin");
 	}
 
+	async expectLoaded(): Promise<void> {
+		await expect(this.applicationReviewHeading).toBeVisible();
+	}
+
 	getApplicationReviewHeading(): Locator {
 		return this.applicationReviewHeading;
 	}
@@ -32,6 +36,10 @@ export class AdminApplicationsPage {
 
 	async confirmHiring(): Promise<void> {
 		await this.confirmButton.click();
+	}
+
+	async expectSuccessMessage(): Promise<void> {
+		await expect(this.successMessage).toBeVisible();
 	}
 
 	getSuccessMessage(): Locator {
