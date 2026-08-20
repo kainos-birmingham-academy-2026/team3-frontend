@@ -2,14 +2,13 @@ import { expect, test } from "../fixtures/test";
 import { resetDatabase } from "../support/db";
 
 test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
-	test.beforeAll(async () => {
-		// Skip database setup in CI
+	test.beforeEach(() => {
+		// Keep this suite deterministic: each test starts from seeded data
+		// so pending applications are always available to hire.
 		if (process.env.CI) {
 			return;
 		}
 
-		// Use the shared helper so BDD/spec tests reset the DB the same way.
-		// Prisma migrate reset also runs seed.
 		resetDatabase();
 	});
 
