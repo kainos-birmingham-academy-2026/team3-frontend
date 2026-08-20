@@ -2,29 +2,7 @@ import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { test } from "../fixtures/test";
 
-const { Given, When, Then, Before } = createBdd(test);
-
-Before(async () => {
-	if (process.env.CI) {
-		return;
-	}
-
-	const { exec } = await import("child_process");
-	const { promisify } = await import("util");
-	const execAsync = promisify(exec);
-
-	try {
-		await execAsync("npx prisma migrate reset --force", {
-			cwd: process.cwd(),
-		});
-
-		await execAsync("npx prisma db seed", {
-			cwd: process.cwd(),
-		});
-	} catch (error) {
-		console.warn("Database reset/seed warning:", error);
-	}
-});
+const { Given, When, Then } = createBdd(test);
 
 Given("I am logged in as an administrator", async ({
 	loginPage,
