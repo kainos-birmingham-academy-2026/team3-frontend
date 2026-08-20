@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures/test";
+import { resetDatabase } from "../support/db";
 
 test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 	test.beforeAll(async () => {
@@ -7,22 +8,9 @@ test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
 			return;
 		}
 
-		// Reset database to ensure fresh state
-		const { exec } = await import("node:child_process");
-		const { promisify } = await import("node:util");
-		const execAsync = promisify(exec);
-
-		try {
-			await execAsync("npx prisma migrate reset --force", {
-				cwd: process.cwd(),
-			});
-
-			await execAsync("npx prisma db seed", {
-				cwd: process.cwd(),
-			});
-		} catch (error) {
-			console.warn("Database reset/seed warning:", error);
-		}
+		// Use the shared helper so BDD/spec tests reset the DB the same way.
+		// Prisma migrate reset also runs seed.
+		resetDatabase();
 	});
 
 	test("successfully hire an applicant", async ({
