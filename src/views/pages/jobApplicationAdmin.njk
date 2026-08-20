@@ -78,11 +78,11 @@
   <table class="applications-table" role="grid">
    <thead>
     <tr>
-     <th>Applicant</th>
-     <th>Applied Role</th>
-     <th>Application Date</th>
-     <th>Status</th>
-     <th>Actions</th>
+     <th scope="col">Applicant</th>
+     <th scope="col">Applied Role</th>
+     <th scope="col">Application Date</th>
+     <th scope="col">Status</th>
+     <th scope="col">Actions</th>
     </tr>
    </thead>
    <tbody id="applications-tbody">
@@ -102,7 +102,7 @@
    aria-labelledby="popup-title"
     aria-describedby="popup-message"
   >
-   <h2 id="popup-title" class="popup-title"></h2>
+   <h2 id="popup-title" class="popup-title">Placeholder</h2>
    <p id="popup-message" class="popup-message"></p>
    <div class="popup-actions">
     <button type="button" id="popup-cancel" class="button button-outline">Cancel</button>
@@ -130,14 +130,17 @@
   .search-input {
    flex: 1;
    padding: 0.75rem;
-   border: 1px solid #ddd;
+   border: 1px solid #8a8a8a;
    border-radius: 4px;
    font-size: 0.95rem;
+   background-color: #fff;
+   color: #1f1f1f;
   }
 
   .search-input:focus {
    outline: 2px solid #0066cc;
    outline-offset: -1px;
+   box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.18);
   }
 
   .filter-controls {
@@ -162,14 +165,17 @@
 
   .filter-group select {
    padding: 0.5rem 0.75rem;
-   border: 1px solid #ddd;
+   border: 1px solid #8a8a8a;
    border-radius: 4px;
    font-size: 0.9rem;
+   background-color: #fff;
+   color: #1f1f1f;
   }
 
   .filter-group select:focus {
    outline: 2px solid #0066cc;
    outline-offset: -1px;
+   box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.18);
   }
 
   .applications-summary {
@@ -291,19 +297,19 @@
   }
 
   .status-pending {
-   background: #fff3e0;
-   color: #e65100;
+   background: #fff4d6;
+   color: #5d2b00;
   }
 
   .status-hired,
   .status-approved {
-   background: #e8f5e9;
-   color: #2e7d32;
+   background: #eaf7ee;
+   color: #184d2f;
   }
 
   .status-rejected {
-   background: #ffebee;
-   color: #c62828;
+   background: #fdeaea;
+   color: #7f1212;
   }
 
   .actions-cell {
@@ -362,12 +368,12 @@
   }
 
   .btn-hire {
-   background: #4caf50;
+   background: #2e7d32;
    color: white;
   }
 
   .btn-hire:hover {
-   background: #45a049;
+   background: #256228;
    transform: translateY(-1px);
   }
 
@@ -381,12 +387,12 @@
   }
 
   .btn-reject {
-   background: #f44336;
+   background: #b71c1c;
    color: white;
   }
 
   .btn-reject:hover {
-   background: #da190b;
+   background: #931414;
    transform: translateY(-1px);
   }
 
@@ -673,10 +679,12 @@
      : `/job-role-list/${jobRoleId}`;
     const normalizedLocation = appLocation.toLowerCase();
 
+    const cvLinkText = `${app.applicantName} — ${app.roleName}`;
+
     row.innerHTML = `
      <td class="applicant-cell">
-      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantName)}">
-       ${escapeHtml(app.applicantName)}
+      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantName)} for ${escapeHtml(app.roleName)}">
+       ${escapeHtml(cvLinkText)}
       </a>
      </td>
      <td class="role-cell">${escapeHtml(app.roleName)}</td>

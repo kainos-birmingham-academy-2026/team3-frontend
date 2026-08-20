@@ -3,7 +3,7 @@
 {% block content %}
   <section class="login-panel" aria-labelledby="edit-job-role-title">
     <a href="/job-role-list/{{ jobRole.jobRoleId }}" class="back-link">← Back to job role</a>
-    <h2 id="edit-job-role-title">Edit job role</h2>
+    <h1 id="edit-job-role-title">Edit job role</h1>
     {% if errorMessage %}
       {% if errorMessage is string %}
         <p class="form-alert" role="alert">{{ errorMessage }}</p>

@@ -904,9 +904,9 @@ body.modal-open {
 }
 
 .button-primary {
-	background: var(--kainos-green);
+	background: #2e7d32;
 	color: var(--kainos-white);
-	border: 2px solid var(--kainos-green);
+	border: 2px solid #2e7d32;
 	padding: 0.75rem 1.8rem;
 	font-size: 1rem;
 	font-weight: 600;
@@ -915,15 +915,15 @@ body.modal-open {
 }
 
 .button-primary:hover {
-	background: #52932e;
-	border-color: #52932e;
+	background: #256228;
+	border-color: #256228;
 	text-decoration: none;
 	transform: translateY(-2px);
-	box-shadow: 0 4px 8px rgba(97, 168, 63, 0.2);
+	box-shadow: 0 4px 8px rgba(46, 125, 50, 0.2);
 }
 
 .button-primary:focus-visible {
-	outline: 3px solid var(--kainos-green);
+	outline: 3px solid #2e7d32;
 	outline-offset: 2px;
 }
 
