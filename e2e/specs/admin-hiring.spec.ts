@@ -1,17 +1,6 @@
 import { expect, test } from "../fixtures/test";
-import { resetDatabase } from "../support/db";
 
 test.describe("Admin hiring workflow", { tag: "@admin" }, () => {
-	test.beforeEach(() => {
-		// Keep this suite deterministic: each test starts from seeded data
-		// so pending applications are always available to hire.
-		if (process.env.CI) {
-			return;
-		}
-
-		resetDatabase();
-	});
-
 	test("successfully hire an applicant", async ({
 		page,
 		loginPage,
