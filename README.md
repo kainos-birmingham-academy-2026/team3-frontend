@@ -2,6 +2,8 @@
 
 A lightweight Express + TypeScript server used for Team 3 frontend.
 
+Continuous integration checks each proposed change before it is merged.
+
 ## Tech Stack
 
 - Node.js
