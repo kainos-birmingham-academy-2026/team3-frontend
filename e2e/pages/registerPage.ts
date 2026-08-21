@@ -9,6 +9,7 @@ export class RegisterPage {
 	private readonly passwordField: Locator;
 	private readonly confirmPasswordField: Locator;
 	private readonly createAccountButton: Locator;
+	private readonly errorAlert: Locator;
 
 	constructor(private readonly page: Page) {
 		this.heading = page.getByRole("heading", { name: "Create your account" });
@@ -19,6 +20,7 @@ export class RegisterPage {
 		this.createAccountButton = page.getByRole("button", {
 			name: "Create account",
 		});
+		this.errorAlert = page.getByRole("alert");
 	}
 
 	async goto(): Promise<void> {
@@ -50,5 +52,9 @@ export class RegisterPage {
 
 	async submit(): Promise<void> {
 		await this.createAccountButton.click();
+	}
+
+	async expectError(message: string): Promise<void> {
+		await expect(this.errorAlert).toHaveText(message);
 	}
 }

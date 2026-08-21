@@ -9,6 +9,7 @@ export class LoginPage {
 	private readonly passwordField: Locator;
 	private readonly signInButton: Locator;
 	private readonly createAccountLink: Locator;
+	private readonly errorAlert: Locator;
 
 	constructor(private readonly page: Page) {
 		this.heading = page.getByRole("heading", { name: "Welcome back" });
@@ -18,6 +19,7 @@ export class LoginPage {
 		this.createAccountLink = page.getByRole("link", {
 			name: "Create an account",
 		});
+		this.errorAlert = page.getByRole("alert");
 	}
 
 	async goto(): Promise<void> {
@@ -44,5 +46,9 @@ export class LoginPage {
 		await this.emailField.fill(email);
 		await this.passwordField.fill(password);
 		await this.signInButton.click();
+	}
+
+	async expectError(message: string): Promise<void> {
+		await expect(this.errorAlert).toHaveText(message);
 	}
 }
