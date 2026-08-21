@@ -55,6 +55,22 @@ Then("I see the password requirements", async ({ registerPage }) => {
 	);
 });
 
+When(
+	"I submit the form with an invalid email format",
+	async ({ registerPage, user }) => {
+		await registerPage.fillForm("not-an-email", user.password);
+		await registerPage.submit();
+	},
+);
+
+Then(
+	"I see a message that my email or password format is invalid",
+	async ({ registerPage }) => {
+		await registerPage.expectLoaded();
+		await registerPage.expectError("Please enter a valid email and password");
+	},
+);
+
 Given("I have already created an account", async ({ authApi, user }) => {
 	const response = await authApi.register(user);
 
