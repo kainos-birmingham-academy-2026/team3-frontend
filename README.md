@@ -77,6 +77,55 @@ npm run build
 npm start
 ```
 
+## Running With Docker
+
+These steps run the frontend in Docker and connect it to the Dockerised backend.
+
+### 1. Build the frontend image
+
+```bash
+docker build -t frontend:1.0.0 .
+```
+
+### 2. Ensure the shared Docker network exists
+
+The frontend and backend containers need to be on the same Docker network so the frontend can call the backend by container name.
+
+```bash
+docker network create team3-network
+```
+
+If Docker says the network already exists, that is fine.
+
+### 3. Run the frontend container
+
+Use `API_BASE_URL=http://team3-backend:4000` so the frontend calls the backend container. Do not use `localhost:4000` inside the frontend container, because `localhost` would mean the frontend container itself.
+
+```bash
+docker rm -f team3-frontend
+docker run -d \
+  --name team3-frontend \
+  --network team3-network \
+  -p 3000:3000 \
+  --env-file .env \
+  -e API_BASE_URL='http://team3-backend:4000' \
+  frontend:1.0.0
+```
+
+### 4. Verify the frontend
+
+```bash
+curl http://localhost:3000/health
+curl http://localhost:3000/job-role-list
+docker logs team3-frontend
+```
+
+Then open:
+
+```text
+http://localhost:3000/job-role-list
+```
+
 ## Available Scripts
 
 - `npm run dev` - Run the server in watch mode for development.
