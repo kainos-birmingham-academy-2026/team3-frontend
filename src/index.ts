@@ -8,7 +8,7 @@ import router from "./routes/jobRoleRouter";
 import { features } from "./config/features";
 
 const app = express();
-const port = Number(process.env.PORT) ?? "3000";
+const port = Number(process.env.PORT ?? 3000);
 const isDev = process.env.NODE_ENV !== "production";
 
 nunjucks.configure(
