@@ -124,6 +124,17 @@ jobs:
       - name: Initialize Terraform
         run: terraform init -input=false -backend-config=environments/dev.backend.hcl
 
+      - name: Import existing resource group
+        run: |
+          resource_group_address='module.resource_group.azurerm_resource_group.this'
+          legacy_resource_group_address='azurerm_resource_group.this'
+          resource_group_id="/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-team3-${TF_VAR_environment}"
+
+          if ! terraform state list | grep -Fqx "$resource_group_address" && \
+            ! terraform state list | grep -Fqx "$legacy_resource_group_address"; then
+            terraform import -input=false "$resource_group_address" "$resource_group_id"
+          fi
+
       - name: Validate Terraform
         run: terraform validate -no-color
 
