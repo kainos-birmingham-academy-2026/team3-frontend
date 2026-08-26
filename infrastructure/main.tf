@@ -15,10 +15,6 @@ terraform {
       version = "~> 4.0"
     }
 
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
-    }
   }
 }
 
@@ -29,10 +25,12 @@ provider "azurerm" {
 
 locals {
   # "prod" reuses the same code; only var.environment changes per pipeline run.
-  resource_group_name         = "rg-team3-${var.environment}"
-  storage_account_name_prefix = "stmhadi${var.environment}"
-  key_vault_name              = "kv-team3-${var.environment}"
-  identity_name               = "id-team3-frontend-${var.environment}"
+  resource_group_name   = "rg-team3-${var.environment}"
+  key_vault_name        = "kv-team3-${var.environment}"
+  identity_name         = "id-team3-frontend-${var.environment}"
+  container_environment = "cae-team3-${var.environment}"
+  acr_name              = "acraiacademy26"
+  acr_login_server      = "${local.acr_name}.azurecr.io"
 }
 
 module "resource_group" {
@@ -56,6 +54,21 @@ data "azurerm_key_vault" "existing" {
   resource_group_name = local.resource_group_name
 }
 
+data "azurerm_container_app_environment" "existing" {
+  name                = local.container_environment
+  resource_group_name = local.resource_group_name
+}
+
+data "azurerm_container_app" "backend" {
+  name                = "ca-team3-backend-${var.environment}"
+  resource_group_name = local.resource_group_name
+}
+
+data "azurerm_resources" "container_registry" {
+  type = "Microsoft.ContainerRegistry/registries"
+  name = local.acr_name
+}
+
 # Frontend-specific identity; role assignments granting ACR/Key Vault access come next.
 module "managed_identity" {
   source = "./modules/user-assigned-identity"
@@ -69,25 +82,86 @@ module "managed_identity" {
   })
 }
 
-resource "random_string" "storage_suffix" {
-  length  = 8
-  special = false
-  upper   = false
+resource "azurerm_role_assignment" "acr_pull" {
+  scope                = data.azurerm_resources.container_registry.resources[0].id
+  role_definition_name = "AcrPull"
+  principal_id         = module.managed_identity.principal_id
+  principal_type       = "ServicePrincipal"
 }
 
-resource "azurerm_storage_account" "this" {
-  name                     = "${local.storage_account_name_prefix}${random_string.storage_suffix.result}"
-  resource_group_name      = module.resource_group.resource_group_name
-  location                 = var.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  account_kind             = "StorageV2"
+resource "azurerm_role_assignment" "key_vault_secrets_user" {
+  scope                = data.azurerm_key_vault.existing.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = module.managed_identity.principal_id
+  principal_type       = "ServicePrincipal"
+}
 
-  https_traffic_only_enabled      = true
-  min_tls_version                 = "TLS1_2"
-  allow_nested_items_to_be_public = false
+resource "azurerm_container_app" "frontend" {
+  name                         = "ca-team3-frontend-${var.environment}"
+  container_app_environment_id = data.azurerm_container_app_environment.existing.id
+  resource_group_name          = module.resource_group.resource_group_name
+  revision_mode                = "Single"
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [module.managed_identity.id]
+  }
+
+  registry {
+    server   = local.acr_login_server
+    identity = module.managed_identity.id
+  }
+
+  secret {
+    name                = "session-secret-ref"
+    key_vault_secret_id = "${data.azurerm_key_vault.existing.vault_uri}secrets/session-secret"
+    identity            = module.managed_identity.id
+  }
+
+  template {
+    min_replicas = 1
+    max_replicas = 1
+
+    container {
+      name   = "frontend"
+      image  = "${local.acr_login_server}/team3-frontend:latest"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      env {
+        name  = "API_BASE_URL"
+        value = "https://${data.azurerm_container_app.backend.ingress[0].fqdn}"
+      }
+
+      env {
+        name        = "SESSION_SECRET"
+        secret_name = "session-secret-ref"
+      }
+
+      env {
+        name  = "FEATURE_ADMIN_HIRING_ENABLED"
+        value = "true"
+      }
+    }
+  }
+
+  ingress {
+    external_enabled = true
+    target_port      = 3000
+    transport        = "auto"
+
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
+  }
 
   tags = merge(var.tags, {
     environment = var.environment
   })
+
+  depends_on = [
+    azurerm_role_assignment.acr_pull,
+    azurerm_role_assignment.key_vault_secrets_user,
+  ]
 }

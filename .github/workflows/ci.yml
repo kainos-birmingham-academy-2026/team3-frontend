@@ -124,6 +124,13 @@ jobs:
       - name: Initialize Terraform
         run: terraform init -input=false -backend-config=environments/dev.backend.hcl
 
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Import existing resource group
         run: |
           resource_group_address='module.resource_group.azurerm_resource_group.this'
@@ -134,6 +141,48 @@ jobs:
             ! terraform state list | grep -Fqx "$legacy_resource_group_address"; then
             terraform import -input=false "$resource_group_address" "$resource_group_id"
           fi
+
+      - name: Import existing role assignments
+        run: |
+          principal_id="$(az identity show \
+            --name "id-team3-frontend-${TF_VAR_environment}" \
+            --resource-group "rg-team3-${TF_VAR_environment}" \
+            --query principalId --output tsv)"
+          acr_scope="$(az acr show --name acraiacademy26 --query id --output tsv)"
+          key_vault_scope="$(az keyvault show \
+            --name "kv-team3-${TF_VAR_environment}" \
+            --resource-group "rg-team3-${TF_VAR_environment}" \
+            --query id --output tsv)"
+
+          import_role_assignment() {
+            local address="$1"
+            local role="$2"
+            local scope="$3"
+
+            if terraform state list | grep -Fqx "$address"; then
+              return
+            fi
+
+            local assignment_id
+            assignment_id="$(az role assignment list \
+              --assignee-object-id "$principal_id" \
+              --scope "$scope" \
+              --role "$role" \
+              --query '[0].id' --output tsv)"
+
+            if [[ -n "$assignment_id" ]]; then
+              terraform import -input=false "$address" "$assignment_id"
+            fi
+          }
+
+          import_role_assignment \
+            'azurerm_role_assignment.acr_pull' \
+            'AcrPull' \
+            "$acr_scope"
+          import_role_assignment \
+            'azurerm_role_assignment.key_vault_secrets_user' \
+            'Key Vault Secrets User' \
+            "$key_vault_scope"
 
       - name: Validate Terraform
         run: terraform validate -no-color

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { type Request, Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController";
+import { requireAdminHiringFeature } from "../middleware/featureFlags";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
 import { AdminApplicationService } from "../services/adminApplicationService";
 import { JobRoleService } from "../services/jobRoleService";
@@ -57,12 +58,17 @@ router.get("/", (_req, res) => {
 	res.render("pages/index.njk");
 });
 
-router.get("/job-applications/admin", requireAuth, requireAdmin, (req, res) =>
-	controller.getApplications(req, res),
+router.get(
+	"/job-applications/admin",
+	requireAdminHiringFeature,
+	requireAuth,
+	requireAdmin,
+	(req, res) => controller.getApplications(req, res),
 );
 
 router.get(
 	"/job-applications/:applicationId/cv",
+	requireAdminHiringFeature,
 	requireAuth,
 	requireAdmin,
 	async (req, res) => {
@@ -108,6 +114,7 @@ router.get(
 // API endpoint for fetching applications (called by client-side JavaScript)
 router.get(
 	"/api/job-applications/admin",
+		requireAdminHiringFeature,
 	requireAuth,
 	requireAdmin,
 	async (req, res) => {
@@ -125,6 +132,7 @@ router.get(
 
 router.get(
 	"/api/job-applications/:applicationId/cv-text",
+	requireAdminHiringFeature,
 	requireAuth,
 	requireAdmin,
 	async (req, res) => {
@@ -158,6 +166,7 @@ router.get(
 
 router.post(
 	"/api/job-applications/:applicationId/status",
+	requireAdminHiringFeature,
 	requireAuth,
 	requireAdmin,
 	async (req, res) => {
