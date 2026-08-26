@@ -13,16 +13,6 @@ output "resource_group_location" {
   value       = var.location
 }
 
-output "storage_account_name" {
-  description = "Name of the created Azure Storage account."
-  value       = azurerm_storage_account.this.name
-}
-
-output "storage_account_primary_blob_endpoint" {
-  description = "Primary Blob service endpoint for the created Azure Storage account."
-  value       = azurerm_storage_account.this.primary_blob_endpoint
-}
-
 output "key_vault_id" {
   description = "ID of the pre-existing Key Vault."
   value       = data.azurerm_key_vault.existing.id
@@ -51,4 +41,9 @@ output "managed_identity_principal_id" {
 output "managed_identity_client_id" {
   description = "Client ID of the frontend's User Assigned Managed Identity."
   value       = module.managed_identity.client_id
+}
+
+output "frontend_container_app_url" {
+  description = "Public URL of the frontend Container App."
+  value       = "https://${azurerm_container_app.frontend.ingress[0].fqdn}"
 }

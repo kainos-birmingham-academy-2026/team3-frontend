@@ -5,6 +5,7 @@ import session from "express-session";
 import nunjucks from "nunjucks";
 import authRouter from "./routes/authRouter";
 import router from "./routes/jobRoleRouter";
+import { features } from "./config/features";
 
 const app = express();
 const port = Number(process.env.PORT) ?? "3000";
@@ -44,6 +45,7 @@ app.use(
 
 app.use((req, res, next) => {
 	res.locals.currentPath = req.path;
+	res.locals.featureAdminHiringEnabled = features.adminHiring;
 	next();
 });
 
