@@ -59,9 +59,9 @@ data "azurerm_container_app_environment" "existing" {
   resource_group_name = local.resource_group_name
 }
 
-data "azurerm_container_registry" "existing" {
-  name                = local.acr_name
-  resource_group_name = local.resource_group_name
+data "azurerm_resources" "container_registry" {
+  type = "Microsoft.ContainerRegistry/registries"
+  name = local.acr_name
 }
 
 # Frontend-specific identity; role assignments granting ACR/Key Vault access come next.
@@ -78,7 +78,7 @@ module "managed_identity" {
 }
 
 resource "azurerm_role_assignment" "acr_pull" {
-  scope                = data.azurerm_container_registry.existing.id
+  scope                = data.azurerm_resources.container_registry.resources[0].id
   role_definition_name = "AcrPull"
   principal_id         = module.managed_identity.principal_id
   principal_type       = "ServicePrincipal"
