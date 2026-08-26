@@ -29,7 +29,7 @@ provider "azurerm" {
 
 locals {
   # "prod" reuses the same code; only var.environment changes per pipeline run.
-  resource_group_name         = "rg-mhadi-infrastructure-${var.environment}"
+  resource_group_name         = "rg-team3-${var.environment}"
   storage_account_name_prefix = "stmhadi${var.environment}"
 }
 
