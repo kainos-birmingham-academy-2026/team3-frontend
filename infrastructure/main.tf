@@ -33,7 +33,7 @@ locals {
   # "prod" reuses the same code; only var.environment changes per pipeline run.
   resource_group_name         = "rg-team3-${var.environment}"
   storage_account_name_prefix = "stmhadi${var.environment}"
-  key_vault_name              = "kv-team3-${var.environment}"
+  key_vault_name              = "team3-${var.environment}"
 }
 
 module "resource_group" {

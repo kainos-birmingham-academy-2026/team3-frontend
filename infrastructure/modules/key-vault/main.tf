@@ -6,7 +6,7 @@ resource "azurerm_key_vault" "this" {
   sku_name            = var.sku_name
 
   # RBAC (via "Key Vault Secrets User" role assignments) instead of legacy access policies.
-  enable_rbac_authorization = true
+  rbac_authorization_enabled = true
 
   purge_protection_enabled   = var.purge_protection_enabled
   soft_delete_retention_days = var.soft_delete_retention_days
