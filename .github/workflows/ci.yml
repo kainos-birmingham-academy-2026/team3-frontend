@@ -79,8 +79,8 @@ jobs:
           context: .
           push: ${{ env.PUSH == 'true' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.PUSH == 'true' && format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, github.sha) || format('{0}:{1}', env.IMAGE_NAME, github.sha) }}
+            ${{ env.PUSH == 'true' && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
