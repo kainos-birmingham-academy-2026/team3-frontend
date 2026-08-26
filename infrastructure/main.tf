@@ -32,7 +32,7 @@ locals {
   resource_group_name         = "rg-team3-${var.environment}"
   storage_account_name_prefix = "stmhadi${var.environment}"
   key_vault_name              = "kv-team3-${var.environment}"
-  identity_name               = "id-team3-fe-${var.environment}"
+  identity_name               = "id-team3-frontend-${var.environment}"
 }
 
 module "resource_group" {
