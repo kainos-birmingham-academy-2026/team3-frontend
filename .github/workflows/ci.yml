@@ -55,7 +55,7 @@ jobs:
       contents: read
       id-token: write 
     env:
-      REGISTRY: ${{ vars.ACR_LOGIN_SERVER }}
+      REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
       IMAGE_NAME: team3-frontend
       PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
