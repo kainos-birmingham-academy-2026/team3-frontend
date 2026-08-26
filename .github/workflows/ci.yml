@@ -104,7 +104,6 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
       TF_VAR_environment: dev
-      TF_VAR_backend_api_url: ${{ vars.BACKEND_API_URL }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -131,13 +130,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Check backend URL
-        run: |
-          if [[ -z "${TF_VAR_backend_api_url//[[:space:]]/}" ]]; then
-            echo "BACKEND_API_URL repository variable must contain the backend Container App URL."
-            exit 1
-          fi
 
       - name: Import existing resource group
         run: |

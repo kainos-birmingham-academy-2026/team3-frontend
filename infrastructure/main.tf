@@ -59,6 +59,11 @@ data "azurerm_container_app_environment" "existing" {
   resource_group_name = local.resource_group_name
 }
 
+data "azurerm_container_app" "backend" {
+  name                = "ca-team3-backend-${var.environment}"
+  resource_group_name = local.resource_group_name
+}
+
 data "azurerm_resources" "container_registry" {
   type = "Microsoft.ContainerRegistry/registries"
   name = local.acr_name
@@ -125,7 +130,7 @@ resource "azurerm_container_app" "frontend" {
 
       env {
         name  = "API_BASE_URL"
-        value = var.backend_api_url
+        value = "https://${data.azurerm_container_app.backend.ingress[0].fqdn}"
       }
 
       env {
