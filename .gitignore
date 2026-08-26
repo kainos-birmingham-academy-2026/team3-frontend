@@ -24,6 +24,13 @@ code_reviews/
 .parcel-cache/
 *.tsbuildinfo
 
+# Terraform generated files
+infrastructure/.terraform/
+infrastructure/*.tfstate
+infrastructure/*.tfstate.*
+infrastructure/*.tfplan
+infrastructure/tfplan
+
 # OS/editor files
 .DS_Store
 Thumbs.db
