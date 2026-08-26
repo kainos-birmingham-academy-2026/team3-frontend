@@ -37,3 +37,18 @@ output "key_vault_uri" {
   description = "URI of the pre-existing Key Vault, used to reference secrets from the Container App."
   value       = data.azurerm_key_vault.existing.vault_uri
 }
+
+output "managed_identity_id" {
+  description = "Resource ID of the frontend's User Assigned Managed Identity."
+  value       = module.managed_identity.id
+}
+
+output "managed_identity_principal_id" {
+  description = "Principal ID of the frontend's User Assigned Managed Identity, used for role assignments."
+  value       = module.managed_identity.principal_id
+}
+
+output "managed_identity_client_id" {
+  description = "Client ID of the frontend's User Assigned Managed Identity."
+  value       = module.managed_identity.client_id
+}

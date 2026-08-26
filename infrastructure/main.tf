@@ -32,6 +32,7 @@ locals {
   resource_group_name         = "rg-team3-${var.environment}"
   storage_account_name_prefix = "stmhadi${var.environment}"
   key_vault_name              = "kv-team3-${var.environment}"
+  identity_name               = "id-team3-fe-${var.environment}"
 }
 
 module "resource_group" {
@@ -53,6 +54,19 @@ moved {
 data "azurerm_key_vault" "existing" {
   name                = local.key_vault_name
   resource_group_name = local.resource_group_name
+}
+
+# Frontend-specific identity; role assignments granting ACR/Key Vault access come next.
+module "managed_identity" {
+  source = "./modules/user-assigned-identity"
+
+  name                = local.identity_name
+  location            = var.location
+  resource_group_name = module.resource_group.resource_group_name
+
+  tags = merge(var.tags, {
+    environment = var.environment
+  })
 }
 
 resource "random_string" "storage_suffix" {
