@@ -31,6 +31,7 @@ locals {
   # "prod" reuses the same code; only var.environment changes per pipeline run.
   resource_group_name         = "rg-team3-${var.environment}"
   storage_account_name_prefix = "stmhadi${var.environment}"
+  key_vault_name              = "kv-team3-${var.environment}"
 }
 
 module "resource_group" {
@@ -46,6 +47,12 @@ module "resource_group" {
 moved {
   from = azurerm_resource_group.this
   to   = module.resource_group.azurerm_resource_group.this
+}
+
+# Pre-existing vault created by the backend; secrets are added manually in the Azure portal.
+data "azurerm_key_vault" "existing" {
+  name                = local.key_vault_name
+  resource_group_name = local.resource_group_name
 }
 
 resource "random_string" "storage_suffix" {

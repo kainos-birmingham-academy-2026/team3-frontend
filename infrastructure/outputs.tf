@@ -22,3 +22,18 @@ output "storage_account_primary_blob_endpoint" {
   description = "Primary Blob service endpoint for the created Azure Storage account."
   value       = azurerm_storage_account.this.primary_blob_endpoint
 }
+
+output "key_vault_id" {
+  description = "ID of the pre-existing Key Vault."
+  value       = data.azurerm_key_vault.existing.id
+}
+
+output "key_vault_name" {
+  description = "Name of the pre-existing Key Vault."
+  value       = data.azurerm_key_vault.existing.name
+}
+
+output "key_vault_uri" {
+  description = "URI of the pre-existing Key Vault, used to reference secrets from the Container App."
+  value       = data.azurerm_key_vault.existing.vault_uri
+}
