@@ -27,10 +27,13 @@ provider "azurerm" {
   features {}
 }
 
+data "azurerm_client_config" "current" {}
+
 locals {
   # "prod" reuses the same code; only var.environment changes per pipeline run.
   resource_group_name         = "rg-team3-${var.environment}"
   storage_account_name_prefix = "stmhadi${var.environment}"
+  key_vault_name              = "kv-team3-${var.environment}"
 }
 
 module "resource_group" {
@@ -46,6 +49,20 @@ module "resource_group" {
 moved {
   from = azurerm_resource_group.this
   to   = module.resource_group.azurerm_resource_group.this
+}
+
+# Secrets are added manually in the Azure portal, not defined in code.
+module "key_vault" {
+  source = "./modules/key-vault"
+
+  name                = local.key_vault_name
+  location            = var.location
+  resource_group_name = module.resource_group.resource_group_name
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+
+  tags = merge(var.tags, {
+    environment = var.environment
+  })
 }
 
 resource "random_string" "storage_suffix" {
