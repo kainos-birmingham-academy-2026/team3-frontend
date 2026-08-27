@@ -11,6 +11,9 @@ const app = express();
 const port = Number(process.env.PORT ?? 3000);
 const isDev = process.env.NODE_ENV !== "production";
 
+	app.set("trust proxy", 1);
+
+
 nunjucks.configure(
 	[
 		path.join(process.cwd(), "src", "views"),
