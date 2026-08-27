@@ -101,25 +101,6 @@ jobs:
             --name "$IMAGE_NAME:${{ github.sha }}" \
             --query digest --output tsv
 
-      - name: Delete images older than 48 hours
-        if: env.PUSH == 'true'
-        run: |
-          set -o pipefail
-          cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')
-
-          az acr manifest list-metadata \
-            --registry "${REGISTRY%%.*}" \
-            --name "$IMAGE_NAME" \
-            --output json \
-            | jq --raw-output --arg cutoff "$cutoff" \
-              '.[] | select(.lastUpdateTime < $cutoff) | select((.tags // []) | contains(["latest"]) | not) | .digest' \
-            | while read -r digest; do
-                az acr repository delete \
-                  --name "${REGISTRY%%.*}" \
-                  --image "$IMAGE_NAME@$digest" \
-                  --yes
-              done
-
   terraform:
     name: Terraform Dev
     needs: docker-build
@@ -139,6 +120,8 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+      IMAGE_NAME: team3-frontend
     defaults:
       run:
         working-directory: infrastructure/environments/dev
@@ -203,3 +186,22 @@ jobs:
       - name: Apply Terraform
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform apply -input=false -auto-approve tfplan
+
+      - name: Delete images older than 48 hours
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -o pipefail
+          cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')
+
+          az acr manifest list-metadata \
+            --registry "${REGISTRY%%.*}" \
+            --name "$IMAGE_NAME" \
+            --output json \
+            | jq --raw-output --arg cutoff "$cutoff" \
+              '.[] | select(.lastUpdateTime < $cutoff) | select((.tags // []) | contains(["latest"]) | not) | .digest' \
+            | while read -r digest; do
+                az acr repository delete \
+                  --name "${REGISTRY%%.*}" \
+                  --image "$IMAGE_NAME@$digest" \
+                  --yes
+              done
