@@ -3,7 +3,7 @@
 		"dev": "tsx watch src/index.ts",
 		"build": "tsc",
 		"start": "node dist/index.js",
-		"lint": "biome lint",
+		"lint": "biome check",
 		"lint:fix": "biome check --write .",
 		"ci:check": "biome ci",
 		"test": "vitest run",
