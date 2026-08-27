@@ -34,9 +34,15 @@ variable "acr_resource_group_name" {
 }
 
 variable "image_tag" {
-  description = "Immutable ACR image tag for the frontend Container App."
+  description = "ACR image tag for the frontend Container App."
   type        = string
-  default     = "latest"
+  default     = "dev-latest"
+}
+
+variable "container_revision_suffix" {
+  description = "Optional unique suffix that forces a new Container App revision."
+  type        = string
+  default     = null
 }
 
 variable "enable_admin_hiring" {

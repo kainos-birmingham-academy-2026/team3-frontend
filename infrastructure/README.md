@@ -15,6 +15,11 @@ reusable `modules/frontend-app` module:
 Each root owns only its frontend identity, role assignments, and Container App.
 Shared resources created by the backend Terraform are read as data sources.
 
+Dev deploys the mutable `dev-latest` image tag. CI supplies the commit SHA as a
+revision suffix so Azure Container Apps creates a new revision on every main
+branch deployment. Production requires an immutable commit SHA or release tag
+and rejects `latest` and `dev-latest`.
+
 The dev root contains one-time `moved` declarations for existing frontend
 resources and a `removed` declaration that releases the shared resource group
 from frontend state without destroying it. A verified migration plan reports
@@ -43,7 +48,8 @@ Before planning production:
 - Deploy the backend production root and confirm its Container App is healthy.
 - Add a strong `session-secret` to `kv-team3-prod` through an approved secret
   management process.
-- Push the tested frontend image SHA to `acraiacademy26.azurecr.io`.
+- Push the tested frontend image SHA or immutable release tag to
+  `acraiacademy26.azurecr.io`.
 - Grant the deployment identity `Contributor` on `rg-team3-prod`,
   `Role Based Access Control Administrator` on the production resource group
   and shared ACR, `Reader` on the shared ACR, and access to the remote state.
@@ -60,7 +66,7 @@ command history.
 | `location` | Azure region for frontend-owned resources |
 | `acr_name` | Existing shared ACR name |
 | `acr_resource_group_name` | Resource group containing the shared ACR |
-| `image_tag` | Immutable, tested frontend image SHA |
+| `image_tag` | Immutable, tested frontend image SHA or release version |
 | `enable_admin_hiring` | Enables the frontend hiring feature; defaults to `false` |
 
 ## Local checks and plan

@@ -31,6 +31,11 @@ variable "acr_resource_group_name" {
 variable "image_tag" {
   description = "Immutable ACR image tag for the frontend Container App."
   type        = string
+
+  validation {
+    condition     = !contains(["latest", "dev-latest"], lower(var.image_tag))
+    error_message = "Production requires an immutable image tag, such as a commit SHA or release version."
+  }
 }
 
 variable "enable_admin_hiring" {

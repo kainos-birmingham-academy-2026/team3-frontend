@@ -88,8 +88,9 @@ resource "azurerm_container_app" "frontend" {
   }
 
   template {
-    min_replicas = 1
-    max_replicas = 1
+    revision_suffix = var.revision_suffix
+    min_replicas    = 1
+    max_replicas    = 1
 
     container {
       name   = "frontend"

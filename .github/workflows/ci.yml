@@ -80,7 +80,7 @@ jobs:
           push: ${{ env.PUSH == 'true' }}
           tags: |
             ${{ env.PUSH == 'true' && format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, github.sha) || format('{0}:{1}', env.IMAGE_NAME, github.sha) }}
-            ${{ env.PUSH == 'true' && format('{0}/{1}:latest', env.REGISTRY, env.IMAGE_NAME) }}
+            ${{ env.PUSH == 'true' && format('{0}/{1}:dev-latest', env.REGISTRY, env.IMAGE_NAME) }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -100,6 +100,10 @@ jobs:
             --registry "${REGISTRY%%.*}" \
             --name "$IMAGE_NAME:${{ github.sha }}" \
             --query digest --output tsv
+          az acr manifest show \
+            --registry "${REGISTRY%%.*}" \
+            --name "$IMAGE_NAME:dev-latest" \
+            --query digest --output tsv
 
   terraform:
     name: Terraform Dev
@@ -115,7 +119,8 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
       TF_VAR_environment: dev
-      TF_VAR_image_tag: ${{ github.sha }}
+      TF_VAR_image_tag: dev-latest
+      TF_VAR_container_revision_suffix: sha-${{ github.sha }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
