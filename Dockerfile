@@ -21,11 +21,10 @@ COPY package*.json ./
 # Upgrade Alpine packages to install patched libcrypto3 and libssl3 versions.
 RUN apk upgrade --no-cache
 
-# Upgrade npm to replace its vulnerable bundled tar, brace-expansion, ip-address, and undici packages.
-RUN npm install --global npm@12.0.2
-
-# Install only production dependencies, then remove cached package archives from the runtime image.
-RUN npm ci --omit=dev && npm cache clean --force
+# Install production dependencies, then remove npm and its vulnerable bundled packages from runtime.
+RUN npm ci --omit=dev \
+	&& npm cache clean --force \
+	&& rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 COPY --chown=node:node --from=build /app/dist ./dist
 COPY --chown=node:node --from=build /app/src/views ./src/views
@@ -35,4 +34,4 @@ EXPOSE 3000
 
 USER node
 
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
