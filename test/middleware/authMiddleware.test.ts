@@ -73,3 +73,5 @@ describe("authMiddleware", () => {
 		expect(res.redirect).not.toHaveBeenCalled();
 	});
 });
+
+//authMiddleWare.test.ts
