@@ -9,6 +9,11 @@ A lightweight Express + TypeScript server used for Team 3 frontend.
 - Express
 - Nunjucks
 
+## Infrastructure
+
+Azure architecture, Terraform setup, and production deployment prerequisites
+are documented in [infrastructure/README.md](infrastructure/README.md).
+
 ## Getting Started
 
 ### 1. Install dependencies

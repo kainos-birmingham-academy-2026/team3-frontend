@@ -25,11 +25,13 @@ code_reviews/
 *.tsbuildinfo
 
 # Terraform generated files
-infrastructure/.terraform/
-infrastructure/*.tfstate
-infrastructure/*.tfstate.*
-infrastructure/*.tfplan
-infrastructure/tfplan
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
+tfplan
 
 # OS/editor files
 .DS_Store
