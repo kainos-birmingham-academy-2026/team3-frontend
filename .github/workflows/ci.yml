@@ -101,6 +101,25 @@ jobs:
             --name "$IMAGE_NAME:${{ github.sha }}" \
             --query digest --output tsv
 
+      - name: Delete images older than 48 hours
+        if: env.PUSH == 'true'
+        run: |
+          set -o pipefail
+          cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')
+
+          az acr manifest list-metadata \
+            --registry "${REGISTRY%%.*}" \
+            --name "$IMAGE_NAME" \
+            --output json \
+            | jq --raw-output --arg cutoff "$cutoff" \
+              '.[] | select(.lastUpdateTime < $cutoff) | select((.tags // []) | contains(["latest"]) | not) | .digest' \
+            | while read -r digest; do
+                az acr repository delete \
+                  --name "${REGISTRY%%.*}" \
+                  --image "$IMAGE_NAME@$digest" \
+                  --yes
+              done
+
   terraform:
     name: Terraform Dev
     needs: docker-build
