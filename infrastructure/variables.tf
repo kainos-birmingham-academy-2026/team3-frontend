@@ -15,6 +15,12 @@ variable "environment" {
   }
 }
 
+variable "image_tag" {
+  description = "Frontend container image tag. The CI pipeline sets this to the Git commit SHA."
+  type        = string
+  default     = "latest"
+}
+
 variable "tags" {
   description = "Tags to apply to the resource group."
   type        = map(string)

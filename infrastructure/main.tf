@@ -124,7 +124,7 @@ resource "azurerm_container_app" "frontend" {
 
     container {
       name   = "frontend"
-      image  = "${local.acr_login_server}/team3-frontend:latest"
+      image  = "${local.acr_login_server}/team3-frontend:${var.image_tag}"
       cpu    = 0.25
       memory = "0.5Gi"
 
