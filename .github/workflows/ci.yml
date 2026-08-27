@@ -84,6 +84,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan Docker image
+        if: env.PUSH == 'true'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
       - name: Verify push
         if: env.PUSH == 'true'
         run: |
@@ -115,6 +124,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Scan Terraform
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: infrastructure
+          severity: HIGH,CRITICAL
+          exit-code: "1"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
