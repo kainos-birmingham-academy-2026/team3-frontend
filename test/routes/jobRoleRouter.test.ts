@@ -129,6 +129,18 @@ describe("routes", () => {
 		});
 	});
 
+	it("calls the backend teapot endpoint before rendering the teapot page", async () => {
+		vi.mocked(apiClient.get).mockResolvedValue({ status: 418 });
+
+		const response = await request(app).get("/teapot");
+
+		expect(response.status).toBe(200);
+		expect(apiClient.get).toHaveBeenCalledWith("/teapot", {
+			validateStatus: expect.any(Function),
+		});
+		expect(response.text).toContain("I'm a Teapot");
+	});
+
 	beforeAll(async () => {
 		app = createTestApp();
 		return new Promise<void>((resolve) => {
