@@ -199,6 +199,31 @@ npm run e2e
 npm run e2e:report
 ```
 
+### E2E environment configuration
+
+Create your local E2E environment file from the tracked example:
+
+```bash
+cp .env.e2e.example .env.e2e
+```
+
+Playwright loads variables from `.env.e2e` first, then uses `.env` for any
+variables that are not already set. Variables provided by the shell take
+precedence over both files.
+
+Set `PLAYWRIGHT_BASE_URL` in `.env.e2e` to test a deployed frontend:
+
+```bash
+PLAYWRIGHT_BASE_URL=https://example.com
+```
+
+If it is not set, Playwright uses `http://127.0.0.1:3000` by default. To
+override the URL for one run:
+
+```bash
+PLAYWRIGHT_BASE_URL=https://example.com npm run e2e:headed
+```
+
 ### BDD E2E tests
 
 The registration and sign-in BDD suite uses Gherkin feature files in

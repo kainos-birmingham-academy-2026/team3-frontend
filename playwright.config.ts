@@ -1,6 +1,10 @@
 /// <reference types="node" />
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
 import { defineBddConfig } from "playwright-bdd";
+
+dotenv.config({ path: [path.resolve(__dirname, ".env.e2e"), path.resolve(__dirname, ".env")] });
 
 const appPort = Number(process.env.PORT ?? 3000);
 const baseURL =
@@ -16,14 +20,6 @@ const bddTestDir = defineBddConfig({
 // Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
 // originals once the backend is deployed remotely.
 const needsDatabase = !process.env.CI;
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
