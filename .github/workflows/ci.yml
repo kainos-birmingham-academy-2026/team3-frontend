@@ -120,7 +120,7 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
       TF_VAR_environment: dev
-      TF_VAR_image_tag: dev-${{ github.sha }}
+      TF_VAR_image_tag: dev-latest
       TF_VAR_container_revision_suffix: sha-${{ github.sha }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
