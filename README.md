@@ -217,6 +217,11 @@ Set `PLAYWRIGHT_BASE_URL` in `.env.e2e` to test a deployed frontend:
 PLAYWRIGHT_BASE_URL=https://example.com
 ```
 
+When the URL is deployed, Playwright does not start the local frontend,
+backend, or database. It runs the browser-only public route and job role tests;
+tests that directly access local backend or database infrastructure are skipped.
+The deployed frontend communicates with its configured internal backend.
+
 If it is not set, Playwright uses `http://127.0.0.1:3000` by default. To
 override the URL for one run:
 

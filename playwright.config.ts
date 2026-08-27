@@ -10,6 +10,9 @@ const appPort = Number(process.env.PORT ?? 3000);
 const baseURL =
 	process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${appPort}`;
 const apiBaseURL = process.env.API_BASE_URL ?? "http://localhost:4000";
+const isDeployedTarget = !["localhost", "127.0.0.1", "::1"].includes(
+	new URL(baseURL).hostname,
+);
 const bddTestDir = defineBddConfig({
 	features: "e2e/bdd/features/**/*.feature",
 	steps: ["e2e/bdd/steps/**/*.ts", "e2e/bdd/fixtures/test.ts"],
@@ -19,7 +22,7 @@ const bddTestDir = defineBddConfig({
 // TEMPORARY: CI has no Postgres or backend, so the database-backed journey is skipped there.
 // Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
 // originals once the backend is deployed remotely.
-const needsDatabase = !process.env.CI;
+const needsDatabase = !process.env.CI && !isDeployedTarget;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -32,14 +35,20 @@ export default defineConfig({
 	// TEMPORARY
 	testIgnore: [
 		"**/.bdd-gen/**",
-		...(needsDatabase
-			? []
-			: [
+		...(process.env.CI
+			? [
 					"**/register-and-login.spec.ts",
 					"**/admin-hiring.spec.ts",
 					"**/view-job-roles.spec.ts",
 					"**/e2e/bdd/**",
-				]),
+				]
+			: isDeployedTarget
+				? [
+						"**/register-and-login.spec.ts",
+						"**/admin-hiring.spec.ts",
+						"**/e2e/bdd/**",
+					]
+				: []),
 	],
 	...(needsDatabase
 		? {
@@ -104,19 +113,23 @@ export default defineConfig({
 					},
 				]
 			: []),
-		{
-			command: "npm run dev",
-			url: baseURL,
-			reuseExistingServer: !process.env.CI,
-			stdout: "pipe",
-			stderr: "pipe",
-			env: {
-				...process.env,
-				NODE_ENV: "test",
-				PORT: String(appPort),
-				SESSION_SECRET:
-					process.env.SESSION_SECRET ?? "playwright-session-secret",
-			},
-		},
+		...(!isDeployedTarget
+			? [
+					{
+						command: "npm run dev",
+						url: baseURL,
+						reuseExistingServer: !process.env.CI,
+						stdout: "pipe" as const,
+						stderr: "pipe" as const,
+						env: {
+							...process.env,
+							NODE_ENV: "test",
+							PORT: String(appPort),
+							SESSION_SECRET:
+								process.env.SESSION_SECRET ?? "playwright-session-secret",
+						},
+					},
+				]
+			: []),
 	],
 });
