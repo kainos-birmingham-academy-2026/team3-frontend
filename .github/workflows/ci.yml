@@ -57,6 +57,7 @@ jobs:
     env:
       REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
       IMAGE_NAME: team3-frontend
+      IMAGE_TAG: dev-${{ github.sha }}
       PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
@@ -79,7 +80,7 @@ jobs:
           context: .
           push: ${{ env.PUSH == 'true' }}
           tags: |
-            ${{ env.PUSH == 'true' && format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, github.sha) || format('{0}:{1}', env.IMAGE_NAME, github.sha) }}
+            ${{ env.PUSH == 'true' && format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, env.IMAGE_TAG) || format('{0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG) }}
             ${{ env.PUSH == 'true' && format('{0}/{1}:dev-latest', env.REGISTRY, env.IMAGE_NAME) }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -88,7 +89,7 @@ jobs:
         if: env.PUSH == 'true'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
@@ -98,7 +99,7 @@ jobs:
         run: |
           az acr manifest show \
             --registry "${REGISTRY%%.*}" \
-            --name "$IMAGE_NAME:${{ github.sha }}" \
+            --name "$IMAGE_NAME:$IMAGE_TAG" \
             --query digest --output tsv
           az acr manifest show \
             --registry "${REGISTRY%%.*}" \
@@ -125,6 +126,8 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+      IMAGE_NAME: team3-frontend
     defaults:
       run:
         working-directory: infrastructure/environments/dev
@@ -189,3 +192,22 @@ jobs:
       - name: Apply Terraform
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform apply -input=false -auto-approve tfplan
+
+      - name: Delete dev images older than 48 hours
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -o pipefail
+          cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')
+
+          az acr manifest list-metadata \
+            --registry "${REGISTRY%%.*}" \
+            --name "$IMAGE_NAME" \
+            --output json \
+            | jq --raw-output --arg cutoff "$cutoff" \
+              '.[] | (.tags // []) as $tags | select(.lastUpdateTime < $cutoff) | select(any($tags[]; startswith("dev-"))) | select(any($tags[]; . == "latest" or . == "dev-latest") | not) | .digest' \
+            | while read -r digest; do
+                az acr repository delete \
+                  --name "${REGISTRY%%.*}" \
+                  --image "$IMAGE_NAME@$digest" \
+                  --yes
+              done
