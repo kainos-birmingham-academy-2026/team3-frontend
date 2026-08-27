@@ -4,22 +4,21 @@ import { test } from "../fixtures/test";
 
 const { Given, When, Then } = createBdd(test);
 
-Given("I am logged in as an administrator", async ({
-	loginPage,
-	page,
-	adminHireWorld,
-}) => {
-	// This flow relies on the seeded admin account.
-	expect(adminHireWorld.adminEmail).toBeTruthy();
+Given(
+	"I am logged in as an administrator",
+	async ({ loginPage, page, adminHireWorld }) => {
+		// This flow relies on the seeded admin account.
+		expect(adminHireWorld.adminEmail).toBeTruthy();
 
-	await loginPage.goto();
-	await loginPage.signIn(
-		adminHireWorld.adminEmail,
-		adminHireWorld.adminPassword,
-	);
+		await loginPage.goto();
+		await loginPage.signIn(
+			adminHireWorld.adminEmail,
+			adminHireWorld.adminPassword,
+		);
 
-	await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {});
-});
+		await page.waitForURL(/^(?!.*login)/, { timeout: 5000 }).catch(() => {});
+	},
+);
 
 When(
 	"I review a pending application",
@@ -43,12 +42,15 @@ When("I hire the applicant", async ({ adminApplicationsPage, page }) => {
 	await adminApplicationsPage.expectSuccessMessage();
 });
 
-Then("the applicant status should change from pending to hired", async ({ page, adminHireWorld }) => {
-	if (typeof adminHireWorld.pendingBeforeHire === "number") {
-		const pendingAfterHire = await page.locator(".status-pending").count();
-		expect(pendingAfterHire).toBeLessThan(adminHireWorld.pendingBeforeHire);
-	}
+Then(
+	"the applicant status should change from pending to hired",
+	async ({ page, adminHireWorld }) => {
+		if (typeof adminHireWorld.pendingBeforeHire === "number") {
+			const pendingAfterHire = await page.locator(".status-pending").count();
+			expect(pendingAfterHire).toBeLessThan(adminHireWorld.pendingBeforeHire);
+		}
 
-	const hiredCount = await page.locator(".status-hired").count();
-	expect(hiredCount).toBeGreaterThan(0);
-});
+		const hiredCount = await page.locator(".status-hired").count();
+		expect(hiredCount).toBeGreaterThan(0);
+	},
+);
