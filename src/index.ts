@@ -3,16 +3,15 @@ import path from "node:path";
 import express from "express";
 import session from "express-session";
 import nunjucks from "nunjucks";
+import { features } from "./config/features";
 import authRouter from "./routes/authRouter";
 import router from "./routes/jobRoleRouter";
-import { features } from "./config/features";
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
 const isDev = process.env.NODE_ENV !== "production";
 
-	app.set("trust proxy", 1);
-
+app.set("trust proxy", 1);
 
 nunjucks.configure(
 	[

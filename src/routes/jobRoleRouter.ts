@@ -1,8 +1,8 @@
 import axios from "axios";
 import { type Request, Router } from "express";
 import { JobRoleController } from "../controllers/jobRoleController";
-import { requireAdminHiringFeature } from "../middleware/featureFlags";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
+import { requireAdminHiringFeature } from "../middleware/featureFlags";
 import { AdminApplicationService } from "../services/adminApplicationService";
 import { JobRoleService } from "../services/jobRoleService";
 
@@ -114,7 +114,7 @@ router.get(
 // API endpoint for fetching applications (called by client-side JavaScript)
 router.get(
 	"/api/job-applications/admin",
-		requireAdminHiringFeature,
+	requireAdminHiringFeature,
 	requireAuth,
 	requireAdmin,
 	async (req, res) => {
