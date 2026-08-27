@@ -4,7 +4,9 @@ import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 import { defineBddConfig } from "playwright-bdd";
 
-dotenv.config({ path: [path.resolve(__dirname, ".env.e2e"), path.resolve(__dirname, ".env")] });
+dotenv.config({
+	path: [path.resolve(__dirname, ".env.e2e"), path.resolve(__dirname, ".env")],
+});
 
 const appPort = Number(process.env.PORT ?? 3000);
 const baseURL =

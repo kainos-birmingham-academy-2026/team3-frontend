@@ -30,15 +30,22 @@ Then(
 When(
 	"I submit the form with different passwords",
 	async ({ registerPage, user }) => {
-		await registerPage.fillForm(user.email, user.password, "DifferentPassword1!");
+		await registerPage.fillForm(
+			user.email,
+			user.password,
+			"DifferentPassword1!",
+		);
 		await registerPage.submit();
 	},
 );
 
-Then("I see a message that my passwords do not match", async ({ registerPage }) => {
-	await registerPage.expectLoaded();
-	await registerPage.expectError("Passwords do not match");
-});
+Then(
+	"I see a message that my passwords do not match",
+	async ({ registerPage }) => {
+		await registerPage.expectLoaded();
+		await registerPage.expectError("Passwords do not match");
+	},
+);
 
 When(
 	"I submit the form with a weak password",

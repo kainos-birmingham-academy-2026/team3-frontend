@@ -4,8 +4,8 @@ import { test as projectTest } from "../../fixtures/test";
 import { deleteUserByEmail } from "../../support/db";
 import { createTestUser, type TestUser } from "../../support/testUser";
 import {
-	createAdminHireWorld,
 	type AdminHireWorld,
+	createAdminHireWorld,
 } from "../world/adminHireWorld";
 
 type BddFixtures = {
