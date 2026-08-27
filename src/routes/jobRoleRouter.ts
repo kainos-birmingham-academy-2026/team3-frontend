@@ -1,5 +1,6 @@
 import axios from "axios";
 import { type Request, Router } from "express";
+import apiClient from "../config/apiClient";
 import { JobRoleController } from "../controllers/jobRoleController";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
 import { requireAdminHiringFeature } from "../middleware/featureFlags";
@@ -253,7 +254,15 @@ router.post(
 	(req, res) => controller.deleteJobRole(req, res),
 );
 
-router.get("/teapot", (_req, res) => {
+router.get("/teapot", async (_req, res) => {
+	try {
+		await apiClient.get("/teapot", {
+			validateStatus: (status) => status === 418,
+		});
+	} catch {
+		// Keep the informational page available when the backend is unavailable.
+	}
+
 	res.render("pages/teapot.njk");
 });
 
