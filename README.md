@@ -144,7 +144,7 @@ http://localhost:3000/job-role-list
 - `npm run test:ui` - Execute UI unit tests.
 - `npm run e2e` - Run Playwright end-to-end tests in headless mode.
 - `npm run e2e:smoke` - Run Playwright tests tagged as smoke tests.
-- `npm run e2e:headed` - Run Playwright tests with a visible browser.
+- `npm run e2e:headed` - Run backend-independent Playwright tests with a visible browser.
 - `npm run e2e:ui` - Open Playwright UI mode for interactive debugging.
 - `npm run e2e:report` - Open the latest Playwright HTML report.
 
