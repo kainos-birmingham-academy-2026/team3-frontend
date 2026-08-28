@@ -9,6 +9,7 @@ dotenv.config({
 });
 
 const appPort = Number(process.env.PORT ?? 3000);
+const hasDeployedBaseURL = Boolean(process.env.PLAYWRIGHT_BASE_URL);
 const baseURL =
 	process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${appPort}`;
 const apiBaseURL = process.env.API_BASE_URL ?? "http://localhost:4000";
@@ -18,10 +19,10 @@ const bddTestDir = defineBddConfig({
 	outputDir: "e2e/specs",
 });
 
-// TEMPORARY: CI has no Postgres or backend, so the database-backed journey is skipped there.
+// TEMPORARY: CI and backend-free local runs skip the database-backed journeys.
 // Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
 // originals once the backend is deployed remotely.
-const needsDatabase = !process.env.CI;
+const needsDatabase = !process.env.CI && !process.env.E2E_SKIP_BACKEND;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -106,19 +107,23 @@ export default defineConfig({
 					},
 				]
 			: []),
-		{
-			command: "npm run dev",
-			url: baseURL,
-			reuseExistingServer: !process.env.CI,
-			stdout: "pipe",
-			stderr: "pipe",
-			env: {
-				...process.env,
-				NODE_ENV: "test",
-				PORT: String(appPort),
-				SESSION_SECRET:
-					process.env.SESSION_SECRET ?? "playwright-session-secret",
-			},
-		},
+		...(hasDeployedBaseURL
+			? []
+			: [
+					{
+						command: "npm run dev",
+						url: baseURL,
+						reuseExistingServer: !process.env.CI,
+						stdout: "pipe" as const,
+						stderr: "pipe" as const,
+						env: {
+							...process.env,
+							NODE_ENV: "test",
+							PORT: String(appPort),
+							SESSION_SECRET:
+								process.env.SESSION_SECRET ?? "playwright-session-secret",
+						},
+					},
+				]),
 	],
 });
