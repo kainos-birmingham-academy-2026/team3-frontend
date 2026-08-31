@@ -15,6 +15,14 @@ export interface JobRole {
 	postcode?: string;
 }
 
+export interface JobRoleFilters {
+	roleName?: string;
+	locationId?: string[];
+	capabilityId?: string[];
+	bandId?: string[];
+	closingDate?: string;
+}
+
 export interface CreateJobRoleInput {
 	roleName?: string;
 	description?: string;

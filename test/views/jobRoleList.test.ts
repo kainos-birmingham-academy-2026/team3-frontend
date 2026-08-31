@@ -15,7 +15,11 @@ const environment = new nunjucks.Environment(
 	new nunjucks.FileSystemLoader(viewsPath),
 );
 
-function renderView(jobRoles: JobRole[], currentUserRole?: string): string {
+function renderView(
+	jobRoles: JobRole[],
+	currentUserRole?: string,
+	context: Record<string, unknown> = {},
+): string {
 	if (!template.length) {
 		throw new Error("Template should not be empty");
 	}
@@ -23,6 +27,7 @@ function renderView(jobRoles: JobRole[], currentUserRole?: string): string {
 	return environment.render("pages/jobRoleList.njk", {
 		jobRoles,
 		currentUserRole,
+		...context,
 	});
 }
 
@@ -112,5 +117,24 @@ describe("jobRoleList", () => {
 
 		expect(html).toContain('row.addEventListener("click", navigateToRole)');
 		expect(html).toContain('event.key === "Enter" || event.key === " "');
+	});
+
+	it("should render filters for every displayed column and retain selections", () => {
+		const html = renderView([], undefined, {
+			filters: { roleName: "Engineer", closingDate: "2026-12-31" },
+			locationOptions: [{ locationId: 1, locationName: "Birmingham" }],
+			capabilityOptions: [{ capabilityId: 2, capabilityName: "Engineering" }],
+			bandOptions: [{ bandId: 3, bandName: "Senior" }],
+			selectedLocationIds: { 1: true },
+			selectedCapabilityIds: { 2: true },
+			selectedBandIds: { 3: true },
+		});
+
+		expect(html).toContain('name="roleName" type="text" value="Engineer"');
+		expect(html).toContain('name="locationId"');
+		expect(html).toContain('name="capabilityId"');
+		expect(html).toContain('name="bandId"');
+		expect(html).toContain('name="closingDate" type="date" value="2026-12-31"');
+		expect(html.match(/checked/g)).toHaveLength(3);
 	});
 });

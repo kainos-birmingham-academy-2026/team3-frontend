@@ -66,6 +66,23 @@ describe("JobRoleService", () => {
 		expect(result[0]?.status).toBe("open");
 	});
 
+	it("should send role filters as API query parameters", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({ data: [] });
+
+		await service.getAll(undefined, {
+			roleName: "Engineer",
+			locationId: ["1", "2"],
+			capabilityId: ["3"],
+			bandId: ["4"],
+			closingDate: "2026-12-31",
+		});
+
+		const config = vi.mocked(apiClient.get).mock.calls[0]?.[1];
+		expect(config?.params.toString()).toBe(
+			"roleName=Engineer&closingDate=2026-12-31&locationId=1&locationId=2&capabilityId=3&bandId=4",
+		);
+	});
+
 	it("should keeps role status values from backend for view filtering", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: [

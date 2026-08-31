@@ -331,10 +331,93 @@ body.modal-open {
 
 .job-role-table {
 	width: 100%;
+	min-width: 490px;
 	border-collapse: collapse;
 	margin-top: 1.2rem;
 	background: var(--kainos-white);
 	border: 1px solid #d9def0;
+}
+
+.job-role-table-scroll {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.job-role-filters {
+	margin-top: 1.2rem;
+	padding: 1.25rem;
+	background: #eef1fb;
+	border-left: 4px solid var(--kainos-blue);
+}
+
+.job-role-filters h2 {
+	margin: 0 0 1rem;
+	font-size: 1.3rem;
+}
+
+.job-role-filter-grid {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.job-role-filter-field {
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.job-role-filter-field > label,
+.job-role-filter-field legend {
+	display: block;
+	margin-bottom: 0.45rem;
+	font-weight: 600;
+}
+
+.job-role-filter-field > input {
+	width: 100%;
+	min-height: 2.75rem;
+	box-sizing: border-box;
+	padding: 0.55rem 0.65rem;
+	font: inherit;
+	border: 1px solid #7c83a0;
+	background: var(--kainos-white);
+}
+
+.job-role-checkbox-list {
+	display: grid;
+	gap: 0.4rem;
+}
+
+.job-role-checkbox-list label {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.45rem;
+}
+
+.job-role-checkbox-list input {
+	flex: 0 0 auto;
+	margin-top: 0.2rem;
+}
+
+.job-role-filter-actions {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+	.job-role-filter-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 560px) {
+	.job-role-filter-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 .job-role-table th,
