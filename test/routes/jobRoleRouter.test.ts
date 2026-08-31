@@ -44,6 +44,9 @@ function createTestApp(): Application {
 			saveUninitialized: false,
 		}),
 	);
+	testApp.get("/test-session-redirect", (req, res) => {
+		res.json({ redirectAfterLogin: req.session.redirectAfterLogin });
+	});
 
 	testApp.use(authRouter);
 	testApp.use(router);
@@ -211,10 +214,16 @@ describe("routes", () => {
 	});
 
 	it("should redirect unauthenticated users from apply page to 401 flow", async () => {
-		const response = await request(app).get("/job-role-list/1/apply");
+		const agent = request.agent(app);
+		const response = await agent.get("/job-role-list/1/apply");
 
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/unauthorised");
+
+		const sessionResponse = await agent.get("/test-session-redirect");
+		expect(sessionResponse.body.redirectAfterLogin).toBe(
+			"/job-role-list/1/apply",
+		);
 	});
 
 	it("should redirect unauthenticated users when posting an application", async () => {

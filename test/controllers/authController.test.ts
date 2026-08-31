@@ -11,6 +11,7 @@ vi.mock("../../src/services/authApiService", () => ({
 type TestSession = {
 	jwtToken?: string;
 	userRole?: "ADMIN" | "USER";
+	redirectAfterLogin?: string;
 	destroy: (callback: () => void) => void;
 };
 
@@ -217,6 +218,26 @@ describe("AuthController", () => {
 		expect(req.session.jwtToken).toBe(createTokenWithRole("USER"));
 		expect(req.session.userRole).toBe("USER");
 		expect(res.redirect).toHaveBeenCalledWith("/");
+	});
+
+	it("should redirect to and clear the saved destination after login", async () => {
+		vi.mocked(authApiService.login).mockResolvedValueOnce(
+			createTokenWithRole("USER"),
+		);
+
+		const req = createReq({
+			body: { email: "jane.doe", password: "password123" },
+			session: {
+				redirectAfterLogin: "/job-role-list/42/apply",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
+		const res = createRes();
+
+		await controller.login(req, res);
+
+		expect(res.redirect).toHaveBeenCalledWith("/job-role-list/42/apply");
+		expect(req.session.redirectAfterLogin).toBeUndefined();
 	});
 
 	it("should return 401 when backend token does not include a valid role", async () => {
