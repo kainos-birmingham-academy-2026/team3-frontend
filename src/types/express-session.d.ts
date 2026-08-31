@@ -11,6 +11,7 @@ declare module "express-session" {
 	interface SessionData {
 		jwtToken?: string;
 		userRole?: UserRole;
+		redirectAfterLogin?: string;
 		dropdownOptions?: {
 			statuses: StatusOption[];
 			locations: LocationOption[];

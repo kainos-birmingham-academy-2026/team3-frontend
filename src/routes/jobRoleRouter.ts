@@ -222,6 +222,7 @@ router.get("/job-role-list", (req, res) => controller.getAll(req, res));
 router.get("/job-role-list/:id", (req, res) => controller.getById(req, res));
 router.get("/job-role-list/:id/apply", (req, res) => {
 	if (!req.session.jwtToken) {
+		req.session.redirectAfterLogin = `/job-role-list/${req.params.id}/apply`;
 		res.redirect("/unauthorised");
 		return;
 	}

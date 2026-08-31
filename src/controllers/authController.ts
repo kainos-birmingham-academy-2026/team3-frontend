@@ -86,7 +86,9 @@ export class AuthController {
 			req.session.jwtToken = jwtToken;
 			req.session.userRole = userRole;
 
-			res.redirect("/");
+			const redirectAfterLogin = req.session.redirectAfterLogin ?? "/";
+			delete req.session.redirectAfterLogin;
+			res.redirect(redirectAfterLogin);
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Unable to sign in";
