@@ -20,7 +20,8 @@ export interface JobRoleFilters {
 	locationId?: string[];
 	capabilityId?: string[];
 	bandId?: string[];
-	closingDate?: string;
+	closingFrom?: string;
+	closingBy?: string;
 }
 
 export interface CreateJobRoleInput {

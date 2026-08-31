@@ -121,7 +121,11 @@ describe("jobRoleList", () => {
 
 	it("should render filters for every displayed column and retain selections", () => {
 		const html = renderView([], undefined, {
-			filters: { roleName: "Engineer", closingDate: "2026-12-31" },
+			filters: {
+				roleName: "Engineer",
+				closingFrom: "2026-09-01",
+				closingBy: "2026-12-31",
+			},
 			locationOptions: [{ locationId: 1, locationName: "Birmingham" }],
 			capabilityOptions: [{ capabilityId: 2, capabilityName: "Engineering" }],
 			bandOptions: [{ bandId: 3, bandName: "Senior" }],
@@ -134,7 +138,8 @@ describe("jobRoleList", () => {
 		expect(html).toContain('name="locationId"');
 		expect(html).toContain('name="capabilityId"');
 		expect(html).toContain('name="bandId"');
-		expect(html).toContain('name="closingDate" type="date" value="2026-12-31"');
+		expect(html).toContain('name="closingFrom" type="date" value="2026-09-01"');
+		expect(html).toContain('name="closingBy" type="date" value="2026-12-31"');
 		expect(html.match(/checked/g)).toHaveLength(3);
 	});
 });

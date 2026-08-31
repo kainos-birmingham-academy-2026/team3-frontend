@@ -65,10 +65,19 @@
           {% endfor %}
         </div>
       </fieldset>
-      <div class="job-role-filter-field">
-        <label for="closingDate">Closing date</label>
-        <input id="closingDate" name="closingDate" type="date" value="{{ filters.closingDate or '' }}">
-      </div>
+      <fieldset class="job-role-filter-field">
+        <legend>Closing date</legend>
+        <div class="job-role-date-range">
+          <label for="closingFrom">
+            Closing on or after
+            <input id="closingFrom" name="closingFrom" type="date" value="{{ filters.closingFrom or '' }}">
+          </label>
+          <label for="closingBy">
+            Closing on or before
+            <input id="closingBy" name="closingBy" type="date" value="{{ filters.closingBy or '' }}">
+          </label>
+        </div>
+      </fieldset>
     </div>
     <div class="job-role-filter-actions">
       <button class="button button-solid" type="submit">Apply filters</button>

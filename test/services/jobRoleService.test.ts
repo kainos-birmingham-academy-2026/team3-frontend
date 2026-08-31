@@ -74,12 +74,13 @@ describe("JobRoleService", () => {
 			locationId: ["1", "2"],
 			capabilityId: ["3"],
 			bandId: ["4"],
-			closingDate: "2026-12-31",
+			closingFrom: "2026-09-01",
+			closingBy: "2026-12-31",
 		});
 
 		const config = vi.mocked(apiClient.get).mock.calls[0]?.[1];
 		expect(config?.params.toString()).toBe(
-			"roleName=Engineer&closingDate=2026-12-31&locationId=1&locationId=2&capabilityId=3&bandId=4",
+			"roleName=Engineer&closingFrom=2026-09-01&closingBy=2026-12-31&locationId=1&locationId=2&capabilityId=3&bandId=4",
 		);
 	});
 

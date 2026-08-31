@@ -401,6 +401,27 @@ body.modal-open {
 	margin-top: 0.2rem;
 }
 
+.job-role-date-range {
+	display: grid;
+	gap: 0.65rem;
+}
+
+.job-role-date-range label {
+	display: grid;
+	gap: 0.3rem;
+	font-size: 0.9rem;
+}
+
+.job-role-date-range input {
+	width: 100%;
+	min-height: 2.75rem;
+	box-sizing: border-box;
+	padding: 0.55rem 0.65rem;
+	font: inherit;
+	border: 1px solid #7c83a0;
+	background: var(--kainos-white);
+}
+
 .job-role-filter-actions {
 	display: flex;
 	align-items: center;

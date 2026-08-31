@@ -42,7 +42,8 @@ export class JobRoleController {
 			locationId: this.getQueryList(req.query.locationId),
 			capabilityId: this.getQueryList(req.query.capabilityId),
 			bandId: this.getQueryList(req.query.bandId),
-			closingDate: this.getQueryString(req.query.closingDate),
+			closingFrom: this.getQueryString(req.query.closingFrom),
+			closingBy: this.getQueryString(req.query.closingBy),
 		};
 	}
 
