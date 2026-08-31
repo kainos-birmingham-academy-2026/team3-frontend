@@ -5,6 +5,7 @@ import type {
 	CapabilityOption,
 	CreateJobRoleInput,
 	JobRole,
+	JobRoleFilters,
 	LocationOption,
 	SchemaError,
 	StatusOption,
@@ -21,6 +22,33 @@ export class JobRoleController {
 
 	private getRoleIdParam(req: Request): string {
 		return Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+	}
+
+	private getQueryString(value: unknown): string | undefined {
+		return typeof value === "string" && value.trim() ? value.trim() : undefined;
+	}
+
+	private getQueryList(value: unknown): string[] | undefined {
+		const values = Array.isArray(value) ? value : [value];
+		const strings = values.filter(
+			(item): item is string => typeof item === "string" && item.length > 0,
+		);
+		return strings.length > 0 ? strings : undefined;
+	}
+
+	private getFilters(req: Request): JobRoleFilters {
+		return {
+			roleName: this.getQueryString(req.query.roleName),
+			locationId: this.getQueryList(req.query.locationId),
+			capabilityId: this.getQueryList(req.query.capabilityId),
+			bandId: this.getQueryList(req.query.bandId),
+			closingFrom: this.getQueryString(req.query.closingFrom),
+			closingBy: this.getQueryString(req.query.closingBy),
+		};
+	}
+
+	private getSelectedIds(values?: string[]): Record<string, boolean> {
+		return Object.fromEntries((values ?? []).map((value) => [value, true]));
 	}
 
 	private canApplyForRole(jobRole: JobRole): boolean {
@@ -58,8 +86,24 @@ export class JobRoleController {
 
 	async getAll(req: Request, res: Response): Promise<void> {
 		try {
-			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
-			res.render("pages/jobRoleList.njk", { jobRoles });
+			const filters = this.getFilters(req);
+			const [jobRoles, locationOptions, capabilityOptions, bandOptions] =
+				await Promise.all([
+					this.jobRoleService.getAll(this.getJwtToken(req), filters),
+					this.jobRoleService.getAllLocations(),
+					this.jobRoleService.getAllCapabilities(),
+					this.jobRoleService.getAllBands(),
+				]);
+			res.render("pages/jobRoleList.njk", {
+				jobRoles,
+				filters,
+				locationOptions,
+				capabilityOptions,
+				bandOptions,
+				selectedLocationIds: this.getSelectedIds(filters.locationId),
+				selectedCapabilityIds: this.getSelectedIds(filters.capabilityId),
+				selectedBandIds: this.getSelectedIds(filters.bandId),
+			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
 				return;

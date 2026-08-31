@@ -5,6 +5,7 @@ import type {
 	CapabilityOption,
 	CreateJobRoleInput,
 	JobRole,
+	JobRoleFilters,
 	LocationOption,
 	StatusOption,
 	UpdateJobRoleInput,
@@ -94,13 +95,35 @@ export class JobRoleService {
 		};
 	}
 
-	async getAll(jwtToken?: string): Promise<JobRole[]> {
+	async getAll(
+		jwtToken?: string,
+		filters: JobRoleFilters = {},
+	): Promise<JobRole[]> {
 		try {
-			const response = jwtToken
-				? await apiClient.get<ApiJobRole[]>("/job-roles", {
-						headers: { Authorization: `Bearer ${jwtToken}` },
-					})
-				: await apiClient.get<ApiJobRole[]>("/job-roles");
+			const params = new URLSearchParams();
+			if (filters.roleName) params.set("roleName", filters.roleName);
+			if (filters.closingFrom) params.set("closingFrom", filters.closingFrom);
+			if (filters.closingBy) params.set("closingBy", filters.closingBy);
+			for (const locationId of filters.locationId ?? []) {
+				params.append("locationId", locationId);
+			}
+			for (const capabilityId of filters.capabilityId ?? []) {
+				params.append("capabilityId", capabilityId);
+			}
+			for (const bandId of filters.bandId ?? []) {
+				params.append("bandId", bandId);
+			}
+
+			const config = {
+				...(jwtToken
+					? { headers: { Authorization: `Bearer ${jwtToken}` } }
+					: {}),
+				...(params.size > 0 ? { params } : {}),
+			};
+			const response =
+				Object.keys(config).length > 0
+					? await apiClient.get<ApiJobRole[]>("/job-roles", config)
+					: await apiClient.get<ApiJobRole[]>("/job-roles");
 
 			return response.data.map((jobRole) => this.mapJobRole(jobRole));
 		} catch (error) {

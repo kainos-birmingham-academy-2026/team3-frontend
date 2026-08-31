@@ -18,6 +18,7 @@ type TestRequest = {
 		id?: string | string[];
 	};
 	body?: Record<string, unknown>;
+	query?: Record<string, string | string[]>;
 };
 
 function createRequest(partial: Partial<TestRequest> = {}): TestRequest {
@@ -26,6 +27,7 @@ function createRequest(partial: Partial<TestRequest> = {}): TestRequest {
 			jwtToken: undefined,
 		},
 		body: {},
+		query: {},
 		...partial,
 	};
 }
@@ -61,6 +63,9 @@ describe("JobRoleController", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		jobRoleService.getAllLocations.mockResolvedValue([]);
+		jobRoleService.getAllCapabilities.mockResolvedValue([]);
+		jobRoleService.getAllBands.mockResolvedValue([]);
 	});
 
 	it("should call service with JWT token and render job roles", async () => {
@@ -84,9 +89,23 @@ describe("JobRoleController", () => {
 
 		await controller.getAll(req as unknown as Request, res);
 
-		expect(jobRoleService.getAll).toHaveBeenCalledWith("jwt-token");
+		expect(jobRoleService.getAll).toHaveBeenCalledWith("jwt-token", {
+			roleName: undefined,
+			locationId: undefined,
+			capabilityId: undefined,
+			bandId: undefined,
+			closingFrom: undefined,
+			closingBy: undefined,
+		});
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
 			jobRoles,
+			filters: expect.any(Object),
+			locationOptions: [],
+			capabilityOptions: [],
+			bandOptions: [],
+			selectedLocationIds: {},
+			selectedCapabilityIds: {},
+			selectedBandIds: {},
 		});
 	});
 
@@ -109,10 +128,51 @@ describe("JobRoleController", () => {
 
 		await controller.getAll(req as unknown as Request, res);
 
-		expect(jobRoleService.getAll).toHaveBeenCalledWith(undefined);
+		expect(jobRoleService.getAll).toHaveBeenCalledWith(
+			undefined,
+			expect.any(Object),
+		);
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
 			jobRoles,
+			filters: expect.any(Object),
+			locationOptions: [],
+			capabilityOptions: [],
+			bandOptions: [],
+			selectedLocationIds: {},
+			selectedCapabilityIds: {},
+			selectedBandIds: {},
 		});
+	});
+
+	it("should pass list filters to the API service and view", async () => {
+		const req = createRequest({
+			query: {
+				roleName: " Engineer ",
+				locationId: ["1", "2"],
+				capabilityId: "3",
+				bandId: "4",
+				closingFrom: "2026-09-01",
+				closingBy: "2026-12-31",
+			},
+		});
+		const res = createResponse();
+		jobRoleService.getAll.mockResolvedValueOnce([]);
+
+		await controller.getAll(req as unknown as Request, res);
+
+		const filters = {
+			roleName: "Engineer",
+			locationId: ["1", "2"],
+			capabilityId: ["3"],
+			bandId: ["4"],
+			closingFrom: "2026-09-01",
+			closingBy: "2026-12-31",
+		};
+		expect(jobRoleService.getAll).toHaveBeenCalledWith(undefined, filters);
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobRoleList.njk",
+			expect.objectContaining({ filters }),
+		);
 	});
 
 	it("should clear token and redirect to login when backend returns 401", async () => {

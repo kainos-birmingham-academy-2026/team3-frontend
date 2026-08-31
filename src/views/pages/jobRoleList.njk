@@ -10,6 +10,80 @@
       </p>
     {% endif %}
   </section>
+  <form class="job-role-filters" method="get" action="/job-role-list">
+    <h2>Filter job roles</h2>
+    <div class="job-role-filter-grid">
+      <div class="job-role-filter-field">
+        <label for="roleName">Role name</label>
+        <input id="roleName" name="roleName" type="text" value="{{ filters.roleName or '' }}">
+      </div>
+      <fieldset class="job-role-filter-field">
+        <legend>Location</legend>
+        <div class="job-role-checkbox-list">
+          {% for location in locationOptions %}
+            <label for="location-{{ location.locationId }}">
+              <input
+                id="location-{{ location.locationId }}"
+                name="locationId"
+                type="checkbox"
+                value="{{ location.locationId }}"
+                {% if selectedLocationIds[location.locationId] %}checked{% endif %}>
+              {{ location.locationName }}
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="job-role-filter-field">
+        <legend>Capability</legend>
+        <div class="job-role-checkbox-list">
+          {% for capability in capabilityOptions %}
+            <label for="capability-{{ capability.capabilityId }}">
+              <input
+                id="capability-{{ capability.capabilityId }}"
+                name="capabilityId"
+                type="checkbox"
+                value="{{ capability.capabilityId }}"
+                {% if selectedCapabilityIds[capability.capabilityId] %}checked{% endif %}>
+              {{ capability.capabilityName }}
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="job-role-filter-field">
+        <legend>Band</legend>
+        <div class="job-role-checkbox-list">
+          {% for band in bandOptions %}
+            <label for="band-{{ band.bandId }}">
+              <input
+                id="band-{{ band.bandId }}"
+                name="bandId"
+                type="checkbox"
+                value="{{ band.bandId }}"
+                {% if selectedBandIds[band.bandId] %}checked{% endif %}>
+              {{ band.bandName }}
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <fieldset class="job-role-filter-field">
+        <legend>Closing date</legend>
+        <div class="job-role-date-range">
+          <label for="closingFrom">
+            Closing on or after
+            <input id="closingFrom" name="closingFrom" type="date" value="{{ filters.closingFrom or '' }}">
+          </label>
+          <label for="closingBy">
+            Closing on or before
+            <input id="closingBy" name="closingBy" type="date" value="{{ filters.closingBy or '' }}">
+          </label>
+        </div>
+      </fieldset>
+    </div>
+    <div class="job-role-filter-actions">
+      <button class="button button-solid" type="submit">Apply filters</button>
+      <a href="/job-role-list">Clear filters</a>
+    </div>
+  </form>
   {% set hasOpenRoles = false %}
   {% for jobRole in jobRoles %}
     {% if jobRole.status == "open" %}
@@ -17,35 +91,37 @@
     {% endif %}
   {% endfor %}
   {% if hasOpenRoles %}
-    <table class="job-role-table">
-      <thead>
-        <tr>
-          <th scope="col">Role Name</th>
-          <th scope="col">Location</th>
-          <th scope="col">Capability</th>
-          <th scope="col">Band</th>
-          <th scope="col">Closing Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for jobRole in jobRoles %}
-          {% if jobRole.status == "open" %}
-            <tr
-              class="job-role-row-link"
-              data-href="/job-role-list/{{ jobRole.jobRoleId }}"
-              role="link"
-              tabindex="0"
-              aria-label="View details for {{ jobRole.roleName }}">
-              <td>{{ jobRole.roleName }}</td>
-              <td>{{ jobRole.location }}</td>
-              <td>{{ jobRole.capability }}</td>
-              <td>{{ jobRole.band }}</td>
-              <td>{{ jobRole.closingDate }}</td>
-            </tr>
-          {% endif %}
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="job-role-table-scroll" tabindex="0" aria-label="Job roles table">
+      <table class="job-role-table">
+        <thead>
+          <tr>
+            <th scope="col">Role Name</th>
+            <th scope="col">Location</th>
+            <th scope="col">Capability</th>
+            <th scope="col">Band</th>
+            <th scope="col">Closing Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for jobRole in jobRoles %}
+            {% if jobRole.status == "open" %}
+              <tr
+                class="job-role-row-link"
+                data-href="/job-role-list/{{ jobRole.jobRoleId }}"
+                role="link"
+                tabindex="0"
+                aria-label="View details for {{ jobRole.roleName }}">
+                <td>{{ jobRole.roleName }}</td>
+                <td>{{ jobRole.location }}</td>
+                <td>{{ jobRole.capability }}</td>
+                <td>{{ jobRole.band }}</td>
+                <td>{{ jobRole.closingDate }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <p class="empty-state">No open job roles found</p>
   {% endif %}

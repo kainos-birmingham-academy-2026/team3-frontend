@@ -128,6 +128,20 @@ describe("routes", () => {
 				};
 			}
 
+			if (url === "/job-roles/locations") {
+				return { data: [{ locationId: 1, locationName: "Birmingham" }] };
+			}
+
+			if (url === "/job-roles/capabilities") {
+				return {
+					data: [{ capabilityId: 1, capabilityName: "Software Engineering" }],
+				};
+			}
+
+			if (url === "/job-roles/bands") {
+				return { data: [{ bandId: 1, bandName: "Engineer" }] };
+			}
+
 			throw new Error(`Unexpected URL: ${String(url)}`);
 		});
 	});
