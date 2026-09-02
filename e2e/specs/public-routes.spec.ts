@@ -66,14 +66,18 @@ test.describe("without browser JavaScript", () => {
 		await page.getByRole("link", { name: "Sign in" }).click();
 		await expect(page).toHaveURL(/\/login$/);
 
-		await page.getByRole("link", { name: "Create an account" }).click();
+		const createAccountLink = page.getByRole("link", {
+			name: "Create an account",
+		});
+		await createAccountLink.focus();
+		await createAccountLink.press("Enter");
 		await expect(page).toHaveURL(/\/register$/);
 		await expect(
 			page.getByRole("heading", { name: "Create your account" }),
 		).toBeVisible();
 	});
 
-	test("native validation rejects a weak registration password", async ({
+	test("server validation rejects a weak registration password", async ({
 		page,
 	}) => {
 		await page.goto("/register");
@@ -83,9 +87,8 @@ test.describe("without browser JavaScript", () => {
 		await page.getByRole("button", { name: "Create account" }).click();
 
 		await expect(page).toHaveURL(/\/register$/);
-		await expect(page.getByLabel("Password", { exact: true })).toHaveJSProperty(
-			"validity.valid",
-			false,
+		await expect(page.getByRole("alert")).toHaveText(
+			"Password must be more than 8 characters and include upper, lower and special characters",
 		);
 	});
 });

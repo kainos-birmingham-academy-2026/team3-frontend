@@ -8,7 +8,7 @@ const environment = new nunjucks.Environment(
 );
 
 describe("register", () => {
-	it("renders native password constraints with neutral initial guidance", () => {
+	it("renders password constraints with neutral initial guidance", () => {
 		const html = environment.render("pages/register.njk", {
 			formValues: { email: "" },
 			currentPath: "/register",
@@ -18,7 +18,7 @@ describe("register", () => {
 		expect(html).toContain(
 			'pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{9,}"',
 		);
-		expect(html).not.toContain("novalidate");
+		expect(html).toContain("novalidate");
 		expect(html).not.toContain('data-met="false"');
 		expect(html).toContain("<noscript>");
 	});
