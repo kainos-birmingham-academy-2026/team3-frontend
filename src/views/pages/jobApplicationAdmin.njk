@@ -9,72 +9,78 @@
   <p>Review and manage all submitted job applications.</p>
  </section>
 
- <section class="admin-controls" aria-label="Application filters and search">
+ <form class="admin-controls" method="get" action="/job-applications/admin" aria-label="Application filters and search">
   <div class="search-group">
+   <label for="search-input">Search applications</label>
    <input 
     type="text" 
     id="search-input" 
+    name="search"
     class="search-input" 
     placeholder="Search by applicant name or email..."
-    aria-label="Search applications"
+    value="{{ filters.search }}"
    />
   </div>
 
   <div class="filter-controls">
    <div class="filter-group">
     <label for="status-filter">Status:</label>
-    <select id="status-filter" class="status-filter">
+    <select id="status-filter" name="status" class="status-filter">
      <option value="">All Statuses</option>
-     <option value="pending">Pending Review</option>
-      <option value="hired">Hired</option>
-     <option value="rejected">Rejected</option>
+     <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending Review</option>
+     <option value="hired" {% if filters.status == 'approved' %}selected{% endif %}>Hired</option>
+     <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
     </select>
    </div>
 
    <div class="filter-group">
     <label for="role-filter">Job Role:</label>
-    <select id="role-filter" class="role-filter">
+    <select id="role-filter" name="role" class="role-filter">
      <option value="">All Roles</option>
      {% for jobRole in jobRoles %}
-    <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}">{{ jobRole.roleName }}</option>
+    <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}" {% if filters.role == jobRole.roleName %}selected{% endif %}>{{ jobRole.roleName }}</option>
        {% endfor %}
       </select>
      </div>
 
      <div class="filter-group">
       <label for="location-filter">Location:</label>
-      <select id="location-filter" class="location-filter">
+      <select id="location-filter" name="location" class="location-filter">
        <option value="">All Locations</option>
        {% for jobRole in jobRoles %}
     {% if jobRole.location %}
-     <option value="{{ jobRole.location }}">{{ jobRole.location }}</option>
+         <option value="{{ jobRole.location }}" {% if filters.location == jobRole.location %}selected{% endif %}>{{ jobRole.location }}</option>
     {% endif %}
      {% endfor %}
     </select>
    </div>
+   <div class="job-role-filter-actions">
+    <button class="button button-solid" type="submit">Apply filters</button>
+    <a href="/job-applications/admin">Clear filters</a>
+   </div>
   </div>
- </section>
+ </form>
 
- <div class="applications-summary" id="summary-container" style="display: none;">
+ <div class="applications-summary" id="summary-container">
   <div class="summary-card">
    <span class="summary-label">Total Applications</span>
-   <span class="summary-value" id="total-count">0</span>
+  <span class="summary-value" id="total-count">{{ applicationCounts.total }}</span>
   </div>
   <div class="summary-card pending">
    <span class="summary-label">Pending Review</span>
-   <span class="summary-value" id="pending-count">0</span>
+  <span class="summary-value" id="pending-count">{{ applicationCounts.pending }}</span>
   </div>
   <div class="summary-card hired">
    <span class="summary-label">Hired</span>
-   <span class="summary-value" id="hired-count">0</span>
+  <span class="summary-value" id="hired-count">{{ applicationCounts.approved }}</span>
   </div>
   <div class="summary-card rejected">
    <span class="summary-label">Rejected</span>
-   <span class="summary-value" id="rejected-count">0</span>
+  <span class="summary-value" id="rejected-count">{{ applicationCounts.rejected }}</span>
   </div>
  </div>
 
- <div class="applications-container" id="table-container" style="display: none;">
+ <div class="applications-container" id="table-container"{% if not applications.length %} style="display: none;"{% endif %}>
   <table class="applications-table" role="grid">
    <thead>
     <tr>
@@ -86,11 +92,44 @@
     </tr>
    </thead>
    <tbody id="applications-tbody">
+    {% for application in applications %}
+     <tr class="application-row" data-application-id="{{ application.applicationId }}" data-location="{{ application.location | lower }}">
+      <td class="applicant-cell">
+       <a class="applicant-link" href="/job-applications/{{ application.applicationId }}/cv">
+        {{ application.applicantName }} — {{ application.roleName }}
+       </a>
+       <span class="email-cell">{{ application.applicantEmail }}</span>
+      </td>
+      <td class="role-cell">{{ application.roleName }}</td>
+      <td class="date-cell">{{ application.applicationDate }}</td>
+      <td class="status-cell">
+       <span class="status-badge status-{% if application.status == 'approved' %}hired{% else %}{{ application.status }}{% endif %}">
+        {% if application.status == 'approved' %}Hired{% else %}{{ application.status | capitalize }}{% endif %}
+       </span>
+      </td>
+      <td class="actions-cell">
+       <div class="actions-content">
+        {% if application.jobRoleId %}
+         <a class="btn-view" href="/job-role-list/{{ application.jobRoleId }}">View job role</a>
+        {% endif %}
+        {% if application.status == 'pending' %}
+         <div class="inline-actions">
+          <form method="post" action="/job-applications/{{ application.applicationId }}/status">
+           <button class="btn-hire" type="submit" name="action" value="approve">Hire</button>
+          </form>
+          <form method="post" action="/job-applications/{{ application.applicationId }}/status">
+           <button class="btn-reject" type="submit" name="action" value="reject">Reject</button>
+          </form>
+         </div>
+        {% endif %}
+       </div>
+      </td>
+     </tr>
+    {% endfor %}
    </tbody>
   </table>
  </div>
-
- <div class="empty-state" id="empty-state">
+ <div class="empty-state" id="empty-state"{% if applications.length %} style="display: none;"{% endif %}>
   <p>No job applications found.</p>
  </div>
 

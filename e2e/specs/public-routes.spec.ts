@@ -55,3 +55,21 @@ test("home header sign-in link navigates to login @smoke", async ({
 	await homePage.clickSignIn();
 	await loginPage.expectLoaded();
 });
+
+test.describe("without browser JavaScript", () => {
+	test.use({ javaScriptEnabled: false });
+
+	test("core public navigation uses server-rendered links @smoke", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		await page.getByRole("link", { name: "Sign in" }).click();
+		await expect(page).toHaveURL(/\/login$/);
+
+		await page.getByRole("link", { name: "Create an account" }).click();
+		await expect(page).toHaveURL(/\/register$/);
+		await expect(
+			page.getByRole("heading", { name: "Create your account" }),
+		).toBeVisible();
+	});
+});

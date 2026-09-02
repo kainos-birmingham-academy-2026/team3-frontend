@@ -59,6 +59,7 @@ function createTestApp(): Application {
 
 function createAdminApp(role: "ADMIN" | "USER" = "ADMIN"): Application {
 	const adminApp = express();
+	adminApp.use(express.urlencoded({ extended: true }));
 	adminApp.use(express.json());
 
 	nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
@@ -637,6 +638,22 @@ describe("routes", () => {
 
 		expect(response.status).toBe(200);
 		expect(Array.isArray(response.body)).toBe(true);
+	});
+
+	it("should update an application from an HTML form and redirect", async () => {
+		const adminApp = createAdminApp();
+		const approve = vi
+			.spyOn(AdminApplicationService.prototype, "approve")
+			.mockResolvedValueOnce();
+
+		const response = await request(adminApp)
+			.post("/job-applications/22/status")
+			.type("form")
+			.send({ action: "approve" });
+
+		expect(response.status).toBe(303);
+		expect(response.headers.location).toBe("/job-applications/admin");
+		expect(approve).toHaveBeenCalledWith(22, "admin-token");
 	});
 
 	it("should return 500 for admin api list failures", async () => {
