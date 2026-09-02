@@ -19,7 +19,9 @@ export class RegisterPage {
 		this.emailField = page.getByLabel("Email");
 		// Exact match, otherwise this also resolves the confirm password field.
 		this.passwordField = page.getByLabel("Password", { exact: true });
-		this.confirmPasswordField = page.getByLabel("Confirm password");
+		this.confirmPasswordField = page.getByLabel("Confirm password", {
+			exact: true,
+		});
 		this.createAccountButton = page.getByRole("button", {
 			name: "Create account",
 		});
