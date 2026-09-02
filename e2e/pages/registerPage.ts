@@ -12,11 +12,16 @@ export class RegisterPage {
 	private readonly errorAlert: Locator;
 
 	constructor(private readonly page: Page) {
-		this.heading = page.getByRole("heading", { name: "Create your account" });
+		this.heading = page.getByRole("heading", {
+			level: 1,
+			name: "Create your account",
+		});
 		this.emailField = page.getByLabel("Email");
 		// Exact match, otherwise this also resolves the confirm password field.
 		this.passwordField = page.getByLabel("Password", { exact: true });
-		this.confirmPasswordField = page.getByLabel("Confirm password");
+		this.confirmPasswordField = page.getByLabel("Confirm password", {
+			exact: true,
+		});
 		this.createAccountButton = page.getByRole("button", {
 			name: "Create account",
 		});
