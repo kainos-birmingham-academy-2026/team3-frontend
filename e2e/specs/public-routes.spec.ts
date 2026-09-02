@@ -72,4 +72,20 @@ test.describe("without browser JavaScript", () => {
 			page.getByRole("heading", { name: "Create your account" }),
 		).toBeVisible();
 	});
+
+	test("native validation rejects a weak registration password", async ({
+		page,
+	}) => {
+		await page.goto("/register");
+		await page.getByLabel("Email").fill("person@example.com");
+		await page.getByLabel("Password", { exact: true }).fill("weak");
+		await page.getByLabel("Confirm password", { exact: true }).fill("weak");
+		await page.getByRole("button", { name: "Create account" }).click();
+
+		await expect(page).toHaveURL(/\/register$/);
+		await expect(page.getByLabel("Password", { exact: true })).toHaveJSProperty(
+			"validity.valid",
+			false,
+		);
+	});
 });
