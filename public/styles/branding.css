@@ -401,6 +401,7 @@ body.modal-open {
 	padding: 1.5rem;
 }
 
+.login-panel h1,
 .login-panel h2 {
 	margin: 0 0 1rem;
 	font-size: 1.45rem;
@@ -445,6 +446,115 @@ body.modal-open {
 	outline-offset: 1px;
 }
 
+.field-input {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	border: 1px solid #b8c2e6;
+	background: #fbfcff;
+}
+
+.field-input:focus-within {
+	border-color: var(--kainos-blue);
+	outline: 3px solid rgba(40, 53, 131, 0.2);
+	outline-offset: 1px;
+}
+
+.field-input input {
+	min-width: 0;
+	border: 0;
+	background: transparent;
+}
+
+.field-input input:focus {
+	border: 0;
+	outline: 0;
+}
+
+.field-icon {
+	width: 1.25rem;
+	height: 1.25rem;
+	margin-left: 0.75rem;
+	fill: none;
+	stroke: var(--kainos-text-muted);
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.password-toggle {
+	display: grid;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	place-items: center;
+	border: 0;
+	background: transparent;
+	color: var(--kainos-blue);
+	cursor: pointer;
+}
+
+.password-toggle:hover {
+	background: rgba(40, 53, 131, 0.08);
+}
+
+.password-toggle:focus-visible {
+	outline: 2px solid var(--kainos-blue);
+	outline-offset: -4px;
+}
+
+.password-toggle svg {
+	width: 1.25rem;
+	height: 1.25rem;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.password-toggle-slash {
+	display: none;
+}
+
+.password-toggle[aria-pressed="true"] .password-toggle-slash {
+	display: block;
+}
+
+.password-requirements p {
+	margin: 0 0 0.5rem;
+	font-weight: 600;
+}
+
+.password-requirements ul {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.password-requirements li {
+	padding: 0.65rem 0.75rem;
+	border: 1px solid #d4a8a8;
+	background: #fff7f7;
+	color: #8a1c1c;
+	font-size: 0.9rem;
+}
+
+.requirement-icon {
+	display: inline-block;
+	width: 1.25rem;
+	font-weight: 700;
+}
+
+.password-requirements li[data-met="true"] {
+	border-color: #8ab979;
+	background: #f4faef;
+	color: #275c1a;
+}
+
 .form-field textarea:focus {
 	border-color: var(--kainos-blue);
 	outline: 3px solid rgba(40, 53, 131, 0.2);
@@ -473,6 +583,12 @@ body.modal-open {
 	margin: 0 0 1rem;
 	color: var(--kainos-navy);
 	font-weight: 500;
+}
+
+@media (max-width: 32rem) {
+	.password-requirements ul {
+		grid-template-columns: 1fr;
+	}
 }
 
 .site-footer {
