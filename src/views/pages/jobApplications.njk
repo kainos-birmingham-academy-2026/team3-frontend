@@ -1,0 +1,131 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Kainos | My Applications{% endblock %}
+
+{% block content %}
+ <section class="page-hero">
+  <p class="eyebrow">My account</p>
+  <h1>My applications</h1>
+  <p>Track the progress of your job applications.</p>
+ </section>
+
+ {% if errorMessage %}
+  <p class="form-alert" role="alert">{{ errorMessage }}</p>
+ {% endif %}
+
+ {% if applications and applications.length %}
+    <div class="applications-container job-role-table-scroll">
+     <table class="applications-table job-role-table">
+    <thead>
+     <tr>
+      <th scope="col">Job role</th>
+      <th scope="col">Application date</th>
+      <th scope="col">Status</th>
+      <th scope="col">CV</th>
+      <th scope="col">Actions</th>
+     </tr>
+    </thead>
+    <tbody>
+     {% for application in applications %}
+      <tr>
+       <td>
+        {% if application.jobRoleId %}
+         <a href="/job-role-list/{{ application.jobRoleId }}">{{ application.roleName }}</a>
+        {% else %}
+         {{ application.roleName }}
+        {% endif %}
+       </td>
+       <td>{{ application.applicationDate }}</td>
+       <td>
+        <span class="status-badge application-status-{{ application.status | lower }}">
+         {{ application.status | capitalize }}
+        </span>
+       </td>
+      <td>
+      <a href="/job-applications/{{ application.applicationId }}/cv">View CV</a>
+      </td>
+      <td>
+       {% if application.status == 'pending' %}
+        <form class="withdraw-application-form" method="post" action="/job-applications/{{ application.applicationId }}/withdraw">
+             <button type="submit" class="button button-danger-solid withdraw-application-button">Withdraw application</button>
+        </form>
+       {% else %}
+        <span aria-label="No actions available">—</span>
+       {% endif %}
+      </td>
+      </tr>
+     {% endfor %}
+    </tbody>
+   </table>
+  </div>
+ {% else %}
+  <section class="empty-state" aria-labelledby="no-applications-title">
+   <h2 id="no-applications-title">No applications yet</h2>
+   <p>When you apply for a job role, you can track its progress here.</p>
+   <a class="button button-solid" href="/job-role-list">Browse job roles</a>
+  </section>
+ {% endif %}
+
+ <div class="withdraw-popup-overlay" id="withdraw-popup" hidden>
+  <div
+   class="withdraw-popup-dialog"
+   role="dialog"
+   aria-modal="true"
+   aria-labelledby="withdraw-popup-title"
+   aria-describedby="withdraw-popup-message"
+  >
+   <h2 id="withdraw-popup-title">Confirm withdrawal</h2>
+   <p id="withdraw-popup-message">Are you sure you want to withdraw this application?</p>
+   <div class="withdraw-popup-actions">
+    <button type="button" class="button button-outline" id="withdraw-popup-cancel">Cancel</button>
+    <button type="button" class="button button-danger-solid" id="withdraw-popup-confirm">Withdraw application</button>
+   </div>
+  </div>
+ </div>
+
+ <script>
+  const withdrawForms = document.querySelectorAll(".withdraw-application-form");
+  const withdrawPopup = document.getElementById("withdraw-popup");
+  const withdrawCancel = document.getElementById("withdraw-popup-cancel");
+  const withdrawConfirm = document.getElementById("withdraw-popup-confirm");
+  let pendingWithdrawForm = null;
+  let withdrawTrigger = null;
+
+  const closeWithdrawPopup = () => {
+   withdrawPopup.hidden = true;
+   document.body.classList.remove("modal-open");
+   pendingWithdrawForm = null;
+   withdrawTrigger?.focus();
+   withdrawTrigger = null;
+  };
+
+  withdrawForms.forEach((form) => {
+   form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    pendingWithdrawForm = form;
+    withdrawTrigger = form.querySelector("button[type='submit']");
+    withdrawPopup.hidden = false;
+    document.body.classList.add("modal-open");
+    withdrawConfirm.focus();
+   });
+  });
+
+  withdrawCancel.addEventListener("click", closeWithdrawPopup);
+
+  withdrawConfirm.addEventListener("click", () => {
+   pendingWithdrawForm?.submit();
+  });
+
+  withdrawPopup.addEventListener("click", (event) => {
+   if (event.target === withdrawPopup) {
+    closeWithdrawPopup();
+   }
+  });
+
+  document.addEventListener("keydown", (event) => {
+   if (event.key === "Escape" && !withdrawPopup.hidden) {
+    closeWithdrawPopup();
+   }
+  });
+ </script>
+{% endblock %}

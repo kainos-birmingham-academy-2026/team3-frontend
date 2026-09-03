@@ -1,10 +1,8 @@
-export interface Application {
+export interface UserApplication {
 	applicationId: number;
-	applicantName: string;
-	applicantEmail: string;
-	cvText?: string;
-	jobRoleId?: number | null;
+	jobRoleId: number;
 	roleName: string;
 	applicationDate: string;
 	status: "pending" | "approved" | "rejected" | "withdrawn";
+	cvText: string;
 }

@@ -28,6 +28,7 @@
      <option value="pending">Pending Review</option>
       <option value="hired">Hired</option>
      <option value="rejected">Rejected</option>
+    <option value="withdrawn">Withdrawn</option>
     </select>
    </div>
 
@@ -71,6 +72,10 @@
   <div class="summary-card rejected">
    <span class="summary-label">Rejected</span>
    <span class="summary-value" id="rejected-count">0</span>
+  </div>
+  <div class="summary-card withdrawn">
+   <span class="summary-label">Withdrawn</span>
+   <span class="summary-value" id="withdrawn-count">0</span>
   </div>
  </div>
 
@@ -207,6 +212,10 @@
    border-left-color: #f44336;
   }
 
+  .summary-card.withdrawn {
+   border-left-color: #6b7280;
+  }
+
   .summary-label {
    font-size: 0.8rem;
    color: #666;
@@ -310,6 +319,11 @@
   .status-rejected {
    background: #fdeaea;
    color: #7f1212;
+  }
+
+  .status-withdrawn {
+   background: #f0f1f3;
+   color: #3f4652;
   }
 
   .actions-cell {
@@ -601,6 +615,10 @@
   function normalizeApplicationStatus(status) {
    const normalizedStatus = String(status || "").trim().toLowerCase();
 
+    if (normalizedStatus === "withdrawn") {
+     return "withdrawn";
+    }
+
    if (
     normalizedStatus === "hired" ||
     normalizedStatus === "approved" ||
@@ -778,11 +796,15 @@
     const rejected = allApplications.filter(
      (app) => normalizeApplicationStatus(app.status) === "rejected"
     ).length;
+    const withdrawn = allApplications.filter(
+     (app) => normalizeApplicationStatus(app.status) === "withdrawn"
+    ).length;
 
    document.getElementById("total-count").textContent = total;
    document.getElementById("pending-count").textContent = pending;
     document.getElementById("hired-count").textContent = hired;
    document.getElementById("rejected-count").textContent = rejected;
+     document.getElementById("withdrawn-count").textContent = withdrawn;
   }
 
   function updateApplicationStatusInView(applicationId, newStatus) {

@@ -18,6 +18,7 @@ import { JobRoleController } from "../../src/controllers/jobRoleController";
 import authRouter from "../../src/routes/authRouter";
 import router from "../../src/routes/jobRoleRouter";
 import { AdminApplicationService } from "../../src/services/adminApplicationService";
+import { UserApplicationService } from "../../src/services/userApplicationService";
 
 vi.mock("../../src/config/apiClient", () => ({
 	default: {
@@ -616,6 +617,106 @@ describe("routes", () => {
 
 		expect(response.status).toBe(200);
 		expect(response.text).toContain("ok");
+	});
+
+	it("should render applications belonging to the logged-in user", async () => {
+		const userApp = createAdminApp("USER");
+		vi.spyOn(UserApplicationService.prototype, "getAll").mockResolvedValueOnce([
+			{
+				applicationId: 1,
+				jobRoleId: 2,
+				roleName: "Software Engineer",
+				applicationDate: "2026-09-02",
+				status: "pending",
+				cvText: "Experienced software engineer",
+			},
+		]);
+
+		const response = await request(userApp).get("/job-applications");
+
+		expect(response.status).toBe(200);
+		expect(response.text).toContain("Software Engineer");
+		expect(response.text).toContain("Pending");
+		expect(response.text).toContain('href="/job-applications/1/cv"');
+		expect(response.text).toContain('action="/job-applications/1/withdraw"');
+		expect(response.text).not.toContain("Experienced software engineer");
+		expect(response.text).toContain('id="withdraw-popup"');
+		expect(response.text).toContain("Confirm withdrawal");
+		expect(response.text).not.toContain("onsubmit=");
+		expect(UserApplicationService.prototype.getAll).toHaveBeenCalledWith(
+			"admin-token",
+		);
+	});
+
+	it("should render the logged-in user's CV page", async () => {
+		const userApp = createAdminApp("USER");
+		vi.spyOn(UserApplicationService.prototype, "getAll").mockResolvedValueOnce([
+			{
+				applicationId: 1,
+				jobRoleId: 2,
+				roleName: "Software Engineer",
+				applicationDate: "2026-09-02",
+				status: "pending",
+				cvText: "Experienced software engineer",
+			},
+		]);
+
+		const response = await request(userApp).get("/job-applications/1/cv");
+
+		expect(response.status).toBe(200);
+		expect(response.text).toContain("Your CV");
+		expect(response.text).toContain("Experienced software engineer");
+		expect(response.text).toContain('href="/job-applications"');
+	});
+
+	it("should withdraw a pending user application and redirect", async () => {
+		const userApp = createAdminApp("USER");
+		vi.spyOn(
+			UserApplicationService.prototype,
+			"withdraw",
+		).mockResolvedValueOnce();
+
+		const response = await request(userApp).post(
+			"/job-applications/1/withdraw",
+		);
+
+		expect(response.status).toBe(303);
+		expect(response.headers.location).toBe("/job-applications");
+		expect(UserApplicationService.prototype.withdraw).toHaveBeenCalledWith(
+			1,
+			"admin-token",
+		);
+	});
+
+	it("should reject admin withdrawal requests", async () => {
+		const adminApp = createAdminApp();
+
+		const response = await request(adminApp).post(
+			"/job-applications/1/withdraw",
+		);
+
+		expect(response.status).toBe(403);
+	});
+
+	it("should render an error when user applications cannot be loaded", async () => {
+		const userApp = createAdminApp("USER");
+		vi.spyOn(UserApplicationService.prototype, "getAll").mockRejectedValueOnce(
+			new Error("Applications unavailable"),
+		);
+
+		const response = await request(userApp).get("/job-applications");
+
+		expect(response.status).toBe(500);
+		expect(response.text).toContain("Applications unavailable");
+	});
+
+	it("should redirect admins to the admin applications page", async () => {
+		const adminApp = createAdminApp();
+
+		const response = await request(adminApp).get("/job-applications");
+
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/job-applications/admin");
 	});
 
 	it("should return applications list for admin api route", async () => {

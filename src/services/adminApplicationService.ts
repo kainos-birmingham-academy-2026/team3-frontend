@@ -16,7 +16,7 @@ interface ApiApplication {
 }
 
 type StatusAction = "approve" | "reject";
-type NormalizedStatus = "pending" | "approved" | "rejected";
+type NormalizedStatus = "pending" | "approved" | "rejected" | "withdrawn";
 
 export class AdminApplicationService {
 	private static readonly ADMIN_APPLICATIONS_ENDPOINT =
@@ -50,6 +50,10 @@ export class AdminApplicationService {
 
 		if (normalizedStatus === "rejected") {
 			return "rejected";
+		}
+
+		if (normalizedStatus === "withdrawn") {
+			return "withdrawn";
 		}
 
 		return "pending";
