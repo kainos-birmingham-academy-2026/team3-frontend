@@ -82,6 +82,14 @@ describe("AdminApplicationService", () => {
 					applicationDate: "2026-08-12T00:00:00.000Z",
 					status: "rejected",
 				},
+				{
+					applicationId: 11,
+					applicantName: "Sam Doe",
+					applicantEmail: "sam@example.com",
+					roleName: "Engineer",
+					applicationDate: "2026-08-12T00:00:00.000Z",
+					status: "WITHDRAWN",
+				},
 			],
 		});
 
@@ -89,6 +97,7 @@ describe("AdminApplicationService", () => {
 
 		expect(result[0]?.status).toBe("approved");
 		expect(result[1]?.status).toBe("rejected");
+		expect(result[2]?.status).toBe("withdrawn");
 	});
 
 	it("should return cv text for the matching application from the list", async () => {

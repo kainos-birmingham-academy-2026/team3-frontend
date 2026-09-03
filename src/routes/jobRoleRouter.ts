@@ -1,16 +1,20 @@
 import axios from "axios";
 import { type Request, Router } from "express";
 import apiClient from "../config/apiClient";
+import { features } from "../config/features";
 import { JobRoleController } from "../controllers/jobRoleController";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware";
 import { requireAdminHiringFeature } from "../middleware/featureFlags";
 import { AdminApplicationService } from "../services/adminApplicationService";
 import { JobRoleService } from "../services/jobRoleService";
+import { UserApplicationService } from "../services/userApplicationService";
+import { USER_ROLES } from "../types/auth";
 
 const router = Router();
 const service = new JobRoleService();
 const controller = new JobRoleController(service);
 const adminApplicationService = new AdminApplicationService();
+const userApplicationService = new UserApplicationService();
 type ApplicationAction = "approve" | "reject";
 
 function getSessionToken(req: Request): string {
@@ -67,11 +71,63 @@ router.get(
 	(req, res) => controller.getApplications(req, res),
 );
 
+router.get("/job-applications", requireAuth, async (req, res) => {
+	if (req.session.userRole === USER_ROLES.ADMIN) {
+		res.redirect("/job-applications/admin");
+		return;
+	}
+
+	try {
+		const applications = await userApplicationService.getAll(
+			getSessionToken(req),
+		);
+		res.render("pages/jobApplications.njk", { applications });
+	} catch {
+		res.status(500).render("pages/jobApplications.njk", {
+			applications: [],
+			errorMessage:
+				"We could not load your applications. Please try again later.",
+		});
+	}
+});
+
+router.post(
+	"/job-applications/:applicationId/withdraw",
+	requireAuth,
+	async (req, res) => {
+		if (req.session.userRole === USER_ROLES.ADMIN) {
+			res.status(403).render("pages/accessRestricted.njk");
+			return;
+		}
+
+		const applicationId = parseApplicationId(req.params.applicationId);
+		if (applicationId === null) {
+			res.status(400).render("pages/404.njk");
+			return;
+		}
+
+		try {
+			await userApplicationService.withdraw(
+				applicationId,
+				getSessionToken(req),
+			);
+			res.redirect(303, "/job-applications");
+		} catch {
+			const applications = await userApplicationService
+				.getAll(getSessionToken(req))
+				.catch(() => []);
+			res.status(500).render("pages/jobApplications.njk", {
+				applications,
+				errorMessage:
+					"We could not withdraw your application. Please try again.",
+			});
+		}
+	},
+);
+
 router.get(
 	"/job-applications/:applicationId/cv",
-	requireAdminHiringFeature,
 	requireAuth,
-	requireAdmin,
 	async (req, res) => {
 		try {
 			const applicationId = parseApplicationId(req.params.applicationId);
@@ -81,7 +137,15 @@ router.get(
 			}
 
 			const jwtToken = getSessionToken(req);
-			const applications = await adminApplicationService.getAll(jwtToken);
+			const isAdmin = req.session.userRole === USER_ROLES.ADMIN;
+			if (isAdmin && !features.adminHiring) {
+				res.status(404).render("pages/404.njk");
+				return;
+			}
+
+			const applications = isAdmin
+				? await adminApplicationService.getAll(jwtToken)
+				: await userApplicationService.getAll(jwtToken);
 			const application = applications.find(
 				(item) => item.applicationId === applicationId,
 			);
@@ -91,22 +155,24 @@ router.get(
 				return;
 			}
 
-			const cvText = await adminApplicationService.getCvTextById(
-				applicationId,
-				jwtToken,
-			);
+			const cvText = isAdmin
+				? await adminApplicationService.getCvTextById(applicationId, jwtToken)
+				: application.cvText;
 			res.render("pages/applicationCv.njk", {
 				application,
+				backUrl: isAdmin ? "/job-applications/admin" : "/job-applications",
+				heading:
+					"applicantName" in application
+						? application.applicantName
+						: "Your CV",
 				cvText:
 					cvText ||
 					application.cvText ||
 					"No CV text available for this application.",
 			});
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to load CV";
+		} catch {
 			res.status(500).render("pages/404.njk", {
-				errorMessage: message,
+				errorMessage: "We could not open this CV. Please try again later.",
 			});
 		}
 	},
