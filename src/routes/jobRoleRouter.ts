@@ -363,4 +363,23 @@ router.get("/teapot", async (_req, res) => {
 	res.render("pages/teapot.njk");
 });
 
+router.get("/deployment-check", async (_req, res) => {
+	try {
+		const response = await apiClient.get<{
+			service: string;
+			marker: string;
+			message: string;
+		}>("/api/deployment-check");
+
+		res.render("pages/deploymentCheck.njk", {
+			backend: response.data,
+			backendAvailable: true,
+		});
+	} catch {
+		res.status(502).render("pages/deploymentCheck.njk", {
+			backendAvailable: false,
+		});
+	}
+});
+
 export default router;

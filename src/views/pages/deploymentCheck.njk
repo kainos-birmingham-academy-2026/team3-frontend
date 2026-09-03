@@ -1,0 +1,101 @@
+{% extends "layouts/base.njk" %}
+
+{% block title %}Test deployment check | Kainos Careers{% endblock %}
+
+{% block content %}
+ <section class="deployment-check" aria-labelledby="deployment-check-title">
+  <p class="deployment-check__eyebrow">chore/test-branch-one</p>
+  <h1 id="deployment-check-title">Test environment deployment check</h1>
+  <p class="deployment-check__intro">This page only exists on the selected frontend feature image.</p>
+
+  <div class="deployment-check__results">
+   <article class="deployment-check__result deployment-check__result--success">
+    <span class="deployment-check__status" aria-hidden="true">✓</span>
+    <div>
+     <h2>Frontend feature image loaded</h2>
+     <p>Marker: <strong>chore-test-branch-one-frontend</strong></p>
+    </div>
+   </article>
+
+   <article class="deployment-check__result deployment-check__result--{{ 'success' if backendAvailable else 'failure' }}">
+    <span class="deployment-check__status" aria-hidden="true">{{ '✓' if backendAvailable else '×' }}</span>
+    <div>
+     <h2>{{ 'Backend feature API reached' if backendAvailable else 'Backend feature API unavailable' }}</h2>
+     {% if backendAvailable %}
+      <p>{{ backend.message }}</p>
+      <p>Marker: <strong>{{ backend.marker }}</strong></p>
+     {% else %}
+      <p>The selected backend image did not return the deployment-check response.</p>
+     {% endif %}
+    </div>
+   </article>
+  </div>
+ </section>
+
+ <style>
+  .deployment-check {
+   max-width: 880px;
+   margin: 3rem auto;
+   padding: 2rem;
+   border: 3px solid #1d7452;
+   background: #f6fbf8;
+  }
+
+  .deployment-check__eyebrow {
+   margin: 0 0 0.75rem;
+   color: #9e4215;
+   font-weight: 700;
+   text-transform: uppercase;
+  }
+
+  .deployment-check h1 {
+   margin: 0;
+   color: #1c2924;
+  }
+
+  .deployment-check__intro {
+   margin: 1rem 0 2rem;
+   font-size: 1.125rem;
+  }
+
+  .deployment-check__results {
+   display: grid;
+   gap: 1rem;
+  }
+
+  .deployment-check__result {
+   display: grid;
+   grid-template-columns: 3rem 1fr;
+   gap: 1rem;
+   align-items: start;
+   padding: 1.25rem;
+   border-left: 6px solid;
+   background: #fff;
+  }
+
+  .deployment-check__result--success {
+   border-color: #16835b;
+  }
+
+  .deployment-check__result--failure {
+   border-color: #c43d32;
+  }
+
+  .deployment-check__status {
+   display: grid;
+   width: 2.5rem;
+   height: 2.5rem;
+   place-items: center;
+   border-radius: 50%;
+   background: #1c2924;
+   color: #fff;
+   font-size: 1.5rem;
+   font-weight: 700;
+  }
+
+  .deployment-check__result h2,
+  .deployment-check__result p {
+   margin: 0 0 0.5rem;
+  }
+ </style>
+{% endblock %}

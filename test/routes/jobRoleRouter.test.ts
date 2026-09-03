@@ -160,6 +160,32 @@ describe("routes", () => {
 		expect(response.text).toContain("I'm a Teapot");
 	});
 
+	it("shows frontend and backend feature image markers", async () => {
+		vi.mocked(apiClient.get).mockResolvedValue({
+			data: {
+				service: "team3-backend",
+				marker: "chore-test-branch-one-backend",
+				message: "Selected backend feature image is running",
+			},
+		});
+
+		const response = await request(app).get("/deployment-check");
+
+		expect(response.status).toBe(200);
+		expect(apiClient.get).toHaveBeenCalledWith("/api/deployment-check");
+		expect(response.text).toContain("chore-test-branch-one-frontend");
+		expect(response.text).toContain("chore-test-branch-one-backend");
+	});
+
+	it("shows a clear failure when the backend feature API is unavailable", async () => {
+		vi.mocked(apiClient.get).mockRejectedValue(new Error("Unavailable"));
+
+		const response = await request(app).get("/deployment-check");
+
+		expect(response.status).toBe(502);
+		expect(response.text).toContain("Backend feature API unavailable");
+	});
+
 	beforeAll(async () => {
 		app = createTestApp();
 		return new Promise<void>((resolve) => {
