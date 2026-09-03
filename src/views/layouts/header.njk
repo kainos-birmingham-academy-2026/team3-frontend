@@ -23,7 +23,7 @@
 
     {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
    {% if isAuthenticated %}
-    <a class="button button-outline header-cta header-cta-danger" href="/logout" id="logout-trigger">Sign out</a>
+    <a class="button button-outline header-cta header-cta-danger" href="/logout/confirmation" id="logout-trigger">Sign out</a>
    {% else %}
     <a class="button button-outline header-cta" href="/login">Sign in</a>
    {% endif %}

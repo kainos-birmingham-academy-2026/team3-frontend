@@ -10,7 +10,7 @@
    <p class="form-alert" role="alert">{{ errorMessage }}</p>
   {% endif %}
 
-  <form method="post" action="/register" class="login-form" novalidate>
+   <form method="post" action="/register" class="login-form" novalidate>
    <div class="form-field">
     <label for="email">Email</label>
         <div class="field-input">
@@ -42,6 +42,9 @@
       type="password"
       autocomplete="new-password"
       aria-describedby="password-requirements"
+      minlength="9"
+      pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{9,}"
+      title="Use at least 9 characters, including uppercase and lowercase letters and a special character"
       required
      />
     <button class="password-toggle" type="button" aria-label="Show password" aria-controls="password" aria-pressed="false">
@@ -67,6 +70,7 @@
       type="password"
       autocomplete="new-password"
       aria-describedby="password-requirements"
+      minlength="9"
       required
      />
     <button class="password-toggle" type="button" aria-label="Show confirm password" aria-controls="confirmPassword" aria-pressed="false">
@@ -82,10 +86,10 @@
    <div id="password-requirements" class="password-requirements">
       <p>Your password must:</p>
     <ul>
-       <li data-password-rule="length" data-met="false"><span class="requirement-icon" aria-hidden="true">✕</span> Be at least 9 characters long</li>
-       <li data-password-rule="case" data-met="false"><span class="requirement-icon" aria-hidden="true">✕</span> Include uppercase and lowercase letters</li>
-       <li data-password-rule="special" data-met="false"><span class="requirement-icon" aria-hidden="true">✕</span> Include a special character, such as !, @, # or £</li>
-      <li data-password-rule="matching" data-met="false"><span class="requirement-icon" aria-hidden="true">✕</span> Be the same in both fields</li>
+      <li data-password-rule="length"><span class="requirement-icon" aria-hidden="true">•</span> Be at least 9 characters long</li>
+      <li data-password-rule="case"><span class="requirement-icon" aria-hidden="true">•</span> Include uppercase and lowercase letters</li>
+      <li data-password-rule="special"><span class="requirement-icon" aria-hidden="true">•</span> Include a special character, such as !, @, # or £</li>
+         <li data-password-rule="matching"><span class="requirement-icon" aria-hidden="true">•</span> Be the same in both fields</li>
     </ul>
    </div>
 
@@ -94,5 +98,6 @@
 
   <p class="form-footnote">Already have an account? <a href="/login">Sign in</a></p>
  </section>
+ <noscript><style>.password-toggle { display: none; }</style></noscript>
  <script src="/scripts/register.js" defer></script>
 {% endblock %}

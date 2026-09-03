@@ -18,7 +18,9 @@
         {% if currentUserRole == 'ADMIN' %}
           <div class="job-role-actions">
             <a href="/job-role-edit/{{ jobRoleId.jobRoleId }}" class="button button-solid">Edit role</a>
-            <button type="button" class="button button-danger-solid delete-role-trigger" data-role-id="{{ jobRoleId.jobRoleId }}" data-role-name="{{ jobRoleId.roleName }}">Delete role</button>
+            <form method="post" action="/job-role-list/{{ jobRoleId.jobRoleId }}/delete">
+              <button type="submit" class="button button-danger-solid delete-role-trigger" data-role-id="{{ jobRoleId.jobRoleId }}" data-role-name="{{ jobRoleId.roleName }}">Delete role</button>
+            </form>
           </div>
         {% endif %}
       </div>

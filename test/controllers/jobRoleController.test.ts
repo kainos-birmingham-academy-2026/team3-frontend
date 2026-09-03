@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { JobRoleController } from "../../src/controllers/jobRoleController";
+import type { AdminApplicationService } from "../../src/services/adminApplicationService";
 import type { JobRoleService } from "../../src/services/jobRoleService";
 
 type TestRequest = {
@@ -56,16 +57,22 @@ describe("JobRoleController", () => {
 		getAllCapabilities: vi.fn(),
 		getAllBands: vi.fn(),
 	};
+	const adminApplicationService = {
+		getAll: vi.fn(),
+	};
 
 	const controller = new JobRoleController(
 		jobRoleService as unknown as JobRoleService,
+		adminApplicationService as unknown as AdminApplicationService,
 	);
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		jobRoleService.getAllStatuses.mockResolvedValue([]);
 		jobRoleService.getAllLocations.mockResolvedValue([]);
 		jobRoleService.getAllCapabilities.mockResolvedValue([]);
 		jobRoleService.getAllBands.mockResolvedValue([]);
+		adminApplicationService.getAll.mockResolvedValue([]);
 	});
 
 	it("should call service with JWT token and render job roles", async () => {
@@ -1189,4 +1196,171 @@ describe("JobRoleController", () => {
 		expect(req.session.userRole).toBeUndefined();
 		expect(res.redirect).toHaveBeenCalledWith("/login");
 	});
+
+	it("should render applications with locations and status counts", async () => {
+		const req = createRequest({ session: { jwtToken: "jwt-token" } });
+		const res = createResponse();
+		const jobRoles = [
+			{ roleName: "Engineer", location: "Belfast" },
+			{ roleName: "Designer", location: "London" },
+		];
+		const applications = [
+			{
+				applicationId: 1,
+				applicantName: "Alex",
+				applicantEmail: "alex@example.com",
+				roleName: "Engineer",
+				applicationDate: "2026-09-01",
+				status: "pending",
+			},
+			{
+				applicationId: 2,
+				applicantName: "Blair",
+				applicantEmail: "blair@example.com",
+				roleName: "Designer",
+				applicationDate: "2026-09-01",
+				status: "approved",
+			},
+			{
+				applicationId: 3,
+				applicantName: "Casey",
+				applicantEmail: "casey@example.com",
+				roleName: "Unknown role",
+				applicationDate: "2026-09-01",
+				status: "rejected",
+			},
+		];
+
+		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
+		adminApplicationService.getAll.mockResolvedValueOnce(applications);
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(jobRoleService.getAll).toHaveBeenCalledWith("jwt-token");
+		expect(adminApplicationService.getAll).toHaveBeenCalledWith("jwt-token");
+		expect(res.render).toHaveBeenCalledWith("pages/jobApplicationAdmin.njk", {
+			applications: [
+				{ ...applications[0], location: "Belfast" },
+				{ ...applications[1], location: "London" },
+				{ ...applications[2], location: "Unknown" },
+			],
+			applicationCounts: { total: 3, pending: 1, approved: 1, rejected: 1 },
+			filters: { search: "", status: "", role: "", location: "" },
+			jobRoles,
+		});
+	});
+
+	it("should filter applications from query parameters", async () => {
+		const req = createRequest({
+			session: { jwtToken: undefined },
+			query: {
+				search: "EXAMPLE.COM",
+				status: "HIRED",
+				role: "Engineer",
+				location: "Belfast",
+			},
+		});
+		const res = createResponse();
+		const matchingApplication = {
+			applicationId: 1,
+			applicantName: "Alex",
+			applicantEmail: "alex@example.com",
+			roleName: "Engineer",
+			applicationDate: "2026-09-01",
+			status: "approved",
+		};
+		const excludedApplication = {
+			...matchingApplication,
+			applicationId: 2,
+			applicantName: "Taylor",
+			applicantEmail: "taylor@other.test",
+		};
+
+		jobRoleService.getAll.mockResolvedValueOnce([
+			{ roleName: "Engineer", location: "Belfast" },
+		]);
+		adminApplicationService.getAll.mockResolvedValueOnce([
+			matchingApplication,
+			excludedApplication,
+		]);
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(adminApplicationService.getAll).toHaveBeenCalledWith("");
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobApplicationAdmin.njk",
+			expect.objectContaining({
+				applications: [{ ...matchingApplication, location: "Belfast" }],
+				filters: {
+					search: "example.com",
+					status: "approved",
+					role: "Engineer",
+					location: "Belfast",
+				},
+			}),
+		);
+	});
+
+	it("should redirect when loading applications returns 401", async () => {
+		const req = createRequest({
+			session: { jwtToken: "jwt-token", userRole: "ADMIN" },
+		});
+		const res = createResponse();
+		adminApplicationService.getAll.mockRejectedValueOnce({
+			isAxiosError: true,
+			response: { status: 401 },
+		});
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(req.session.jwtToken).toBeUndefined();
+		expect(req.session.userRole).toBeUndefined();
+		expect(res.redirect).toHaveBeenCalledWith("/login");
+	});
+
+	it("should render an application loading error", async () => {
+		const req = createRequest();
+		const res = createResponse();
+		adminApplicationService.getAll.mockRejectedValueOnce("unknown");
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(res.status).toHaveBeenCalledWith(500);
+		expect(res.render).toHaveBeenCalledWith("pages/jobApplicationAdmin.njk", {
+			applications: [],
+			jobRoles: [],
+			errorMessage: "Unable to load applications",
+		});
+	});
+
+	it("should return all job role option lists", async () => {
+		jobRoleService.getAllStatuses.mockResolvedValueOnce(["open"]);
+		jobRoleService.getAllLocations.mockResolvedValueOnce(["Belfast"]);
+		jobRoleService.getAllCapabilities.mockResolvedValueOnce(["Engineering"]);
+		jobRoleService.getAllBands.mockResolvedValueOnce(["Senior"]);
+
+		expect(await controller.getAllStatuses()).toEqual(["open"]);
+		expect(await controller.getAllLocations()).toEqual(["Belfast"]);
+		expect(await controller.getAllCapabilities()).toEqual(["Engineering"]);
+		expect(await controller.getAllBands()).toEqual(["Senior"]);
+	});
+
+	it.each([
+		["statuses", "getAllStatuses", "Failed to fetch job role statuses"],
+		["locations", "getAllLocations", "Failed to fetch job role locations"],
+		[
+			"capabilities",
+			"getAllCapabilities",
+			"Failed to fetch job role capabilities",
+		],
+		["bands", "getAllBands", "Failed to fetch job role bands"],
+	] as const)(
+		"should normalize errors when fetching %s",
+		async (_label, method, expectedMessage) => {
+			const serviceMethod = jobRoleService[method];
+			serviceMethod.mockRejectedValueOnce(new Error("backend failed"));
+
+			await expect(controller[method]()).rejects.toThrow(expectedMessage);
+		},
+	);
 });
