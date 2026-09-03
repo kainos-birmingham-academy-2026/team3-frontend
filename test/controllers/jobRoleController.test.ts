@@ -101,8 +101,8 @@ describe("JobRoleController", () => {
 			locationId: undefined,
 			capabilityId: undefined,
 			bandId: undefined,
-			closingFrom: undefined,
-			closingBy: undefined,
+			closingDateFrom: undefined,
+			closingDateTo: undefined,
 		});
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
 			jobRoles,
@@ -158,8 +158,8 @@ describe("JobRoleController", () => {
 				locationId: ["1", "2"],
 				capabilityId: "3",
 				bandId: "4",
-				closingFrom: "2026-09-01",
-				closingBy: "2026-12-31",
+				closingDateFrom: "2026-09-01",
+				closingDateTo: "2026-12-31",
 			},
 		});
 		const res = createResponse();
@@ -172,8 +172,8 @@ describe("JobRoleController", () => {
 			locationId: ["1", "2"],
 			capabilityId: ["3"],
 			bandId: ["4"],
-			closingFrom: "2026-09-01",
-			closingBy: "2026-12-31",
+			closingDateFrom: "2026-09-01",
+			closingDateTo: "2026-12-31",
 		};
 		expect(jobRoleService.getAll).toHaveBeenCalledWith(undefined, filters);
 		expect(res.render).toHaveBeenCalledWith(

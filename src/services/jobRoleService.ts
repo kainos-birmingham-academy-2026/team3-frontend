@@ -102,8 +102,12 @@ export class JobRoleService {
 		try {
 			const params = new URLSearchParams();
 			if (filters.roleName) params.set("roleName", filters.roleName);
-			if (filters.closingFrom) params.set("closingFrom", filters.closingFrom);
-			if (filters.closingBy) params.set("closingBy", filters.closingBy);
+			if (filters.closingDateFrom) {
+				params.set("closingDateFrom", filters.closingDateFrom);
+			}
+			if (filters.closingDateTo) {
+				params.set("closingDateTo", filters.closingDateTo);
+			}
 			for (const locationId of filters.locationId ?? []) {
 				params.append("locationId", locationId);
 			}

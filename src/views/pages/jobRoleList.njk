@@ -68,13 +68,13 @@
       <fieldset class="job-role-filter-field">
         <legend>Closing date</legend>
         <div class="job-role-date-range">
-          <label for="closingFrom">
+          <label for="closingDateFrom">
             Closing on or after
-            <input id="closingFrom" name="closingFrom" type="date" value="{{ filters.closingFrom or '' }}">
+            <input id="closingDateFrom" name="closingDateFrom" type="date" value="{{ filters.closingDateFrom or '' }}">
           </label>
-          <label for="closingBy">
+          <label for="closingDateTo">
             Closing on or before
-            <input id="closingBy" name="closingBy" type="date" value="{{ filters.closingBy or '' }}">
+            <input id="closingDateTo" name="closingDateTo" type="date" value="{{ filters.closingDateTo or '' }}">
           </label>
         </div>
       </fieldset>
@@ -126,16 +126,16 @@
     <p class="empty-state">No open job roles found</p>
   {% endif %}
   <script>
-    const closingFromInput = document.getElementById("closingFrom");
-    const closingByInput = document.getElementById("closingBy");
+    const closingDateFromInput = document.getElementById("closingDateFrom");
+    const closingDateToInput = document.getElementById("closingDateTo");
 
     const syncClosingDateFilters = () => {
-      closingFromInput.disabled = Boolean(closingByInput.value);
-      closingByInput.disabled = Boolean(closingFromInput.value);
+      closingDateFromInput.disabled = Boolean(closingDateToInput.value);
+      closingDateToInput.disabled = Boolean(closingDateFromInput.value);
     };
 
-    closingFromInput.addEventListener("input", syncClosingDateFilters);
-    closingByInput.addEventListener("input", syncClosingDateFilters);
+    closingDateFromInput.addEventListener("input", syncClosingDateFilters);
+    closingDateToInput.addEventListener("input", syncClosingDateFilters);
     syncClosingDateFilters();
 
     document.querySelectorAll(".job-role-row-link").forEach((row) => {
