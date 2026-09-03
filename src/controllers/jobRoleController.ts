@@ -11,10 +11,14 @@ import type {
 	StatusOption,
 	UpdateJobRoleInput,
 } from "../models/jobRole";
+import { AdminApplicationService } from "../services/adminApplicationService";
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
-	constructor(private jobRoleService: JobRoleService) {}
+	constructor(
+		private jobRoleService: JobRoleService,
+		private adminApplicationService = new AdminApplicationService(),
+	) {}
 
 	private getJwtToken(req: Request): string | undefined {
 		return req.session.jwtToken;
@@ -462,9 +466,50 @@ export class JobRoleController {
 
 	async getApplications(req: Request, res: Response): Promise<void> {
 		try {
-			const jobRoles = await this.jobRoleService.getAll(this.getJwtToken(req));
+			const jwtToken = this.getJwtToken(req);
+			const [jobRoles, applications] = await Promise.all([
+				this.jobRoleService.getAll(jwtToken),
+				this.adminApplicationService.getAll(jwtToken ?? ""),
+			]);
+			const requestedStatus =
+				this.getQueryString(req.query.status)?.toLowerCase() ?? "";
+			const filters = {
+				search: this.getQueryString(req.query.search)?.toLowerCase() ?? "",
+				status: requestedStatus === "hired" ? "approved" : requestedStatus,
+				role: this.getQueryString(req.query.role) ?? "",
+				location: this.getQueryString(req.query.location) ?? "",
+			};
+			const roleLocations = new Map(
+				jobRoles.map((role) => [role.roleName.toLowerCase(), role.location]),
+			);
+			const applicationsWithLocations = applications.map((application) => ({
+				...application,
+				location:
+					roleLocations.get(application.roleName.toLowerCase()) ?? "Unknown",
+			}));
+			const filteredApplications = applicationsWithLocations.filter(
+				(application) =>
+					(!filters.search ||
+						application.applicantName.toLowerCase().includes(filters.search) ||
+						application.applicantEmail
+							.toLowerCase()
+							.includes(filters.search)) &&
+					(!filters.status || application.status === filters.status) &&
+					(!filters.role || application.roleName === filters.role) &&
+					(!filters.location || application.location === filters.location),
+			);
 			res.render("pages/jobApplicationAdmin.njk", {
-				applications: [],
+				applications: filteredApplications,
+				applicationCounts: {
+					total: applications.length,
+					pending: applications.filter((item) => item.status === "pending")
+						.length,
+					approved: applications.filter((item) => item.status === "approved")
+						.length,
+					rejected: applications.filter((item) => item.status === "rejected")
+						.length,
+				},
+				filters,
 				jobRoles,
 			});
 		} catch (error) {

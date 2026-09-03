@@ -124,7 +124,6 @@ describe("jobRoleList", () => {
 			filters: {
 				roleName: "Engineer",
 				closingFrom: "2026-09-01",
-				closingBy: "2026-12-31",
 			},
 			locationOptions: [{ locationId: 1, locationName: "Birmingham" }],
 			capabilityOptions: [{ capabilityId: 2, capabilityName: "Engineering" }],
@@ -139,7 +138,13 @@ describe("jobRoleList", () => {
 		expect(html).toContain('name="capabilityId"');
 		expect(html).toContain('name="bandId"');
 		expect(html).toContain('name="closingFrom" type="date" value="2026-09-01"');
-		expect(html).toContain('name="closingBy" type="date" value="2026-12-31"');
+		expect(html).toContain('name="closingBy" type="date" value=""');
+		expect(html).toContain(
+			"closingByInput.disabled = Boolean(closingFromInput.value)",
+		);
+		expect(html).toContain(
+			"closingFromInput.disabled = Boolean(closingByInput.value)",
+		);
 		expect(html.match(/checked/g)).toHaveLength(3);
 	});
 });

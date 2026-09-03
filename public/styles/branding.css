@@ -641,9 +641,9 @@ body.modal-open {
 
 .password-requirements li {
 	padding: 0.65rem 0.75rem;
-	border: 1px solid #d4a8a8;
-	background: #fff7f7;
-	color: #8a1c1c;
+	border: 1px solid #c8cbd2;
+	background: #f7f8fa;
+	color: var(--kainos-text);
 	font-size: 0.9rem;
 }
 
@@ -651,6 +651,12 @@ body.modal-open {
 	display: inline-block;
 	width: 1.25rem;
 	font-weight: 700;
+}
+
+.password-requirements li[data-met="false"] {
+	border-color: #d4a8a8;
+	background: #fff7f7;
+	color: #8a1c1c;
 }
 
 .password-requirements li[data-met="true"] {

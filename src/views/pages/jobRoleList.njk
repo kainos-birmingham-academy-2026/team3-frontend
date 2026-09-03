@@ -111,7 +111,7 @@
                 role="link"
                 tabindex="0"
                 aria-label="View details for {{ jobRole.roleName }}">
-                <td>{{ jobRole.roleName }}</td>
+                <td><a href="/job-role-list/{{ jobRole.jobRoleId }}">{{ jobRole.roleName }}</a></td>
                 <td>{{ jobRole.location }}</td>
                 <td>{{ jobRole.capability }}</td>
                 <td>{{ jobRole.band }}</td>
@@ -126,6 +126,18 @@
     <p class="empty-state">No open job roles found</p>
   {% endif %}
   <script>
+    const closingFromInput = document.getElementById("closingFrom");
+    const closingByInput = document.getElementById("closingBy");
+
+    const syncClosingDateFilters = () => {
+      closingFromInput.disabled = Boolean(closingByInput.value);
+      closingByInput.disabled = Boolean(closingFromInput.value);
+    };
+
+    closingFromInput.addEventListener("input", syncClosingDateFilters);
+    closingByInput.addEventListener("input", syncClosingDateFilters);
+    syncClosingDateFilters();
+
     document.querySelectorAll(".job-role-row-link").forEach((row) => {
       const navigateToRole = () => {
         const href = row.getAttribute("data-href");

@@ -55,3 +55,40 @@ test("home header sign-in link navigates to login @smoke", async ({
 	await homePage.clickSignIn();
 	await loginPage.expectLoaded();
 });
+
+test.describe("without browser JavaScript", () => {
+	test.use({ javaScriptEnabled: false });
+
+	test("core public navigation uses server-rendered links @smoke", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		await page.getByRole("link", { name: "Sign in" }).click();
+		await expect(page).toHaveURL(/\/login$/);
+
+		const createAccountLink = page.getByRole("link", {
+			name: "Create an account",
+		});
+		await createAccountLink.focus();
+		await createAccountLink.press("Enter");
+		await expect(page).toHaveURL(/\/register$/);
+		await expect(
+			page.getByRole("heading", { name: "Create your account" }),
+		).toBeVisible();
+	});
+
+	test("server validation rejects a weak registration password", async ({
+		page,
+	}) => {
+		await page.goto("/register");
+		await page.getByLabel("Email").fill("person@example.com");
+		await page.getByLabel("Password", { exact: true }).fill("weak");
+		await page.getByLabel("Confirm password", { exact: true }).fill("weak");
+		await page.getByRole("button", { name: "Create account" }).click();
+
+		await expect(page).toHaveURL(/\/register$/);
+		await expect(page.getByRole("alert")).toHaveText(
+			"Password must be more than 8 characters and include upper, lower and special characters",
+		);
+	});
+});

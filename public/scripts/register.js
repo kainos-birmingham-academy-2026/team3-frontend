@@ -31,6 +31,7 @@ if (
 		updatePasswordRequirements(passwordField.value, confirmPasswordField.value);
 	};
 
+	updateRequirements();
 	passwordField.addEventListener("input", () => {
 		updateRequirements();
 	});

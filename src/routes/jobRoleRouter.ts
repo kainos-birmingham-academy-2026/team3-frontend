@@ -166,6 +166,36 @@ router.get(
 );
 
 router.post(
+	"/job-applications/:applicationId/status",
+	requireAdminHiringFeature,
+	requireAuth,
+	requireAdmin,
+	async (req, res) => {
+		try {
+			const applicationId = parseApplicationId(req.params.applicationId);
+			const action = parseApplicationAction(req.body?.action);
+			if (applicationId === null || action === null) {
+				res.status(400).render("pages/404.njk");
+				return;
+			}
+
+			const jwtToken = getSessionToken(req);
+			if (action === "approve") {
+				await adminApplicationService.approve(applicationId, jwtToken);
+			} else {
+				await adminApplicationService.reject(applicationId, jwtToken);
+			}
+
+			res.redirect(303, "/job-applications/admin");
+		} catch (error) {
+			res.status(500).render("pages/404.njk", {
+				errorMessage: getAxiosErrorMessage(error),
+			});
+		}
+	},
+);
+
+router.post(
 	"/api/job-applications/:applicationId/status",
 	requireAdminHiringFeature,
 	requireAuth,
