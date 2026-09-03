@@ -707,7 +707,10 @@ describe("routes", () => {
 		const response = await request(userApp).get("/job-applications");
 
 		expect(response.status).toBe(500);
-		expect(response.text).toContain("Applications unavailable");
+		expect(response.text).toContain(
+			"We could not load your applications. Please try again later.",
+		);
+		expect(response.text).not.toContain("Applications unavailable");
 	});
 
 	it("should redirect admins to the admin applications page", async () => {

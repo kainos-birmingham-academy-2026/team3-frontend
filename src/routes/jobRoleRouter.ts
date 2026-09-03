@@ -82,11 +82,11 @@ router.get("/job-applications", requireAuth, async (req, res) => {
 			getSessionToken(req),
 		);
 		res.render("pages/jobApplications.njk", { applications });
-	} catch (error) {
+	} catch {
 		res.status(500).render("pages/jobApplications.njk", {
 			applications: [],
 			errorMessage:
-				error instanceof Error ? error.message : "Unable to load applications",
+				"We could not load your applications. Please try again later.",
 		});
 	}
 });
@@ -112,16 +112,14 @@ router.post(
 				getSessionToken(req),
 			);
 			res.redirect(303, "/job-applications");
-		} catch (error) {
+		} catch {
 			const applications = await userApplicationService
 				.getAll(getSessionToken(req))
 				.catch(() => []);
 			res.status(500).render("pages/jobApplications.njk", {
 				applications,
 				errorMessage:
-					error instanceof Error
-						? error.message
-						: "Unable to withdraw application",
+					"We could not withdraw your application. Please try again.",
 			});
 		}
 	},
@@ -172,11 +170,9 @@ router.get(
 					application.cvText ||
 					"No CV text available for this application.",
 			});
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : "Failed to load CV";
+		} catch {
 			res.status(500).render("pages/404.njk", {
-				errorMessage: message,
+				errorMessage: "We could not open this CV. Please try again later.",
 			});
 		}
 	},
