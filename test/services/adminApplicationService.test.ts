@@ -22,7 +22,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 7,
-					applicantName: "Jane Doe",
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -45,7 +44,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 8,
-					applicantName: "Jane Doe",
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -68,7 +66,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 9,
-					applicantName: "Jane Doe",
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -76,7 +73,6 @@ describe("AdminApplicationService", () => {
 				},
 				{
 					applicationId: 10,
-					applicantName: "John Doe",
 					applicantEmail: "john@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -105,7 +101,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 99,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -128,7 +123,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 7,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -160,7 +154,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 7,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -180,7 +173,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 404,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",

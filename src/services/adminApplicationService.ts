@@ -3,7 +3,6 @@ import type { Application } from "../models/application";
 
 interface ApiApplication {
 	applicationId: number;
-	applicantName?: string;
 	applicantEmail?: string;
 	cvText?: string;
 	application?: {
@@ -62,7 +61,6 @@ export class AdminApplicationService {
 	private mapApiApplicationToModel(app: ApiApplication): Application {
 		return {
 			applicationId: app.applicationId,
-			applicantName: app.applicantName ?? "N/A",
 			applicantEmail: app.applicantEmail ?? "N/A",
 			cvText: this.extractCvTextFromUnknown(app),
 			jobRoleId: app.jobRoleId ?? null,

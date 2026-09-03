@@ -482,7 +482,6 @@ export class JobRoleController {
 			const filteredApplications = applicationsWithLocations.filter(
 				(application) =>
 					(!filters.search ||
-						application.applicantName.toLowerCase().includes(filters.search) ||
 						application.applicantEmail
 							.toLowerCase()
 							.includes(filters.search)) &&

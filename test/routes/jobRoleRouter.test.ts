@@ -494,7 +494,6 @@ describe("routes", () => {
 			[
 				{
 					applicationId: 10,
-					applicantName: "A User",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-01",
@@ -511,7 +510,7 @@ describe("routes", () => {
 		const response = await request(adminApp).get("/job-applications/10/cv");
 
 		expect(response.status).toBe(200);
-		expect(response.text).toContain("A User");
+		expect(response.text).toContain("a@example.com");
 		expect(response.text).toContain("Full CV text");
 	});
 
@@ -731,7 +730,6 @@ describe("routes", () => {
 			[
 				{
 					applicationId: 1,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-01",

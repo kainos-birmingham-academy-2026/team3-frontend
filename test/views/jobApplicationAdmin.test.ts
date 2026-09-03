@@ -14,7 +14,6 @@ describe("jobApplicationAdmin", () => {
 			applications: [
 				{
 					applicationId: 12,
-					applicantName: "Alex Example",
 					applicantEmail: "alex@example.com",
 					jobRoleId: 4,
 					roleName: "Engineer",

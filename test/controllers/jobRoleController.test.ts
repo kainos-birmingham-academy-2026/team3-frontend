@@ -1207,7 +1207,6 @@ describe("JobRoleController", () => {
 		const applications = [
 			{
 				applicationId: 1,
-				applicantName: "Alex",
 				applicantEmail: "alex@example.com",
 				roleName: "Engineer",
 				applicationDate: "2026-09-01",
@@ -1215,7 +1214,6 @@ describe("JobRoleController", () => {
 			},
 			{
 				applicationId: 2,
-				applicantName: "Blair",
 				applicantEmail: "blair@example.com",
 				roleName: "Designer",
 				applicationDate: "2026-09-01",
@@ -1223,7 +1221,6 @@ describe("JobRoleController", () => {
 			},
 			{
 				applicationId: 3,
-				applicantName: "Casey",
 				applicantEmail: "casey@example.com",
 				roleName: "Unknown role",
 				applicationDate: "2026-09-01",
@@ -1263,7 +1260,6 @@ describe("JobRoleController", () => {
 		const res = createResponse();
 		const matchingApplication = {
 			applicationId: 1,
-			applicantName: "Alex",
 			applicantEmail: "alex@example.com",
 			roleName: "Engineer",
 			applicationDate: "2026-09-01",
@@ -1272,7 +1268,6 @@ describe("JobRoleController", () => {
 		const excludedApplication = {
 			...matchingApplication,
 			applicationId: 2,
-			applicantName: "Taylor",
 			applicantEmail: "taylor@other.test",
 		};
 
