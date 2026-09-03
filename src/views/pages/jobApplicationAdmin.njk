@@ -17,7 +17,7 @@
     id="search-input" 
     name="search"
     class="search-input" 
-    placeholder="Search by applicant name or email..."
+    placeholder="Search by applicant email..."
     value="{{ filters.search }}"
    />
   </div>
@@ -101,9 +101,8 @@
      <tr class="application-row" data-application-id="{{ application.applicationId }}" data-location="{{ application.location | lower }}">
       <td class="applicant-cell">
        <a class="applicant-link" href="/job-applications/{{ application.applicationId }}/cv">
-        {{ application.applicantName }} — {{ application.roleName }}
+        {{ application.applicantEmail }} — {{ application.roleName }}
        </a>
-       <span class="email-cell">{{ application.applicantEmail }}</span>
       </td>
       <td class="role-cell">{{ application.roleName }}</td>
       <td class="date-cell">{{ application.applicationDate }}</td>
@@ -736,11 +735,11 @@
      : `/job-role-list/${jobRoleId}`;
     const normalizedLocation = appLocation.toLowerCase();
 
-    const cvLinkText = `${app.applicantName} — ${app.roleName}`;
+    const cvLinkText = `${app.applicantEmail} — ${app.roleName}`;
 
     row.innerHTML = `
      <td class="applicant-cell">
-      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantName)} for ${escapeHtml(app.roleName)}">
+      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantEmail)} for ${escapeHtml(app.roleName)}">
        ${escapeHtml(cvLinkText)}
       </a>
      </td>
@@ -756,7 +755,7 @@
        <button 
         class="btn-view" 
         data-href="${detailsHref}"
-        aria-label="View full application details for ${escapeHtml(app.applicantName)}"
+        aria-label="View full application details for ${escapeHtml(app.applicantEmail)}"
        >
         View job role
        </button>
@@ -765,14 +764,14 @@
          <button 
           class="btn-hire" 
           data-application-id="${app.applicationId}"
-          aria-label="Hire ${escapeHtml(app.applicantName)}"
+          aria-label="Hire ${escapeHtml(app.applicantEmail)}"
          >
           Hire
          </button>
          <button 
           class="btn-reject" 
           data-application-id="${app.applicationId}"
-          aria-label="Reject ${escapeHtml(app.applicantName)}'s application"
+          aria-label="Reject ${escapeHtml(app.applicantEmail)}'s application"
          >
           Reject
          </button>
@@ -985,11 +984,8 @@
 
     // Search filter
     if (searchTerm) {
-     const applicantName = row.querySelector(".applicant-cell").textContent.toLowerCase();
-     const applicantEmail = row.querySelector(".email-cell").textContent.toLowerCase();
-     shouldShow =
-      shouldShow &&
-      (applicantName.includes(searchTerm) || applicantEmail.includes(searchTerm));
+     const applicantEmail = row.querySelector(".applicant-cell").textContent.toLowerCase();
+     shouldShow = shouldShow && applicantEmail.includes(searchTerm);
     }
 
     // Status filter
@@ -1081,10 +1077,10 @@
 
     const errorBody = await response
      .json()
-     .catch(() => ({ error: "Failed to hire applicant" }));
+     .catch(() => ({ message: "Failed to hire applicant" }));
     const message =
-     errorBody && typeof errorBody.error === "string"
-      ? errorBody.error
+     errorBody && typeof errorBody.message === "string"
+      ? errorBody.message
       : "Failed to hire applicant";
     await showPopup({
      title: "Hire Failed",
@@ -1149,10 +1145,10 @@
 
     const errorBody = await response
      .json()
-     .catch(() => ({ error: "Failed to reject application" }));
+     .catch(() => ({ message: "Failed to reject application" }));
     const message =
-     errorBody && typeof errorBody.error === "string"
-      ? errorBody.error
+     errorBody && typeof errorBody.message === "string"
+      ? errorBody.message
       : "Failed to reject application";
     await showPopup({
      title: "Rejection Failed",

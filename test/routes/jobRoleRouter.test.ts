@@ -99,7 +99,7 @@ describe("routes", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.mocked(apiClient.get).mockImplementation(async (url) => {
-			if (url === "/job-roles") {
+			if (url === "/api/job-roles") {
 				return {
 					data: [
 						{
@@ -115,7 +115,7 @@ describe("routes", () => {
 				};
 			}
 
-			if (url === "/job-roles/1") {
+			if (url === "/api/job-roles/1") {
 				return {
 					data: {
 						jobRoleId: 1,
@@ -130,17 +130,17 @@ describe("routes", () => {
 				};
 			}
 
-			if (url === "/job-roles/locations") {
+			if (url === "/api/job-roles/locations") {
 				return { data: [{ locationId: 1, locationName: "Birmingham" }] };
 			}
 
-			if (url === "/job-roles/capabilities") {
+			if (url === "/api/job-roles/capabilities") {
 				return {
 					data: [{ capabilityId: 1, capabilityName: "Software Engineering" }],
 				};
 			}
 
-			if (url === "/job-roles/bands") {
+			if (url === "/api/job-roles/bands") {
 				return { data: [{ bandId: 1, bandName: "Engineer" }] };
 			}
 
@@ -327,7 +327,7 @@ describe("routes", () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/job-role-list");
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/job-roles/create",
+			"/api/job-roles",
 			expect.objectContaining({
 				roleName: "Software Engineer",
 				numberOfOpenPositions: 2,
@@ -392,7 +392,7 @@ describe("routes", () => {
 		const adminApp = createAdminApp();
 		vi.mocked(apiClient.get).mockImplementation(async (url) => {
 			const responses: Record<string, unknown> = {
-				"/job-roles/1": {
+				"/api/job-roles/1": {
 					jobRoleId: 1,
 					roleName: "Software Engineer",
 					description: "Build software",
@@ -405,12 +405,14 @@ describe("routes", () => {
 					locationName: "Birmingham",
 					statusName: "OPEN",
 				},
-				"/job-roles/statuses": [{ statusId: 1, statusName: "OPEN" }],
-				"/job-roles/locations": [{ locationId: 2, locationName: "Birmingham" }],
-				"/job-roles/capabilities": [
+				"/api/job-roles/statuses": [{ statusId: 1, statusName: "OPEN" }],
+				"/api/job-roles/locations": [
+					{ locationId: 2, locationName: "Birmingham" },
+				],
+				"/api/job-roles/capabilities": [
 					{ capabilityId: 3, capabilityName: "Engineering" },
 				],
-				"/job-roles/bands": [{ bandId: 4, bandName: "Engineer" }],
+				"/api/job-roles/bands": [{ bandId: 4, bandName: "Engineer" }],
 			};
 			return { data: responses[String(url)] };
 		});
@@ -443,7 +445,7 @@ describe("routes", () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/job-role-list/1");
 		expect(apiClient.patch).toHaveBeenCalledWith(
-			"/job-roles/1",
+			"/api/job-roles/1",
 			expect.objectContaining({
 				roleName: "Lead Engineer",
 				numberOfOpenPositions: 3,
@@ -480,7 +482,7 @@ describe("routes", () => {
 
 		expect(response.status).toBe(303);
 		expect(response.headers.location).toBe("/job-role-list");
-		expect(apiClient.delete).toHaveBeenCalledWith("/job-roles/1", {
+		expect(apiClient.delete).toHaveBeenCalledWith("/api/job-roles/1", {
 			headers: { Authorization: "Bearer admin-token" },
 		});
 	});
@@ -492,7 +494,6 @@ describe("routes", () => {
 			[
 				{
 					applicationId: 10,
-					applicantName: "A User",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-01",
@@ -509,7 +510,7 @@ describe("routes", () => {
 		const response = await request(adminApp).get("/job-applications/10/cv");
 
 		expect(response.status).toBe(200);
-		expect(response.text).toContain("A User");
+		expect(response.text).toContain("a@example.com");
 		expect(response.text).toContain("Full CV text");
 	});
 
@@ -568,7 +569,7 @@ describe("routes", () => {
 		);
 
 		expect(response.status).toBe(400);
-		expect(response.body.error).toBe("Invalid application ID");
+		expect(response.body.message).toBe("Invalid application ID");
 	});
 
 	it("should return axios error response from cv-text route", async () => {
@@ -579,7 +580,7 @@ describe("routes", () => {
 		).mockRejectedValueOnce({
 			isAxiosError: true,
 			message: "axios fail",
-			response: { status: 409, data: { error: "Conflict" } },
+			response: { status: 409, data: { message: "Conflict" } },
 		});
 
 		const response = await request(adminApp).get(
@@ -587,7 +588,7 @@ describe("routes", () => {
 		);
 
 		expect(response.status).toBe(409);
-		expect(response.body.error).toBe("Conflict");
+		expect(response.body.message).toBe("Conflict");
 	});
 
 	it("should return generic error from cv-text route", async () => {
@@ -602,7 +603,7 @@ describe("routes", () => {
 		);
 
 		expect(response.status).toBe(500);
-		expect(response.body.error).toBe("bad");
+		expect(response.body.message).toBe("bad");
 	});
 
 	it("should route job-applications admin to controller", async () => {
@@ -729,7 +730,6 @@ describe("routes", () => {
 			[
 				{
 					applicationId: 1,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-01",
@@ -769,7 +769,7 @@ describe("routes", () => {
 		const response = await request(adminApp).get("/api/job-applications/admin");
 
 		expect(response.status).toBe(500);
-		expect(response.body.error).toBe("list failed");
+		expect(response.body.message).toBe("list failed");
 	});
 
 	it("should return 400 for invalid status id", async () => {
@@ -780,7 +780,7 @@ describe("routes", () => {
 			.send({ action: "approve" });
 
 		expect(response.status).toBe(400);
-		expect(response.body.error).toBe("Invalid application ID");
+		expect(response.body.message).toBe("Invalid application ID");
 	});
 
 	it("should approve application successfully", async () => {
@@ -806,7 +806,7 @@ describe("routes", () => {
 		).mockRejectedValueOnce({
 			isAxiosError: true,
 			message: "approve fail",
-			response: { status: 409, data: { error: "Already approved" } },
+			response: { status: 409, data: { message: "Already approved" } },
 		});
 
 		const response = await request(adminApp)
@@ -814,7 +814,7 @@ describe("routes", () => {
 			.send({ action: "approve" });
 
 		expect(response.status).toBe(409);
-		expect(response.body.error).toBe("Already approved");
+		expect(response.body.message).toBe("Already approved");
 	});
 
 	it("should return generic error from approve route", async () => {
@@ -829,7 +829,7 @@ describe("routes", () => {
 			.send({ action: "approve" });
 
 		expect(response.status).toBe(500);
-		expect(response.body.error).toBe("approve error");
+		expect(response.body.message).toBe("approve error");
 	});
 
 	it("should return 400 for invalid reject id", async () => {
@@ -840,7 +840,7 @@ describe("routes", () => {
 			.send({ action: "reject" });
 
 		expect(response.status).toBe(400);
-		expect(response.body.error).toBe("Invalid application ID");
+		expect(response.body.message).toBe("Invalid application ID");
 	});
 
 	it("should reject application successfully", async () => {
@@ -864,7 +864,7 @@ describe("routes", () => {
 			{
 				isAxiosError: true,
 				message: "reject fail",
-				response: { status: 409, data: { error: "Already rejected" } },
+				response: { status: 409, data: { message: "Already rejected" } },
 			},
 		);
 
@@ -873,7 +873,7 @@ describe("routes", () => {
 			.send({ action: "reject" });
 
 		expect(response.status).toBe(409);
-		expect(response.body.error).toBe("Already rejected");
+		expect(response.body.message).toBe("Already rejected");
 	});
 
 	it("should return generic error from reject route", async () => {
@@ -887,7 +887,7 @@ describe("routes", () => {
 			.send({ action: "reject" });
 
 		expect(response.status).toBe(500);
-		expect(response.body.error).toBe("reject error");
+		expect(response.body.message).toBe("reject error");
 	});
 
 	it("should return 400 for invalid status action", async () => {
@@ -898,7 +898,7 @@ describe("routes", () => {
 			.send({ action: "hold" });
 
 		expect(response.status).toBe(400);
-		expect(response.body.error).toBe(
+		expect(response.body.message).toBe(
 			"Invalid action. Use 'approve' or 'reject'.",
 		);
 	});

@@ -16,7 +16,7 @@ function extractToken(data: LoginResponse): string | null {
 }
 
 export async function login(email: string, password: string): Promise<string> {
-	const loginPath = process.env.AUTH_LOGIN_PATH ?? "/api/login";
+	const loginPath = process.env.AUTH_LOGIN_PATH ?? "/api/auth/login";
 
 	try {
 		const response = await apiClient.post<LoginResponse>(loginPath, {
@@ -66,7 +66,7 @@ export async function login(email: string, password: string): Promise<string> {
 }
 
 export async function register(email: string, password: string): Promise<void> {
-	const registerPath = process.env.AUTH_REGISTER_PATH ?? "/api/register";
+	const registerPath = process.env.AUTH_REGISTER_PATH ?? "/api/auth/register";
 
 	try {
 		await apiClient.post<RegisterResponse>(registerPath, {

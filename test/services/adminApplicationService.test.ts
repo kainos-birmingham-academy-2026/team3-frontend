@@ -22,7 +22,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 7,
-					applicantName: "Jane Doe",
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -33,7 +32,7 @@ describe("AdminApplicationService", () => {
 
 		const result = await service.getAll(jwtToken);
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-applications/admin", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 		expect(result[0]?.status).toBe("pending");
@@ -45,11 +44,10 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 8,
-					applicantName: "Jane Doe",
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "APPROVED",
+					status: "HIRED",
 					application: {
 						cvText: "Nested CV",
 					},
@@ -63,28 +61,25 @@ describe("AdminApplicationService", () => {
 		expect(result[0]?.status).toBe("approved");
 	});
 
-	it("should map status aliases correctly", async () => {
+	it("should map canonical API statuses correctly", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: [
 				{
 					applicationId: 9,
-					applicantName: "Jane Doe",
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "hired",
+					status: "HIRED",
 				},
 				{
 					applicationId: 10,
-					applicantName: "John Doe",
 					applicantEmail: "john@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "rejected",
+					status: "REJECTED",
 				},
 				{
 					applicationId: 11,
-					applicantName: "Sam Doe",
 					applicantEmail: "sam@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -105,7 +100,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 99,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -118,7 +112,7 @@ describe("AdminApplicationService", () => {
 		const result = await service.getCvTextById(99, jwtToken);
 
 		expect(result).toBe("Detailed CV");
-		expect(apiClient.get).toHaveBeenCalledWith("/job-applications/admin", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 	});
@@ -128,7 +122,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 7,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -160,7 +153,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 7,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -180,7 +172,6 @@ describe("AdminApplicationService", () => {
 			data: [
 				{
 					applicationId: 404,
-					applicantName: "A",
 					applicantEmail: "a@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
@@ -203,5 +194,21 @@ describe("AdminApplicationService", () => {
 		vi.mocked(apiClient.request).mockRejectedValueOnce(conflictError);
 
 		await expect(service.approve(42, jwtToken)).rejects.toBe(conflictError);
+	});
+
+	it.each([
+		["approve", "HIRED"],
+		["reject", "REJECTED"],
+	] as const)("should send canonical status for %s", async (action, status) => {
+		vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
+
+		await service[action](42, jwtToken);
+
+		expect(apiClient.request).toHaveBeenCalledWith({
+			method: "patch",
+			url: "/api/job-applications/admin/42/status",
+			data: { status },
+			headers: { Authorization: `Bearer ${jwtToken}` },
+		});
 	});
 });

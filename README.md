@@ -39,8 +39,8 @@ openssl rand -hex 32
 Available variables:
 
 - `SESSION_SECRET` - Secret used to sign the session cookie (required)
-- `AUTH_LOGIN_PATH` - Backend login endpoint path used by the frontend auth service (default: `/api/login`)
-- `AUTH_REGISTER_PATH` - Backend register endpoint path used by the frontend auth service (default: `/api/register`)
+- `AUTH_LOGIN_PATH` - Backend login endpoint path used by the frontend auth service (default: `/api/auth/login`)
+- `AUTH_REGISTER_PATH` - Backend register endpoint path used by the frontend auth service (default: `/api/auth/register`)
 - `API_BASE_URL` - Base URL used for API requests (default: `http://localhost:4000`)
 - `NODE_ENV` - Runtime environment (`development` or `production`)
 - `PORT` - Port for this Express app (default: `3000`)
@@ -49,8 +49,8 @@ Example:
 
 ```bash
 SESSION_SECRET=replace-with-a-long-random-secret
-AUTH_LOGIN_PATH=/api/login
-AUTH_REGISTER_PATH=/api/register
+AUTH_LOGIN_PATH=/api/auth/login
+AUTH_REGISTER_PATH=/api/auth/register
 API_BASE_URL=http://localhost:4000
 NODE_ENV=development
 PORT=3000
@@ -303,7 +303,7 @@ Renders the create job role form for authenticated administrators.
 
 ### `POST /job-role-create`
 
-Creates a job role through the backend `POST /job-roles/create` endpoint.
+Creates a job role through the backend `POST /api/job-roles` endpoint.
 
 - Requires an authenticated administrator session
 - On success: redirects to `/job-role-list`
@@ -322,7 +322,7 @@ Renders the edit form for an existing job role.
 
 ### `POST /job-role-edit`
 
-Updates a job role through the backend `PATCH /job-roles/:id` endpoint.
+Updates a job role through the backend `PATCH /api/job-roles/:id` endpoint.
 
 - Requires an authenticated administrator session
 - On success: redirects to `/job-role-list/:id`
@@ -332,7 +332,7 @@ Updates a job role through the backend `PATCH /job-roles/:id` endpoint.
 
 ### `POST /job-role-list/:id/delete`
 
-Deletes a job role through the backend `DELETE /job-roles/:id` endpoint.
+Deletes a job role through the backend `DELETE /api/job-roles/:id` endpoint.
 
 - Requires an authenticated administrator session
 - Is submitted from the confirmation dialog on the job role detail page

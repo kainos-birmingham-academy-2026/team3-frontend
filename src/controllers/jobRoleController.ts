@@ -46,8 +46,8 @@ export class JobRoleController {
 			locationId: this.getQueryList(req.query.locationId),
 			capabilityId: this.getQueryList(req.query.capabilityId),
 			bandId: this.getQueryList(req.query.bandId),
-			closingFrom: this.getQueryString(req.query.closingFrom),
-			closingBy: this.getQueryString(req.query.closingBy),
+			closingDateFrom: this.getQueryString(req.query.closingDateFrom),
+			closingDateTo: this.getQueryString(req.query.closingDateTo),
 		};
 	}
 
@@ -172,24 +172,18 @@ export class JobRoleController {
 
 				const responseData = error.response?.data as {
 					errors?: SchemaError[];
-					error?: string;
 					message?: string;
 				};
 
 				if (statusCode === 400) {
 					if (Array.isArray(responseData?.errors)) {
 						errorMessage = responseData.errors;
-					} else if (responseData?.error) {
-						errorMessage = [
-							{
-								field: responseData.error.toLowerCase().includes("closing date")
-									? "closingDate"
-									: undefined,
-								message: responseData.error,
-							},
-						];
 					} else if (responseData?.message) {
-						errorMessage = responseData.message;
+						errorMessage = responseData.message
+							.toLowerCase()
+							.includes("closing date")
+							? [{ field: "closingDate", message: responseData.message }]
+							: responseData.message;
 					} else {
 						errorMessage = "Please provide valid job role data.";
 					}
@@ -263,14 +257,12 @@ export class JobRoleController {
 				statusCode = error.response?.status ?? 500;
 				const responseData = error.response?.data as {
 					errors?: SchemaError[];
-					error?: string;
 					message?: string;
 				};
 
 				if (statusCode === 400) {
 					errorMessage =
 						responseData?.errors ??
-						responseData?.error ??
 						responseData?.message ??
 						"Please provide valid job role data.";
 				} else if (statusCode === 403) {
@@ -490,7 +482,6 @@ export class JobRoleController {
 			const filteredApplications = applicationsWithLocations.filter(
 				(application) =>
 					(!filters.search ||
-						application.applicantName.toLowerCase().includes(filters.search) ||
 						application.applicantEmail
 							.toLowerCase()
 							.includes(filters.search)) &&

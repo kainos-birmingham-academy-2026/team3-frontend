@@ -7,10 +7,10 @@ export class AuthApi {
 	constructor(private readonly request: APIRequestContext) {}
 
 	async register(user: TestUser): Promise<APIResponse> {
-		return this.request.post(`${apiBaseURL}/api/register`, { data: user });
+		return this.request.post(`${apiBaseURL}/api/auth/register`, { data: user });
 	}
 
 	async login(user: TestUser): Promise<APIResponse> {
-		return this.request.post(`${apiBaseURL}/api/login`, { data: user });
+		return this.request.post(`${apiBaseURL}/api/auth/login`, { data: user });
 	}
 }

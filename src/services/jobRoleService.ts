@@ -102,8 +102,12 @@ export class JobRoleService {
 		try {
 			const params = new URLSearchParams();
 			if (filters.roleName) params.set("roleName", filters.roleName);
-			if (filters.closingFrom) params.set("closingFrom", filters.closingFrom);
-			if (filters.closingBy) params.set("closingBy", filters.closingBy);
+			if (filters.closingDateFrom) {
+				params.set("closingDateFrom", filters.closingDateFrom);
+			}
+			if (filters.closingDateTo) {
+				params.set("closingDateTo", filters.closingDateTo);
+			}
 			for (const locationId of filters.locationId ?? []) {
 				params.append("locationId", locationId);
 			}
@@ -122,8 +126,8 @@ export class JobRoleService {
 			};
 			const response =
 				Object.keys(config).length > 0
-					? await apiClient.get<ApiJobRole[]>("/job-roles", config)
-					: await apiClient.get<ApiJobRole[]>("/job-roles");
+					? await apiClient.get<ApiJobRole[]>("/api/job-roles", config)
+					: await apiClient.get<ApiJobRole[]>("/api/job-roles");
 
 			return response.data.map((jobRole) => this.mapJobRole(jobRole));
 		} catch (error) {
@@ -146,10 +150,10 @@ export class JobRoleService {
 	async getById(jobRoleId: string, jwtToken?: string): Promise<JobRole> {
 		try {
 			const response = jwtToken
-				? await apiClient.get<ApiJobRole>(`/job-roles/${jobRoleId}`, {
+				? await apiClient.get<ApiJobRole>(`/api/job-roles/${jobRoleId}`, {
 						headers: { Authorization: `Bearer ${jwtToken}` },
 					})
-				: await apiClient.get<ApiJobRole>(`/job-roles/${jobRoleId}`);
+				: await apiClient.get<ApiJobRole>(`/api/job-roles/${jobRoleId}`);
 
 			return this.mapJobRole(response.data);
 		} catch (error) {
@@ -178,7 +182,7 @@ export class JobRoleService {
 		}
 		const payload = this.mapWritePayload(jobRoleData);
 
-		await apiClient.post("/job-roles/create", payload, {
+		await apiClient.post("/api/job-roles", payload, {
 			headers: {
 				Authorization: `Bearer ${jwtToken}`,
 				"Content-Type": "application/json",
@@ -196,7 +200,7 @@ export class JobRoleService {
 
 		const { jobRoleId, ...editableFields } = jobRoleData;
 		await apiClient.patch(
-			`/job-roles/${jobRoleId}`,
+			`/api/job-roles/${jobRoleId}`,
 			this.mapWritePayload(editableFields),
 			{
 				headers: {
@@ -212,7 +216,7 @@ export class JobRoleService {
 			throw new Error("Not authenticated");
 		}
 
-		await apiClient.delete(`/job-roles/${jobRoleId}`, {
+		await apiClient.delete(`/api/job-roles/${jobRoleId}`, {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 	}
@@ -227,8 +231,8 @@ export class JobRoleService {
 		}
 
 		await apiClient.post(
-			`/job-roles/${jobRoleId}/apply`,
-			{ cvText },
+			"/api/job-applications",
+			{ jobRoleId, cvText },
 			{
 				headers: { Authorization: `Bearer ${jwtToken}` },
 			},
@@ -239,7 +243,7 @@ export class JobRoleService {
 	async getAllStatuses(): Promise<StatusOption[]> {
 		try {
 			const response = await apiClient.get<StatusOption[]>(
-				"/job-roles/statuses",
+				"/api/job-roles/statuses",
 			);
 			return response.data;
 		} catch {
@@ -250,7 +254,7 @@ export class JobRoleService {
 	async getAllLocations(): Promise<LocationOption[]> {
 		try {
 			const response = await apiClient.get<LocationOption[]>(
-				"/job-roles/locations",
+				"/api/job-roles/locations",
 			);
 			return response.data;
 		} catch {
@@ -261,7 +265,7 @@ export class JobRoleService {
 	async getAllCapabilities(): Promise<CapabilityOption[]> {
 		try {
 			const response = await apiClient.get<CapabilityOption[]>(
-				"/job-roles/capabilities",
+				"/api/job-roles/capabilities",
 			);
 			return response.data;
 		} catch {
@@ -271,7 +275,9 @@ export class JobRoleService {
 
 	async getAllBands(): Promise<BandOption[]> {
 		try {
-			const response = await apiClient.get<BandOption[]>("/job-roles/bands");
+			const response = await apiClient.get<BandOption[]>(
+				"/api/job-roles/bands",
+			);
 			return response.data;
 		} catch {
 			throw new Error("Failed to fetch job role bands");

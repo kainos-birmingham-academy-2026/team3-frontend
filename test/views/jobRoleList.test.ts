@@ -123,7 +123,7 @@ describe("jobRoleList", () => {
 		const html = renderView([], undefined, {
 			filters: {
 				roleName: "Engineer",
-				closingFrom: "2026-09-01",
+				closingDateFrom: "2026-09-01",
 			},
 			locationOptions: [{ locationId: 1, locationName: "Birmingham" }],
 			capabilityOptions: [{ capabilityId: 2, capabilityName: "Engineering" }],
@@ -137,13 +137,15 @@ describe("jobRoleList", () => {
 		expect(html).toContain('name="locationId"');
 		expect(html).toContain('name="capabilityId"');
 		expect(html).toContain('name="bandId"');
-		expect(html).toContain('name="closingFrom" type="date" value="2026-09-01"');
-		expect(html).toContain('name="closingBy" type="date" value=""');
 		expect(html).toContain(
-			"closingByInput.disabled = Boolean(closingFromInput.value)",
+			'name="closingDateFrom" type="date" value="2026-09-01"',
+		);
+		expect(html).toContain('name="closingDateTo" type="date" value=""');
+		expect(html).toContain(
+			"closingDateToInput.disabled = Boolean(closingDateFromInput.value)",
 		);
 		expect(html).toContain(
-			"closingFromInput.disabled = Boolean(closingByInput.value)",
+			"closingDateFromInput.disabled = Boolean(closingDateToInput.value)",
 		);
 		expect(html.match(/checked/g)).toHaveLength(3);
 	});

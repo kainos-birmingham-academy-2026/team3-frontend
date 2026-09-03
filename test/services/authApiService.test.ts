@@ -36,7 +36,7 @@ describe("authApiService", () => {
 		const result = await login("jane.doe@example.com", "password123");
 
 		expect(result).toBe("jwt-token");
-		expect(apiClient.post).toHaveBeenCalledWith("/api/login", {
+		expect(apiClient.post).toHaveBeenCalledWith("/api/auth/login", {
 			email: "jane.doe@example.com",
 			password: "password123",
 		});
@@ -146,7 +146,7 @@ describe("authApiService", () => {
 			register("new.user@example.com", "password123"),
 		).resolves.toBeUndefined();
 
-		expect(apiClient.post).toHaveBeenCalledWith("/api/register", {
+		expect(apiClient.post).toHaveBeenCalledWith("/api/auth/register", {
 			email: "new.user@example.com",
 			password: "password123",
 		});

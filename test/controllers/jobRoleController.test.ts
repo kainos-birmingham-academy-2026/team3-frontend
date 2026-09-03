@@ -101,8 +101,8 @@ describe("JobRoleController", () => {
 			locationId: undefined,
 			capabilityId: undefined,
 			bandId: undefined,
-			closingFrom: undefined,
-			closingBy: undefined,
+			closingDateFrom: undefined,
+			closingDateTo: undefined,
 		});
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
 			jobRoles,
@@ -158,8 +158,8 @@ describe("JobRoleController", () => {
 				locationId: ["1", "2"],
 				capabilityId: "3",
 				bandId: "4",
-				closingFrom: "2026-09-01",
-				closingBy: "2026-12-31",
+				closingDateFrom: "2026-09-01",
+				closingDateTo: "2026-12-31",
 			},
 		});
 		const res = createResponse();
@@ -172,8 +172,8 @@ describe("JobRoleController", () => {
 			locationId: ["1", "2"],
 			capabilityId: ["3"],
 			bandId: ["4"],
-			closingFrom: "2026-09-01",
-			closingBy: "2026-12-31",
+			closingDateFrom: "2026-09-01",
+			closingDateTo: "2026-12-31",
 		};
 		expect(jobRoleService.getAll).toHaveBeenCalledWith(undefined, filters);
 		expect(res.render).toHaveBeenCalledWith(
@@ -374,7 +374,7 @@ describe("JobRoleController", () => {
 	});
 
 	it.each([
-		["backend error", { error: "Closing date is invalid" }, "closingDate"],
+		["backend message", { message: "Closing date is invalid" }, "closingDate"],
 		["backend message", { message: "Role data is incomplete" }, undefined],
 		["generic validation", {}, undefined],
 	])(
@@ -397,9 +397,9 @@ describe("JobRoleController", () => {
 				errorMessage: string | { field?: string; message: string }[];
 			};
 			expect(res.status).toHaveBeenCalledWith(400);
-			if ("error" in responseData) {
+			if ("message" in responseData && expectedField) {
 				expect(renderedError.errorMessage).toEqual([
-					{ field: expectedField, message: responseData.error },
+					{ field: expectedField, message: responseData.message },
 				]);
 			} else if ("message" in responseData) {
 				expect(renderedError.errorMessage).toBe(responseData.message);
@@ -1207,7 +1207,6 @@ describe("JobRoleController", () => {
 		const applications = [
 			{
 				applicationId: 1,
-				applicantName: "Alex",
 				applicantEmail: "alex@example.com",
 				roleName: "Engineer",
 				applicationDate: "2026-09-01",
@@ -1215,7 +1214,6 @@ describe("JobRoleController", () => {
 			},
 			{
 				applicationId: 2,
-				applicantName: "Blair",
 				applicantEmail: "blair@example.com",
 				roleName: "Designer",
 				applicationDate: "2026-09-01",
@@ -1223,7 +1221,6 @@ describe("JobRoleController", () => {
 			},
 			{
 				applicationId: 3,
-				applicantName: "Casey",
 				applicantEmail: "casey@example.com",
 				roleName: "Unknown role",
 				applicationDate: "2026-09-01",
@@ -1263,7 +1260,6 @@ describe("JobRoleController", () => {
 		const res = createResponse();
 		const matchingApplication = {
 			applicationId: 1,
-			applicantName: "Alex",
 			applicantEmail: "alex@example.com",
 			roleName: "Engineer",
 			applicationDate: "2026-09-01",
@@ -1272,7 +1268,6 @@ describe("JobRoleController", () => {
 		const excludedApplication = {
 			...matchingApplication,
 			applicationId: 2,
-			applicantName: "Taylor",
 			applicantEmail: "taylor@other.test",
 		};
 
