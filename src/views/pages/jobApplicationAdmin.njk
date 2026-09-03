@@ -1081,10 +1081,10 @@
 
     const errorBody = await response
      .json()
-     .catch(() => ({ error: "Failed to hire applicant" }));
+     .catch(() => ({ message: "Failed to hire applicant" }));
     const message =
-     errorBody && typeof errorBody.error === "string"
-      ? errorBody.error
+     errorBody && typeof errorBody.message === "string"
+      ? errorBody.message
       : "Failed to hire applicant";
     await showPopup({
      title: "Hire Failed",
@@ -1149,10 +1149,10 @@
 
     const errorBody = await response
      .json()
-     .catch(() => ({ error: "Failed to reject application" }));
+     .catch(() => ({ message: "Failed to reject application" }));
     const message =
-     errorBody && typeof errorBody.error === "string"
-      ? errorBody.error
+     errorBody && typeof errorBody.message === "string"
+      ? errorBody.message
       : "Failed to reject application";
     await showPopup({
      title: "Rejection Failed",

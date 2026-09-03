@@ -172,24 +172,18 @@ export class JobRoleController {
 
 				const responseData = error.response?.data as {
 					errors?: SchemaError[];
-					error?: string;
 					message?: string;
 				};
 
 				if (statusCode === 400) {
 					if (Array.isArray(responseData?.errors)) {
 						errorMessage = responseData.errors;
-					} else if (responseData?.error) {
-						errorMessage = [
-							{
-								field: responseData.error.toLowerCase().includes("closing date")
-									? "closingDate"
-									: undefined,
-								message: responseData.error,
-							},
-						];
 					} else if (responseData?.message) {
-						errorMessage = responseData.message;
+						errorMessage = responseData.message
+							.toLowerCase()
+							.includes("closing date")
+							? [{ field: "closingDate", message: responseData.message }]
+							: responseData.message;
 					} else {
 						errorMessage = "Please provide valid job role data.";
 					}
@@ -263,14 +257,12 @@ export class JobRoleController {
 				statusCode = error.response?.status ?? 500;
 				const responseData = error.response?.data as {
 					errors?: SchemaError[];
-					error?: string;
 					message?: string;
 				};
 
 				if (statusCode === 400) {
 					errorMessage =
 						responseData?.errors ??
-						responseData?.error ??
 						responseData?.message ??
 						"Please provide valid job role data.";
 				} else if (statusCode === 403) {

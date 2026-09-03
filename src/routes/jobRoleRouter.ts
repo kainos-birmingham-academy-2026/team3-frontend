@@ -42,10 +42,10 @@ function getAxiosErrorMessage(error: unknown): string {
 	if (
 		typeof error.response?.data === "object" &&
 		error.response?.data !== null &&
-		"error" in error.response.data &&
-		typeof (error.response.data as { error?: unknown }).error === "string"
+		"message" in error.response.data &&
+		typeof (error.response.data as { message?: unknown }).message === "string"
 	) {
-		return (error.response.data as { error: string }).error;
+		return (error.response.data as { message: string }).message;
 	}
 
 	return error.message;
@@ -192,7 +192,7 @@ router.get(
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Failed to fetch applications";
-			res.status(500).json({ error: message });
+			res.status(500).json({ message });
 		}
 	},
 );
@@ -206,7 +206,7 @@ router.get(
 		try {
 			const applicationId = parseApplicationId(req.params.applicationId);
 			if (applicationId === null) {
-				res.status(400).json({ error: "Invalid application ID" });
+				res.status(400).json({ message: "Invalid application ID" });
 				return;
 			}
 
@@ -220,13 +220,13 @@ router.get(
 			if (axios.isAxiosError(error)) {
 				res
 					.status(error.response?.status ?? 500)
-					.json({ error: getAxiosErrorMessage(error) });
+					.json({ message: getAxiosErrorMessage(error) });
 				return;
 			}
 
 			const message =
 				error instanceof Error ? error.message : "Failed to fetch CV text";
-			res.status(500).json({ error: message });
+			res.status(500).json({ message });
 		}
 	},
 );
@@ -270,7 +270,7 @@ router.post(
 		try {
 			const applicationId = parseApplicationId(req.params.applicationId);
 			if (applicationId === null) {
-				res.status(400).json({ error: "Invalid application ID" });
+				res.status(400).json({ message: "Invalid application ID" });
 				return;
 			}
 
@@ -278,7 +278,7 @@ router.post(
 			if (action === null) {
 				res
 					.status(400)
-					.json({ error: "Invalid action. Use 'approve' or 'reject'." });
+					.json({ message: "Invalid action. Use 'approve' or 'reject'." });
 				return;
 			}
 
@@ -294,7 +294,7 @@ router.post(
 			if (axios.isAxiosError(error)) {
 				res
 					.status(error.response?.status ?? 500)
-					.json({ error: getAxiosErrorMessage(error) });
+					.json({ message: getAxiosErrorMessage(error) });
 				return;
 			}
 
@@ -302,7 +302,7 @@ router.post(
 				error instanceof Error
 					? error.message
 					: "Failed to update application status";
-			res.status(500).json({ error: message });
+			res.status(500).json({ message });
 		}
 	},
 );

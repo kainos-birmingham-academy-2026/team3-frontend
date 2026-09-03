@@ -374,7 +374,7 @@ describe("JobRoleController", () => {
 	});
 
 	it.each([
-		["backend error", { error: "Closing date is invalid" }, "closingDate"],
+		["backend message", { message: "Closing date is invalid" }, "closingDate"],
 		["backend message", { message: "Role data is incomplete" }, undefined],
 		["generic validation", {}, undefined],
 	])(
@@ -397,9 +397,9 @@ describe("JobRoleController", () => {
 				errorMessage: string | { field?: string; message: string }[];
 			};
 			expect(res.status).toHaveBeenCalledWith(400);
-			if ("error" in responseData) {
+			if ("message" in responseData && expectedField) {
 				expect(renderedError.errorMessage).toEqual([
-					{ field: expectedField, message: responseData.error },
+					{ field: expectedField, message: responseData.message },
 				]);
 			} else if ("message" in responseData) {
 				expect(renderedError.errorMessage).toBe(responseData.message);
