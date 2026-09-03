@@ -231,8 +231,8 @@ export class JobRoleService {
 		}
 
 		await apiClient.post(
-			`/api/job-roles/${jobRoleId}/apply`,
-			{ cvText },
+			"/api/job-applications",
+			{ jobRoleId, cvText },
 			{
 				headers: { Authorization: `Bearer ${jwtToken}` },
 			},

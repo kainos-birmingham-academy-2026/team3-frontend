@@ -392,8 +392,8 @@ describe("JobRoleService", () => {
 		await service.applyForRole("3", "I am interested in this role", jwtToken);
 
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/api/job-roles/3/apply",
-			{ cvText: "I am interested in this role" },
+			"/api/job-applications",
+			{ jobRoleId: "3", cvText: "I am interested in this role" },
 			{ headers: { Authorization: `Bearer ${jwtToken}` } },
 		);
 	});
