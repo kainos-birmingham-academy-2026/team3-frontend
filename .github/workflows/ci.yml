@@ -6,18 +6,34 @@ on:
   pull_request:
     branches: ["**"]
   repository_dispatch:
-    types: [backend-dev-deployed]
+    types: [backend-dev-deployed, backend-test-deployed]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref}}
   cancel-in-progress: true
 
 jobs:
+  resolve-source:
+    name: Resolve Source
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.action == 'backend-test-deployed' && github.event.client_payload.frontend_ref || github.sha }}
+      - name: Record source commit
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   lint:
     name: Lint & Format
+    needs: resolve-source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -27,9 +43,12 @@ jobs:
 
   typecheck:
     name: Type Check
+    needs: resolve-source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -39,9 +58,12 @@ jobs:
 
   test:
     name: Unit Tests
+    needs: resolve-source
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -51,7 +73,7 @@ jobs:
 
   docker-build:
     name: Build Docker Image
-    needs: [lint, typecheck, test]
+    needs: [resolve-source, lint, typecheck, test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -59,10 +81,14 @@ jobs:
     env:
       REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
       IMAGE_NAME: team3-frontend
-      IMAGE_TAG: dev-${{ github.sha }}
+      DEPLOY_ENV: ${{ github.event.action == 'backend-test-deployed' && 'test' || 'dev' }}
+      IMAGE_TAG: ${{ github.event.action == 'backend-test-deployed' && format('test-{0}', needs.resolve-source.outputs.sha) || format('dev-{0}', needs.resolve-source.outputs.sha) }}
+      LATEST_TAG: ${{ github.event.action == 'backend-test-deployed' && 'test-latest' || 'dev-latest' }}
       PUSH: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'repository_dispatch' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
       - uses: docker/setup-buildx-action@v3
 
       - name: Log in to Azure
@@ -83,7 +109,7 @@ jobs:
           push: ${{ env.PUSH == 'true' }}
           tags: |
             ${{ env.PUSH == 'true' && format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, env.IMAGE_TAG) || format('{0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG) }}
-            ${{ env.PUSH == 'true' && format('{0}/{1}:dev-latest', env.REGISTRY, env.IMAGE_NAME) }}
+            ${{ env.PUSH == 'true' && format('{0}/{1}:{2}', env.REGISTRY, env.IMAGE_NAME, env.LATEST_TAG) }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -105,12 +131,12 @@ jobs:
             --query digest --output tsv
           az acr manifest show \
             --registry "${REGISTRY%%.*}" \
-            --name "$IMAGE_NAME:dev-latest" \
+            --name "$IMAGE_NAME:$LATEST_TAG" \
             --query digest --output tsv
 
   terraform:
     name: Terraform Dev
-    needs: docker-build
+    needs: [resolve-source, docker-build]
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
     permissions:
@@ -121,8 +147,9 @@ jobs:
     env:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
-      TF_VAR_environment: dev
-      TF_VAR_image_tag: dev-${{ github.sha }}
+      DEPLOY_ENV: ${{ github.event.action == 'backend-test-deployed' && 'test' || 'dev' }}
+      TF_VAR_environment: ${{ github.event.action == 'backend-test-deployed' && 'test' || 'dev' }}
+      TF_VAR_image_tag: ${{ github.event.action == 'backend-test-deployed' && format('test-{0}', needs.resolve-source.outputs.sha) || format('dev-{0}', needs.resolve-source.outputs.sha) }}
       TF_VAR_container_revision_suffix: run-${{ github.run_id }}-${{ github.run_attempt }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -132,10 +159,12 @@ jobs:
       IMAGE_NAME: team3-frontend
     defaults:
       run:
-        working-directory: infrastructure/environments/dev
+        working-directory: infrastructure/environments/${{ github.event.action == 'backend-test-deployed' && 'test' || 'dev' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
 
       - name: Scan Terraform
         uses: aquasecurity/trivy-action@v0.36.0
@@ -155,13 +184,13 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Verify backend dev deployment
-        run: >-
-          az containerapp show
-          --name ca-team3-backend-dev
-          --resource-group rg-team3-dev
-          --only-show-errors
-          --output none
+      - name: Verify backend deployment
+        run: |
+          az containerapp show \
+            --name "ca-team3-backend-${DEPLOY_ENV}" \
+            --resource-group "rg-team3-${DEPLOY_ENV}" \
+            --only-show-errors \
+            --output none
 
       - name: Install tfcmt
         if: github.event_name == 'pull_request'
@@ -214,7 +243,7 @@ jobs:
             --name "$IMAGE_NAME" \
             --output json \
             | jq --raw-output --arg cutoff "$cutoff" \
-              '.[] | (.tags // []) as $tags | select(.lastUpdateTime < $cutoff) | select(any($tags[]; startswith("dev-"))) | select(any($tags[]; . == "latest" or . == "dev-latest") | not) | .digest' \
+              '.[] | (.tags // []) as $tags | select(.lastUpdateTime < $cutoff) | select(any($tags[]; startswith(env.DEPLOY_ENV + "-"))) | select(any($tags[]; . == "latest" or . == (env.DEPLOY_ENV + "-latest")) | not) | .digest' \
             | while read -r digest; do
                 az acr repository delete \
                   --name "${REGISTRY%%.*}" \
