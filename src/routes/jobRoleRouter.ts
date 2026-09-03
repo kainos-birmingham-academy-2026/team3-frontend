@@ -162,8 +162,8 @@ router.get(
 				application,
 				backUrl: isAdmin ? "/job-applications/admin" : "/job-applications",
 				heading:
-					"applicantName" in application
-						? application.applicantName
+					"applicantEmail" in application
+						? application.applicantEmail
 						: "Your CV",
 				cvText:
 					cvText ||

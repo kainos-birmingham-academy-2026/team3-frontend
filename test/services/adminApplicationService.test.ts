@@ -80,7 +80,6 @@ describe("AdminApplicationService", () => {
 				},
 				{
 					applicationId: 11,
-					applicantName: "Sam Doe",
 					applicantEmail: "sam@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
