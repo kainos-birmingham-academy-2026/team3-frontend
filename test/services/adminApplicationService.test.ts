@@ -47,7 +47,7 @@ describe("AdminApplicationService", () => {
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "APPROVED",
+					status: "HIRED",
 					application: {
 						cvText: "Nested CV",
 					},
@@ -61,7 +61,7 @@ describe("AdminApplicationService", () => {
 		expect(result[0]?.status).toBe("approved");
 	});
 
-	it("should map status aliases correctly", async () => {
+	it("should map canonical API statuses correctly", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: [
 				{
@@ -69,14 +69,14 @@ describe("AdminApplicationService", () => {
 					applicantEmail: "jane@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "hired",
+					status: "HIRED",
 				},
 				{
 					applicationId: 10,
 					applicantEmail: "john@example.com",
 					roleName: "Engineer",
 					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "rejected",
+					status: "REJECTED",
 				},
 				{
 					applicationId: 11,
@@ -195,5 +195,21 @@ describe("AdminApplicationService", () => {
 		vi.mocked(apiClient.request).mockRejectedValueOnce(conflictError);
 
 		await expect(service.approve(42, jwtToken)).rejects.toBe(conflictError);
+	});
+
+	it.each([
+		["approve", "HIRED"],
+		["reject", "REJECTED"],
+	] as const)("should send canonical status for %s", async (action, status) => {
+		vi.mocked(apiClient.request).mockResolvedValueOnce({ data: {} });
+
+		await service[action](42, jwtToken);
+
+		expect(apiClient.request).toHaveBeenCalledWith({
+			method: "patch",
+			url: "/api/job-applications/admin/42/status",
+			data: { status },
+			headers: { Authorization: `Bearer ${jwtToken}` },
+		});
 	});
 });

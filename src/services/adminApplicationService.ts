@@ -43,7 +43,7 @@ export class AdminApplicationService {
 	private mapStatus(status: string): NormalizedStatus {
 		const normalizedStatus = status.trim().toLowerCase();
 
-		if (normalizedStatus === "hired" || normalizedStatus === "approved") {
+		if (normalizedStatus === "hired") {
 			return "approved";
 		}
 
@@ -72,8 +72,8 @@ export class AdminApplicationService {
 		};
 	}
 
-	private getStatusValue(action: StatusAction): "approved" | "rejected" {
-		return action === "approve" ? "approved" : "rejected";
+	private getStatusValue(action: StatusAction): "HIRED" | "REJECTED" {
+		return action === "approve" ? "HIRED" : "REJECTED";
 	}
 
 	async getAll(jwtToken?: string): Promise<Application[]> {
