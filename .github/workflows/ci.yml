@@ -5,6 +5,8 @@ on:
     branches: ["**"]
   pull_request:
     branches: ["**"]
+  repository_dispatch:
+    types: [backend-dev-deployed]
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref}}
@@ -58,7 +60,7 @@ jobs:
       REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
       IMAGE_NAME: team3-frontend
       IMAGE_TAG: dev-${{ github.sha }}
-      PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      PUSH: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'repository_dispatch' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -109,7 +111,7 @@ jobs:
   terraform:
     name: Terraform Dev
     needs: docker-build
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -120,7 +122,7 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
       TF_VAR_environment: dev
-      TF_VAR_image_tag: dev-latest
+      TF_VAR_image_tag: dev-${{ github.sha }}
       TF_VAR_container_revision_suffix: run-${{ github.run_id }}-${{ github.run_attempt }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -146,6 +148,21 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify backend dev deployment
+        run: >-
+          az containerapp show
+          --name ca-team3-backend-dev
+          --resource-group rg-team3-dev
+          --only-show-errors
+          --output none
+
       - name: Install tfcmt
         if: github.event_name == 'pull_request'
         env:
@@ -169,13 +186,6 @@ jobs:
       - name: Initialize Terraform
         run: terraform init -input=false -backend-config=backend.hcl
 
-      - name: Log in to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
       - name: Validate Terraform
         run: terraform validate -no-color
 
@@ -186,15 +196,15 @@ jobs:
         run: tfcmt -var "target:frontend-dev" plan -- terraform plan -input=false -no-color
 
       - name: Create Terraform plan
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'repository_dispatch'
         run: terraform plan -input=false -no-color -out=tfplan
 
       - name: Apply Terraform
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'repository_dispatch'
         run: terraform apply -input=false -auto-approve tfplan
 
       - name: Delete dev images older than 48 hours
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'repository_dispatch'
         run: |
           set -o pipefail
           cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')

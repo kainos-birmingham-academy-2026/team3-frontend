@@ -15,10 +15,11 @@ reusable `modules/frontend-app` module:
 Each root owns only its frontend identity, role assignments, and Container App.
 Shared resources created by the backend Terraform are read as data sources.
 
-Dev deploys the mutable `dev-latest` image tag. CI supplies the commit SHA as a
-revision suffix so Azure Container Apps creates a new revision on every main
-branch deployment. Production requires an immutable commit SHA or release tag
-and rejects `latest` and `dev-latest`.
+Dev deploys the immutable `dev-<commit-sha>` image tag. CI also publishes
+`dev-latest` for convenience, but Terraform does not use that mutable tag.
+The commit SHA is also used as a revision suffix so Azure Container Apps creates
+a new revision on every deployment. Production requires an immutable commit SHA
+or release tag and rejects `latest` and `dev-latest`.
 
 The dev root contains one-time `moved` declarations for existing frontend
 resources and a `removed` declaration that releases the shared resource group
@@ -54,8 +55,20 @@ Before planning production:
   `Role Based Access Control Administrator` on the production resource group
   and shared ACR, `Reader` on the shared ACR, and access to the remote state.
 
-Do not put secret values in Terraform variables, state, committed files, or
-command history.
+The backend Terraform root owns `session-secret` for every environment. Deploy
+the backend before the frontend rather than creating this secret manually.
+
+## Dev deployment ordering
+
+The frontend workflow verifies that `ca-team3-backend-dev` exists before it can
+plan or apply frontend Terraform. After a successful backend dev apply, the
+backend workflow sends the `backend-dev-deployed` repository dispatch event,
+which builds and deploys the frontend from its default branch. Frontend pushes
+can still deploy independently when the backend is already present.
+
+Configure `FRONTEND_REPOSITORY_DISPATCH_TOKEN` in the backend repository as a
+fine-grained token with Contents write permission on `team3-frontend`. GitHub's
+built-in repository token cannot dispatch workflows in another repository.
 
 ## Production variables
 
