@@ -33,7 +33,7 @@ describe("AdminApplicationService", () => {
 
 		const result = await service.getAll(jwtToken);
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-applications/admin", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 		expect(result[0]?.status).toBe("pending");
@@ -118,7 +118,7 @@ describe("AdminApplicationService", () => {
 		const result = await service.getCvTextById(99, jwtToken);
 
 		expect(result).toBe("Detailed CV");
-		expect(apiClient.get).toHaveBeenCalledWith("/job-applications/admin", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 	});

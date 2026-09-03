@@ -20,7 +20,7 @@ type NormalizedStatus = "pending" | "approved" | "rejected" | "withdrawn";
 
 export class AdminApplicationService {
 	private static readonly ADMIN_APPLICATIONS_ENDPOINT =
-		"/job-applications/admin";
+		"/api/job-applications/admin";
 
 	private getAuthHeaders(jwtToken: string): { Authorization: string } {
 		return { Authorization: `Bearer ${jwtToken}` };

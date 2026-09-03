@@ -36,7 +36,7 @@ describe("JobRoleService", () => {
 
 		const result = await service.getAll(jwtToken);
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-roles", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 		expect(result[0]?.closingDate).toBe("2026-08-06");
@@ -61,7 +61,7 @@ describe("JobRoleService", () => {
 
 		const result = await service.getAll();
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-roles");
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles");
 		expect(result).toHaveLength(1);
 		expect(result[0]?.status).toBe("open");
 	});
@@ -268,7 +268,7 @@ describe("JobRoleService", () => {
 
 		const result = await service.getById("1", jwtToken);
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-roles/1", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles/1", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 		expect(result?.jobRoleId).toBe(1);
@@ -318,7 +318,7 @@ describe("JobRoleService", () => {
 
 		await service.getAll("jwt-token");
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-roles", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles", {
 			headers: { Authorization: "Bearer jwt-token" },
 		});
 	});
@@ -392,7 +392,7 @@ describe("JobRoleService", () => {
 		await service.applyForRole("3", "I am interested in this role", jwtToken);
 
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/job-roles/3/apply",
+			"/api/job-roles/3/apply",
 			{ cvText: "I am interested in this role" },
 			{ headers: { Authorization: `Bearer ${jwtToken}` } },
 		);
@@ -410,7 +410,7 @@ describe("JobRoleService", () => {
 
 		await service.deleteJobRole("3", jwtToken);
 
-		expect(apiClient.delete).toHaveBeenCalledWith("/job-roles/3", {
+		expect(apiClient.delete).toHaveBeenCalledWith("/api/job-roles/3", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 	});
@@ -434,7 +434,7 @@ describe("JobRoleService", () => {
 
 		const result = await service.getById("5");
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-roles/5");
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles/5");
 		expect(result.jobRoleId).toBe(5);
 		expect(result.roleName).toBe("Product Manager");
 	});
@@ -577,7 +577,7 @@ describe("JobRoleService", () => {
 		);
 
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/job-roles/create",
+			"/api/job-roles/create",
 			{
 				roleName: "Software Engineer",
 				description: "Build software products",
@@ -614,7 +614,7 @@ describe("JobRoleService", () => {
 		);
 
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/job-roles/create",
+			"/api/job-roles/create",
 			{
 				roleName: "Delivery Manager",
 				numberOfOpenPositions: undefined,
@@ -654,7 +654,7 @@ describe("JobRoleService", () => {
 		);
 
 		expect(apiClient.patch).toHaveBeenCalledWith(
-			"/job-roles/7",
+			"/api/job-roles/7",
 			{
 				roleName: "Lead Engineer",
 				description: "Lead delivery",
