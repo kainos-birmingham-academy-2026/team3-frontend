@@ -577,7 +577,7 @@ describe("JobRoleService", () => {
 		);
 
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/api/job-roles/create",
+			"/api/job-roles",
 			{
 				roleName: "Software Engineer",
 				description: "Build software products",
@@ -614,7 +614,7 @@ describe("JobRoleService", () => {
 		);
 
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/api/job-roles/create",
+			"/api/job-roles",
 			{
 				roleName: "Delivery Manager",
 				numberOfOpenPositions: undefined,

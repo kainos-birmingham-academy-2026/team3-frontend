@@ -178,7 +178,7 @@ export class JobRoleService {
 		}
 		const payload = this.mapWritePayload(jobRoleData);
 
-		await apiClient.post("/api/job-roles/create", payload, {
+		await apiClient.post("/api/job-roles", payload, {
 			headers: {
 				Authorization: `Bearer ${jwtToken}`,
 				"Content-Type": "application/json",

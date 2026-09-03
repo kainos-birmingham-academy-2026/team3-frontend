@@ -303,7 +303,7 @@ Renders the create job role form for authenticated administrators.
 
 ### `POST /job-role-create`
 
-Creates a job role through the backend `POST /api/job-roles/create` endpoint.
+Creates a job role through the backend `POST /api/job-roles` endpoint.
 
 - Requires an authenticated administrator session
 - On success: redirects to `/job-role-list`

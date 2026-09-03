@@ -99,7 +99,7 @@ describe("routes", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		vi.mocked(apiClient.get).mockImplementation(async (url) => {
-			if (url === "/job-roles") {
+			if (url === "/api/job-roles") {
 				return {
 					data: [
 						{
@@ -115,7 +115,7 @@ describe("routes", () => {
 				};
 			}
 
-			if (url === "/job-roles/1") {
+			if (url === "/api/job-roles/1") {
 				return {
 					data: {
 						jobRoleId: 1,
@@ -130,17 +130,17 @@ describe("routes", () => {
 				};
 			}
 
-			if (url === "/job-roles/locations") {
+			if (url === "/api/job-roles/locations") {
 				return { data: [{ locationId: 1, locationName: "Birmingham" }] };
 			}
 
-			if (url === "/job-roles/capabilities") {
+			if (url === "/api/job-roles/capabilities") {
 				return {
 					data: [{ capabilityId: 1, capabilityName: "Software Engineering" }],
 				};
 			}
 
-			if (url === "/job-roles/bands") {
+			if (url === "/api/job-roles/bands") {
 				return { data: [{ bandId: 1, bandName: "Engineer" }] };
 			}
 
@@ -327,7 +327,7 @@ describe("routes", () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/job-role-list");
 		expect(apiClient.post).toHaveBeenCalledWith(
-			"/job-roles/create",
+			"/api/job-roles",
 			expect.objectContaining({
 				roleName: "Software Engineer",
 				numberOfOpenPositions: 2,
@@ -392,7 +392,7 @@ describe("routes", () => {
 		const adminApp = createAdminApp();
 		vi.mocked(apiClient.get).mockImplementation(async (url) => {
 			const responses: Record<string, unknown> = {
-				"/job-roles/1": {
+				"/api/job-roles/1": {
 					jobRoleId: 1,
 					roleName: "Software Engineer",
 					description: "Build software",
@@ -405,12 +405,14 @@ describe("routes", () => {
 					locationName: "Birmingham",
 					statusName: "OPEN",
 				},
-				"/job-roles/statuses": [{ statusId: 1, statusName: "OPEN" }],
-				"/job-roles/locations": [{ locationId: 2, locationName: "Birmingham" }],
-				"/job-roles/capabilities": [
+				"/api/job-roles/statuses": [{ statusId: 1, statusName: "OPEN" }],
+				"/api/job-roles/locations": [
+					{ locationId: 2, locationName: "Birmingham" },
+				],
+				"/api/job-roles/capabilities": [
 					{ capabilityId: 3, capabilityName: "Engineering" },
 				],
-				"/job-roles/bands": [{ bandId: 4, bandName: "Engineer" }],
+				"/api/job-roles/bands": [{ bandId: 4, bandName: "Engineer" }],
 			};
 			return { data: responses[String(url)] };
 		});
@@ -443,7 +445,7 @@ describe("routes", () => {
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/job-role-list/1");
 		expect(apiClient.patch).toHaveBeenCalledWith(
-			"/job-roles/1",
+			"/api/job-roles/1",
 			expect.objectContaining({
 				roleName: "Lead Engineer",
 				numberOfOpenPositions: 3,
@@ -480,7 +482,7 @@ describe("routes", () => {
 
 		expect(response.status).toBe(303);
 		expect(response.headers.location).toBe("/job-role-list");
-		expect(apiClient.delete).toHaveBeenCalledWith("/job-roles/1", {
+		expect(apiClient.delete).toHaveBeenCalledWith("/api/job-roles/1", {
 			headers: { Authorization: "Bearer admin-token" },
 		});
 	});
