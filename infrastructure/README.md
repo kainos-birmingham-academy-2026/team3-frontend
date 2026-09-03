@@ -10,6 +10,7 @@ Small independent roots under `infrastructure/environments/` configure the
 reusable `modules/frontend-app` module:
 
 - `dev` retains the existing `dev/terraform.tfstate` state key.
+- `test` uses the isolated `test/terraform.tfstate` state key.
 - `prod` uses the separate `team3-frontend-prod.tfstate` state key.
 
 Each root owns only its frontend identity, role assignments, and Container App.
@@ -20,6 +21,13 @@ Dev deploys the immutable `dev-<commit-sha>` image tag. CI also publishes
 The commit SHA is also used as a revision suffix so Azure Container Apps creates
 a new revision on every deployment. Production requires an immutable commit SHA
 or release tag and rejects `latest` and `dev-latest`.
+
+For an isolated test deployment, the backend workflow's `frontend_ref` input
+selects a frontend branch, tag, or commit. The frontend workflow resolves it to
+an exact commit, runs checks against that commit, publishes
+`test-<commit-sha>`, and deploys that immutable image to `rg-team3-test`. The
+test Terraform configuration itself is checked out from the frontend default
+branch, so the selected feature branch only controls application code.
 
 The dev root contains one-time `moved` declarations for existing frontend
 resources and a `removed` declaration that releases the shared resource group
