@@ -5,6 +5,7 @@ import session from "express-session";
 import nunjucks from "nunjucks";
 import { features } from "./config/features";
 import authRouter from "./routes/authRouter";
+import jobRoleChatRouter from "./routes/jobRoleChatRouter";
 import router from "./routes/jobRoleRouter";
 
 const app = express();
@@ -59,6 +60,7 @@ app.use((req, res, next) => {
 });
 
 app.use(authRouter);
+app.use(jobRoleChatRouter);
 app.use(router);
 
 // Catch-all route for 404 errors
