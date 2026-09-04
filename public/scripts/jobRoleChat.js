@@ -58,7 +58,14 @@
 			roleResults.append(result);
 		});
 
-		if (roles.length > 0) message.append(roleResults);
+		if (roles.length > 0) {
+			message.append(roleResults);
+			const guidance = document.createElement("p");
+			guidance.className = "job-chat-role-guidance";
+			guidance.textContent =
+				"If you want more details on a specific role, tell me which one.";
+			message.append(guidance);
+		}
 
 		messages.append(message);
 		messages.scrollTop = messages.scrollHeight;
