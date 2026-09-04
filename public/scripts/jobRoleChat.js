@@ -25,12 +25,40 @@
 		body.textContent = text;
 		message.append(body);
 
+		const roleResults = document.createElement("div");
+		roleResults.className = "job-chat-role-results";
+
 		roles.forEach((role) => {
+			const result = document.createElement("article");
+			result.className = "job-chat-role-result";
+			const heading = document.createElement("div");
+			heading.className = "job-chat-role-heading";
 			const link = document.createElement("a");
 			link.href = `/job-role-list/${role.jobRoleId}`;
-			link.textContent = `View ${role.roleName}`;
-			message.append(link);
+			link.textContent = role.roleName;
+			heading.append(link);
+			const status = document.createElement("span");
+			status.className = "job-chat-role-status";
+			status.textContent = role.status;
+			heading.append(status);
+			result.append(heading);
+
+			const facts = document.createElement("p");
+			facts.className = "job-chat-role-facts";
+			const closingDate = role.closingDate
+				? new Intl.DateTimeFormat("en-GB", {
+						day: "numeric",
+						month: "short",
+						year: "numeric",
+					}).format(new Date(role.closingDate))
+				: "No closing date";
+			const positions = `${role.openPositions} ${role.openPositions === 1 ? "position" : "positions"}`;
+			facts.textContent = `${role.location} · ${positions} · Closes ${closingDate}`;
+			result.append(facts);
+			roleResults.append(result);
 		});
+
+		if (roles.length > 0) message.append(roleResults);
 
 		messages.append(message);
 		messages.scrollTop = messages.scrollHeight;

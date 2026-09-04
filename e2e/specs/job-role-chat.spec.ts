@@ -10,7 +10,16 @@ test("applicant can ask the chatbot about a job role @smoke", async ({
 			body: JSON.stringify({
 				answer:
 					"The Software Engineer role is based in Belfast and has two open positions.",
-				roles: [{ jobRoleId: 1, roleName: "Software Engineer" }],
+				roles: [
+					{
+						jobRoleId: 1,
+						roleName: "Software Engineer",
+						location: "Belfast",
+						status: "OPEN",
+						openPositions: 2,
+						closingDate: "2026-10-01T00:00:00.000Z",
+					},
+				],
 			}),
 		});
 	});
@@ -31,8 +40,11 @@ test("applicant can ask the chatbot about a job role @smoke", async ({
 		),
 	).toBeVisible();
 	await expect(
-		page.getByRole("link", { name: "View Software Engineer" }),
+		page.getByRole("link", { name: "Software Engineer" }),
 	).toHaveAttribute("href", "/job-role-list/1");
+	await expect(
+		page.getByText("Belfast · 2 positions · Closes 1 Oct 2026"),
+	).toBeVisible();
 
 	await page.keyboard.press("Escape");
 	await expect(page.locator("#job-chat-panel")).toBeHidden();
