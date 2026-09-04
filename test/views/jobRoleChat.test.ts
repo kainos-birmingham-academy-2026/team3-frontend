@@ -15,7 +15,11 @@ describe("job role chat widget", () => {
 		expect(html).toContain('aria-expanded="false"');
 		expect(html).toContain('id="job-chat-panel"');
 		expect(html).toContain('maxlength="500"');
+		expect(html).toContain('aria-describedby="job-chat-character-count"');
 		expect(html).toContain('id="job-chat-character-count"');
+		expect(html).not.toContain(
+			'id="job-chat-character-count" class="job-chat-character-count" aria-live',
+		);
 		expect(html).toContain("0 / 500 characters");
 		expect(html).toContain("/scripts/jobRoleChat.js");
 	});

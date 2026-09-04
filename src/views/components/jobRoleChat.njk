@@ -13,10 +13,10 @@
   <form id="job-chat-form" class="job-chat-form">
    <label for="job-chat-input">Your question</label>
    <div class="job-chat-input-row">
-    <input id="job-chat-input" name="message" type="text" maxlength="500" autocomplete="off" required />
+    <input id="job-chat-input" name="message" type="text" maxlength="500" autocomplete="off" aria-describedby="job-chat-character-count" required />
     <button class="job-chat-send" type="submit">Send</button>
    </div>
-    <p id="job-chat-character-count" class="job-chat-character-count" aria-live="polite">0 / 500 characters</p>
+   <p id="job-chat-character-count" class="job-chat-character-count">0 / 500 characters</p>
   </form>
  </section>
  <button
