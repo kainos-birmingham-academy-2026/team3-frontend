@@ -128,13 +128,17 @@
   {% if pagination.totalPages > 1 %}
     <nav class="application-pagination" aria-label="Job role pages">
       {% if pagination.page > 1 %}
-        <button class="button button-outline" type="submit" name="page" value="1" form="job-role-filters" aria-label="First page">&lt;&lt;</button>
-        <button class="button button-outline" type="submit" name="page" value="{{ pagination.page - 1 }}" form="job-role-filters" aria-label="Previous page">&lt;</button>
+        {% if pagination.totalPages >= 3 %}
+          <button class="pagination-link" type="submit" name="page" value="1" form="job-role-filters" aria-label="First page">&lt;&lt;</button>
+        {% endif %}
+        <button class="pagination-link" type="submit" name="page" value="{{ pagination.page - 1 }}" form="job-role-filters" aria-label="Previous page">&lt;</button>
       {% endif %}
       <span>Page {{ pagination.page }} of {{ pagination.totalPages }}</span>
       {% if pagination.page < pagination.totalPages %}
-        <button class="button button-outline" type="submit" name="page" value="{{ pagination.page + 1 }}" form="job-role-filters" aria-label="Next page">&gt;</button>
-        <button class="button button-outline" type="submit" name="page" value="{{ pagination.totalPages }}" form="job-role-filters" aria-label="Last page">&gt;&gt;</button>
+        <button class="pagination-link" type="submit" name="page" value="{{ pagination.page + 1 }}" form="job-role-filters" aria-label="Next page">&gt;</button>
+        {% if pagination.totalPages >= 3 %}
+          <button class="pagination-link" type="submit" name="page" value="{{ pagination.totalPages }}" form="job-role-filters" aria-label="Last page">&gt;&gt;</button>
+        {% endif %}
       {% endif %}
     </nav>
   {% endif %}

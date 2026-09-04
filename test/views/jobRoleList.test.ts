@@ -171,4 +171,15 @@ describe("jobRoleList", () => {
 			'value="3" form="job-role-filters" aria-label="Last page"',
 		);
 	});
+
+	it("should hide first and last controls when there are two pages", () => {
+		const html = renderView([], undefined, {
+			filters: {},
+			pagination: { page: 1, pageSize: 10, totalItems: 20, totalPages: 2 },
+		});
+
+		expect(html).toContain('aria-label="Next page"');
+		expect(html).not.toContain('aria-label="First page"');
+		expect(html).not.toContain('aria-label="Last page"');
+	});
 });
