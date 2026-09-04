@@ -20,7 +20,9 @@ test("applicant can ask the chatbot about a job role @smoke", async ({
 		name: "Open job role assistant",
 	});
 	await toggle.click();
-	await page.getByLabel("Your question").fill("Where is Software Engineer based?");
+	await page
+		.getByLabel("Your question")
+		.fill("Where is Software Engineer based?");
 	await page.getByRole("button", { name: "Send" }).click();
 
 	await expect(
