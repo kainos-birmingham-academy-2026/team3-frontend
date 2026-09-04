@@ -93,15 +93,12 @@ export class JobRoleController {
 			const filters = this.getFilters(req);
 			const requestedPage = Number(this.getQueryString(req.query.page) ?? "1");
 			const page =
-				Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+				Number.isInteger(requestedPage) && requestedPage > 0
+					? requestedPage
+					: 1;
 			const [jobRolePage, locationOptions, capabilityOptions, bandOptions] =
 				await Promise.all([
-					this.jobRoleService.getPage(
-						this.getJwtToken(req),
-						filters,
-						page,
-						10,
-					),
+					this.jobRoleService.getPage(this.getJwtToken(req), filters, page, 10),
 					this.jobRoleService.getAllLocations(),
 					this.jobRoleService.getAllCapabilities(),
 					this.jobRoleService.getAllBands(),
@@ -470,7 +467,9 @@ export class JobRoleController {
 			const jwtToken = this.getJwtToken(req);
 			const requestedPage = Number(this.getQueryString(req.query.page) ?? "1");
 			const page =
-				Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+				Number.isInteger(requestedPage) && requestedPage > 0
+					? requestedPage
+					: 1;
 			const [jobRoles, applicationPage] = await Promise.all([
 				this.jobRoleService.getAll(jwtToken),
 				this.adminApplicationService.getPage(jwtToken ?? "", page, 10),

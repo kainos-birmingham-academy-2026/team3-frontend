@@ -730,13 +730,13 @@ describe("routes", () => {
 			.spyOn(AdminApplicationService.prototype, "getPage")
 			.mockResolvedValueOnce({
 				items: [
-				{
-					applicationId: 1,
-					applicantEmail: "a@example.com",
-					roleName: "Engineer",
-					applicationDate: "2026-08-01",
-					status: "pending",
-				},
+					{
+						applicationId: 1,
+						applicantEmail: "a@example.com",
+						roleName: "Engineer",
+						applicationDate: "2026-08-01",
+						status: "pending",
+					},
 				],
 				page: 2,
 				pageSize: 10,
@@ -771,9 +771,10 @@ describe("routes", () => {
 
 	it("should return 500 for admin api list failures", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getPage").mockRejectedValueOnce(
-			new Error("list failed"),
-		);
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getPage",
+		).mockRejectedValueOnce(new Error("list failed"));
 
 		const response = await request(adminApp).get("/api/job-applications/admin");
 

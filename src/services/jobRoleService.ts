@@ -148,9 +148,7 @@ export class JobRoleService {
 	): Promise<ApiJobRolePage | ApiJobRole[]> {
 		const params = this.getListParams(filters, page, pageSize);
 		const config = {
-			...(jwtToken
-				? { headers: { Authorization: `Bearer ${jwtToken}` } }
-				: {}),
+			...(jwtToken ? { headers: { Authorization: `Bearer ${jwtToken}` } } : {}),
 			...(params.size > 0 ? { params } : {}),
 		};
 		const response =

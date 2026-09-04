@@ -189,7 +189,9 @@ router.get(
 			const jwtToken = getSessionToken(req);
 			const requestedPage = Number(req.query.page ?? 1);
 			const page =
-				Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+				Number.isInteger(requestedPage) && requestedPage > 0
+					? requestedPage
+					: 1;
 			const applications = await adminApplicationService.getPage(
 				jwtToken,
 				page,

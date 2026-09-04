@@ -98,15 +98,12 @@ export class AdminApplicationService {
 		pageSize?: number,
 	): Promise<ApplicationPage> {
 		try {
-			const response = await apiClient.get<ApiApplicationPage | ApiApplication[]>(
-				AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT,
-				{
-					...(jwtToken
-						? { headers: this.getAuthHeaders(jwtToken) }
-						: {}),
-					...(page && pageSize ? { params: { page, pageSize } } : {}),
-				},
-			);
+			const response = await apiClient.get<
+				ApiApplicationPage | ApiApplication[]
+			>(AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT, {
+				...(jwtToken ? { headers: this.getAuthHeaders(jwtToken) } : {}),
+				...(page && pageSize ? { params: { page, pageSize } } : {}),
+			});
 			const responsePage = Array.isArray(response.data)
 				? {
 						items: response.data,
