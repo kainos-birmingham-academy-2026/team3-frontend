@@ -157,8 +157,18 @@ describe("jobRoleList", () => {
 		});
 
 		expect(html).toContain('aria-label="Job role pages"');
-		expect(html).toContain('name="page" value="1" form="job-role-filters"');
+		expect(html).toContain(
+			'value="1" form="job-role-filters" aria-label="First page"',
+		);
+		expect(html).toContain(
+			'value="1" form="job-role-filters" aria-label="Previous page"',
+		);
 		expect(html).toContain("Page 2 of 3");
-		expect(html).toContain('name="page" value="3" form="job-role-filters"');
+		expect(html).toContain(
+			'value="3" form="job-role-filters" aria-label="Next page"',
+		);
+		expect(html).toContain(
+			'value="3" form="job-role-filters" aria-label="Last page"',
+		);
 	});
 });
