@@ -137,6 +137,18 @@
   <p>No job applications found.</p>
  </div>
 
+ {% if pagination.totalPages > 1 %}
+  <nav class="application-pagination" aria-label="Application pages">
+   {% if pagination.page > 1 %}
+    <a class="button button-outline" href="?page={{ pagination.page - 1 }}&search={{ filters.search | urlencode }}&status={{ filters.status | urlencode }}&role={{ filters.role | urlencode }}&location={{ filters.location | urlencode }}">Previous</a>
+   {% endif %}
+   <span>Page {{ pagination.page }} of {{ pagination.totalPages }}</span>
+   {% if pagination.page < pagination.totalPages %}
+    <a class="button button-outline" href="?page={{ pagination.page + 1 }}&search={{ filters.search | urlencode }}&status={{ filters.status | urlencode }}&role={{ filters.role | urlencode }}&location={{ filters.location | urlencode }}">Next</a>
+   {% endif %}
+  </nav>
+ {% endif %}
+
  <div class="popup-overlay" id="action-popup" hidden>
   <div
    class="popup-dialog"
@@ -613,6 +625,7 @@
 
  <script>
   let allApplications = [];
+  let totalApplicationCount = {{ applicationCounts.total or 0 }};
   const statusOverrides = new Map();
   let filtersBound = false;
 
@@ -683,7 +696,8 @@
   // Fetch applications on page load
   async function loadApplications() {
    try {
-    const response = await fetch("/api/job-applications/admin", {
+    const page = new URLSearchParams(window.location.search).get("page") || "1";
+    const response = await fetch(`/api/job-applications/admin?page=${encodeURIComponent(page)}`, {
      method: "GET",
     });
 
@@ -691,7 +705,9 @@
      throw new Error(`Failed to fetch applications: ${response.statusText}`);
     }
 
-    const fetchedApplications = await response.json();
+    const applicationPage = await response.json();
+    const fetchedApplications = applicationPage.items;
+    totalApplicationCount = applicationPage.totalItems;
     allApplications = fetchedApplications.map((app) => {
      const overrideStatus = statusOverrides.get(getApplicationKey(app.applicationId));
      const effectiveStatus = overrideStatus ?? app.status;
@@ -824,7 +840,7 @@
   }
 
   function updateSummary() {
-   const total = allApplications.length;
+  const total = totalApplicationCount;
     const pending = allApplications.filter(
      (app) => normalizeApplicationStatus(app.status) === "pending"
     ).length;

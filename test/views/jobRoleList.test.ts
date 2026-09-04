@@ -149,4 +149,16 @@ describe("jobRoleList", () => {
 		);
 		expect(html.match(/checked/g)).toHaveLength(3);
 	});
+
+	it("should render pagination controls using the filter form", () => {
+		const html = renderView([], undefined, {
+			filters: {},
+			pagination: { page: 2, pageSize: 10, totalItems: 25, totalPages: 3 },
+		});
+
+		expect(html).toContain('aria-label="Job role pages"');
+		expect(html).toContain('name="page" value="1" form="job-role-filters"');
+		expect(html).toContain("Page 2 of 3");
+		expect(html).toContain('name="page" value="3" form="job-role-filters"');
+	});
 });

@@ -10,7 +10,7 @@
       </p>
     {% endif %}
   </section>
-  <form class="job-role-filters" method="get" action="/job-role-list">
+  <form id="job-role-filters" class="job-role-filters" method="get" action="/job-role-list">
     <h2>Filter job roles</h2>
     <div class="job-role-filter-grid">
       <div class="job-role-filter-field">
@@ -124,6 +124,17 @@
     </div>
   {% else %}
     <p class="empty-state">No open job roles found</p>
+  {% endif %}
+  {% if pagination.totalPages > 1 %}
+    <nav class="application-pagination" aria-label="Job role pages">
+      {% if pagination.page > 1 %}
+        <button class="button button-outline" type="submit" name="page" value="{{ pagination.page - 1 }}" form="job-role-filters">Previous</button>
+      {% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.totalPages }}</span>
+      {% if pagination.page < pagination.totalPages %}
+        <button class="button button-outline" type="submit" name="page" value="{{ pagination.page + 1 }}" form="job-role-filters">Next</button>
+      {% endif %}
+    </nav>
   {% endif %}
   <script>
     const closingDateFromInput = document.getElementById("closingDateFrom");

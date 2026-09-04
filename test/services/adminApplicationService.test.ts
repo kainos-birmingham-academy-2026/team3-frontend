@@ -39,6 +39,33 @@ describe("AdminApplicationService", () => {
 		expect(result[0]?.applicationDate).toBe("2026-08-12");
 	});
 
+	it("should request and map a page of applications", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: {
+				items: [
+					{
+						applicationId: 7,
+						applicantEmail: "jane@example.com",
+						status: "HIRED",
+					},
+				],
+				page: 2,
+				pageSize: 10,
+				totalItems: 11,
+				totalPages: 2,
+			},
+		});
+
+		const result = await service.getPage(jwtToken, 2, 10);
+
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
+			headers: { Authorization: `Bearer ${jwtToken}` },
+			params: { page: 2, pageSize: 10 },
+		});
+		expect(result.items[0]?.status).toBe("approved");
+		expect(result.totalPages).toBe(2);
+	});
+
 	it("should map cvText from nested payload fields", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: [
