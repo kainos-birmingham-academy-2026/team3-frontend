@@ -9,7 +9,7 @@ Container App Environment; browsers only connect to the public frontend.
 Small independent roots under `infrastructure/environments/` configure the
 reusable `modules/frontend-app` module:
 
-- `dev` uses `dev/terraform.tfstate`.
+- `dev` uses `team3-frontend-dev.tfstate`.
 - `test` uses the isolated `team3-frontend-test.tfstate` state key.
 - `prod` uses the separate `team3-frontend-prod.tfstate` state key.
 
@@ -44,6 +44,12 @@ Dev deploys `dev-<commit-sha>` and test deploys `test-<commit-sha>`. CI also
 publishes matching `dev-latest` and `test-latest` convenience tags, but
 Terraform deploys immutable commit tags. Production rejects `latest` and
 `dev-latest`.
+
+Registry cleanup is owned by the backend dev Terraform state because the ACR is
+shared. A daily ACR Task removes old backend and frontend dev and test artifacts
+independently of application deployment workflows; production tags are
+excluded. CI disables unused Buildx provenance so new single-platform images do
+not accumulate untagged OCI child manifests.
 
 ## Deployment workflow
 

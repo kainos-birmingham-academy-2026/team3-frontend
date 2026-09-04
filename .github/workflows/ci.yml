@@ -102,6 +102,7 @@ jobs:
         with:
           context: .
           push: true
+          provenance: false
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-${{ needs.resolve-source.outputs.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev-latest
@@ -158,6 +159,7 @@ jobs:
         with:
           context: .
           push: true
+          provenance: false
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-${{ needs.resolve-source.outputs.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-latest
@@ -283,8 +285,6 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
-      IMAGE_NAME: team3-frontend
     defaults:
       run:
         working-directory: infrastructure/environments/dev
@@ -323,23 +323,6 @@ jobs:
         run: terraform plan -input=false -no-color -out=tfplan
       - name: Apply Terraform
         run: terraform apply -input=false -auto-approve tfplan
-      - name: Delete dev images older than 48 hours
-        run: |
-          set -o pipefail
-          cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')
-
-          az acr manifest list-metadata \
-            --registry "${REGISTRY%%.*}" \
-            --name "$IMAGE_NAME" \
-            --output json \
-            | jq --raw-output --arg cutoff "$cutoff" \
-              '.[] | (.tags // []) as $tags | select(.lastUpdateTime < $cutoff) | select(any($tags[]; startswith("dev-"))) | select(any($tags[]; . == "latest" or . == "dev-latest") | not) | .digest' \
-            | while read -r digest; do
-                az acr repository delete \
-                  --name "${REGISTRY%%.*}" \
-                  --image "$IMAGE_NAME@$digest" \
-                  --yes
-              done
 
   terraform-deploy-test:
     name: Deploy test infrastructure
@@ -362,8 +345,6 @@ jobs:
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
-      IMAGE_NAME: team3-frontend
     defaults:
       run:
         working-directory: infrastructure/environments/test
@@ -402,20 +383,3 @@ jobs:
         run: terraform plan -input=false -no-color -out=tfplan
       - name: Apply Terraform
         run: terraform apply -input=false -auto-approve tfplan
-      - name: Delete test images older than 48 hours
-        run: |
-          set -o pipefail
-          cutoff=$(date --utc --date='48 hours ago' +'%Y-%m-%dT%H:%M:%SZ')
-
-          az acr manifest list-metadata \
-            --registry "${REGISTRY%%.*}" \
-            --name "$IMAGE_NAME" \
-            --output json \
-            | jq --raw-output --arg cutoff "$cutoff" \
-              '.[] | (.tags // []) as $tags | select(.lastUpdateTime < $cutoff) | select(any($tags[]; startswith("test-"))) | select(any($tags[]; . == "latest" or . == "test-latest") | not) | .digest' \
-            | while read -r digest; do
-                az acr repository delete \
-                  --name "${REGISTRY%%.*}" \
-                  --image "$IMAGE_NAME@$digest" \
-                  --yes
-              done
