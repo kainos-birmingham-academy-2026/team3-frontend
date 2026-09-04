@@ -1,4 +1,6 @@
 (() => {
+	const HISTORY_STORAGE_KEY = "jobRoleChatHistory";
+	const MAX_HISTORY_MESSAGES = 20;
 	const panel = document.getElementById("job-chat-panel");
 	const toggle = document.getElementById("job-chat-toggle");
 	const close = document.getElementById("job-chat-close");
@@ -22,6 +24,51 @@
 		characterCount.textContent = `${input.value.length} / ${input.maxLength} characters`;
 	};
 
+	const isStoredRole = (role) =>
+		role &&
+		Number.isInteger(role.jobRoleId) &&
+		typeof role.roleName === "string" &&
+		typeof role.location === "string" &&
+		typeof role.status === "string" &&
+		Number.isInteger(role.openPositions) &&
+		(role.closingDate === null || typeof role.closingDate === "string");
+
+	const readHistory = () => {
+		try {
+			const storedHistory = JSON.parse(
+				sessionStorage.getItem(HISTORY_STORAGE_KEY) ?? "[]",
+			);
+			if (!Array.isArray(storedHistory)) return [];
+
+			return storedHistory
+				.filter(
+					(entry) =>
+						entry &&
+						["user", "assistant"].includes(entry.sender) &&
+						typeof entry.text === "string" &&
+						entry.text.length <= 2000 &&
+						Array.isArray(entry.roles) &&
+						entry.roles.length <= 3 &&
+						entry.roles.every(isStoredRole),
+				)
+				.slice(-MAX_HISTORY_MESSAGES);
+		} catch {
+			return [];
+		}
+	};
+
+	let history = readHistory();
+	const saveMessage = (text, sender, roles) => {
+		history = [...history, { text, sender, roles }].slice(
+			-MAX_HISTORY_MESSAGES,
+		);
+		try {
+			sessionStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+		} catch {
+			// Storage can be unavailable in privacy-restricted browser contexts.
+		}
+	};
+
 	const setOpen = (isOpen) => {
 		panel.hidden = !isOpen;
 		toggle.setAttribute("aria-expanded", String(isOpen));
@@ -32,7 +79,7 @@
 		if (isOpen) input.focus();
 	};
 
-	const addMessage = (text, sender, roles = []) => {
+	const addMessage = (text, sender, roles = [], persist = false) => {
 		const message = document.createElement("div");
 		message.className = `job-chat-message job-chat-message-${sender}`;
 		const body = document.createElement("p");
@@ -86,8 +133,13 @@
 
 		messages.append(message);
 		messages.scrollTop = messages.scrollHeight;
+		if (persist) saveMessage(text, sender, roles);
 		return message;
 	};
+
+	history.forEach(({ text, sender, roles }) => {
+		addMessage(text, sender, roles);
+	});
 
 	toggle.addEventListener("click", () => setOpen(panel.hidden));
 	input.addEventListener("input", updateCharacterCount);
@@ -101,7 +153,7 @@
 		const question = input.value.trim();
 		if (!question) return;
 
-		addMessage(question, "user");
+		addMessage(question, "user", [], true);
 		input.value = "";
 		updateCharacterCount();
 		input.disabled = true;
@@ -121,7 +173,7 @@
 			const data = await response.json();
 			loadingMessage.remove();
 			if (!response.ok) throw new Error(data.message);
-			addMessage(data.answer, "assistant", data.roles);
+			addMessage(data.answer, "assistant", data.roles, true);
 		} catch (error) {
 			loadingMessage.remove();
 			addMessage(
@@ -129,6 +181,8 @@
 					? error.message
 					: "The job role assistant is unavailable. Please try again later.",
 				"assistant",
+				[],
+				true,
 			);
 		} finally {
 			input.disabled = false;

@@ -53,6 +53,24 @@ test("applicant can ask the chatbot about a job role @smoke", async ({
 		guidance.getByRole("link", { name: "job roles page" }),
 	).toHaveAttribute("href", "/job-role-list");
 
+	await page.goto("/job-role-list");
+	await page.getByRole("button", { name: "Open job role assistant" }).click();
+	const restoredMessages = page.locator("#job-chat-messages");
+	await expect(
+		restoredMessages.getByText("Where is Software Engineer based?"),
+	).toBeVisible();
+	await expect(
+		restoredMessages.getByText(
+			"The Software Engineer role is based in Belfast and has two open positions.",
+		),
+	).toBeVisible();
+	await expect(
+		restoredMessages.getByRole("link", {
+			name: "Software Engineer",
+			exact: true,
+		}),
+	).toHaveAttribute("href", "/job-role-list/1");
+
 	await page.keyboard.press("Escape");
 	await expect(page.locator("#job-chat-panel")).toBeHidden();
 	await expect(toggle).toBeFocused();
