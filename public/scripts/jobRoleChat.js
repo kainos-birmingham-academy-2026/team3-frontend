@@ -76,8 +76,11 @@
 			message.append(roleResults);
 			const guidance = document.createElement("p");
 			guidance.className = "job-chat-role-guidance";
-			guidance.textContent =
-				"If you want more details on a specific role, tell me which one.";
+			guidance.append("To see more roles, visit the ");
+			const allRolesLink = document.createElement("a");
+			allRolesLink.href = "/job-role-list";
+			allRolesLink.textContent = "job roles page";
+			guidance.append(allRolesLink, ".");
 			message.append(guidance);
 		}
 

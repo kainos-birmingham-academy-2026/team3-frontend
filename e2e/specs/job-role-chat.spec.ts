@@ -45,11 +45,13 @@ test("applicant can ask the chatbot about a job role @smoke", async ({
 	await expect(
 		page.getByText("Belfast · 2 positions · Closes 1 Oct 2026"),
 	).toBeVisible();
+	const guidance = page.locator(".job-chat-role-guidance");
+	await expect(guidance).toHaveText(
+		"To see more roles, visit the job roles page.",
+	);
 	await expect(
-		page.getByText(
-			"If you want more details on a specific role, tell me which one.",
-		),
-	).toBeVisible();
+		guidance.getByRole("link", { name: "job roles page" }),
+	).toHaveAttribute("href", "/job-role-list");
 
 	await page.keyboard.press("Escape");
 	await expect(page.locator("#job-chat-panel")).toBeHidden();
