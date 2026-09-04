@@ -23,7 +23,16 @@ describe("job role chat proxy", () => {
 		vi.mocked(apiClient.post).mockResolvedValueOnce({
 			data: {
 				answer: "The Software Engineer role is open.",
-				roles: [{ jobRoleId: 1, roleName: "Software Engineer" }],
+				roles: [
+					{
+						jobRoleId: 1,
+						roleName: "Software Engineer",
+						location: "Belfast",
+						status: "OPEN",
+						openPositions: 2,
+						closingDate: "2026-10-01T00:00:00.000Z",
+					},
+				],
 			},
 		});
 

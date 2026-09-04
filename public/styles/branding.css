@@ -1474,10 +1474,45 @@ body.modal-open {
 	color: var(--kainos-white);
 }
 
-.job-chat-message a {
-	display: block;
-	margin-top: 0.45rem;
-	font-weight: 600;
+.job-chat-role-results {
+	display: grid;
+	gap: 0.55rem;
+	margin-top: 0.75rem;
+}
+
+.job-chat-role-result {
+	padding-top: 0.55rem;
+	border-top: 1px solid #d9def0;
+}
+
+.job-chat-role-heading {
+	display: flex;
+	gap: 0.5rem;
+	align-items: baseline;
+	justify-content: space-between;
+}
+
+.job-chat-role-result a {
+	display: inline-block;
+	font-weight: 700;
+}
+
+.job-chat-role-result .job-chat-role-facts {
+	margin-top: 0.15rem;
+	color: var(--kainos-text-muted);
+	font-size: 0.78rem;
+	line-height: 1.4;
+}
+
+.job-chat-role-status {
+	flex: none;
+	padding: 0.08rem 0.35rem;
+	border-radius: 3px;
+	background: #e4f3df;
+	color: var(--kainos-dark-green);
+	font-size: 0.68rem;
+	font-weight: 700;
+	text-transform: uppercase;
 }
 
 .job-chat-form {
