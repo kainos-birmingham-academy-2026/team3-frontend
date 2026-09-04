@@ -1363,10 +1363,12 @@ body.modal-open {
 	height: 3.5rem;
 	margin-left: auto;
 	place-items: center;
-	border: 0;
+	border: 3px solid var(--kainos-white);
 	border-radius: 50%;
 	background: var(--kainos-dark-green);
-	box-shadow: 0 8px 24px rgba(0, 70, 49, 0.28);
+	box-shadow:
+		0 0 0 1px rgba(40, 53, 131, 0.35),
+		0 8px 24px rgba(15, 23, 42, 0.32);
 	cursor: pointer;
 }
 
