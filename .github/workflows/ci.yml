@@ -9,8 +9,8 @@ on:
     types: [backend-dev-deployed, backend-test-deployed]
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref}}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event.action == 'backend-test-deployed' && 'test-environment' || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   resolve-source:
@@ -267,6 +267,9 @@ jobs:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.action == 'backend-dev-deployed'
     needs: [resolve-source, push-image]
     runs-on: ubuntu-latest
+    concurrency:
+      group: frontend-infrastructure-dev
+      cancel-in-progress: false
     permissions:
       contents: read
       id-token: write
@@ -343,6 +346,9 @@ jobs:
     if: github.event.action == 'backend-test-deployed'
     needs: [resolve-source, push-test-image]
     runs-on: ubuntu-latest
+    concurrency:
+      group: frontend-infrastructure-test
+      cancel-in-progress: false
     permissions:
       contents: read
       id-token: write
