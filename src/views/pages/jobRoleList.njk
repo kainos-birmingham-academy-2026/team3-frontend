@@ -10,7 +10,7 @@
       </p>
     {% endif %}
   </section>
-  <form class="job-role-filters" method="get" action="/job-role-list">
+  <form id="job-role-filters" class="job-role-filters" method="get" action="/job-role-list">
     <h2>Filter job roles</h2>
     <div class="job-role-filter-grid">
       <div class="job-role-filter-field">
@@ -124,6 +124,23 @@
     </div>
   {% else %}
     <p class="empty-state">No open job roles found</p>
+  {% endif %}
+  {% if pagination.totalPages > 1 %}
+    <nav class="application-pagination" aria-label="Job role pages">
+      {% if pagination.page > 1 %}
+        {% if pagination.totalPages >= 3 %}
+          <button class="pagination-link" type="submit" name="page" value="1" form="job-role-filters" aria-label="First page">&lt;&lt;</button>
+        {% endif %}
+        <button class="pagination-link" type="submit" name="page" value="{{ pagination.page - 1 }}" form="job-role-filters" aria-label="Previous page">&lt;</button>
+      {% endif %}
+      <span>Page {{ pagination.page }} of {{ pagination.totalPages }}</span>
+      {% if pagination.page < pagination.totalPages %}
+        <button class="pagination-link" type="submit" name="page" value="{{ pagination.page + 1 }}" form="job-role-filters" aria-label="Next page">&gt;</button>
+        {% if pagination.totalPages >= 3 %}
+          <button class="pagination-link" type="submit" name="page" value="{{ pagination.totalPages }}" form="job-role-filters" aria-label="Last page">&gt;&gt;</button>
+        {% endif %}
+      {% endif %}
+    </nav>
   {% endif %}
   <script>
     const closingDateFromInput = document.getElementById("closingDateFrom");

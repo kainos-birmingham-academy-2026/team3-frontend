@@ -47,6 +47,7 @@ function createResponse(): Response {
 describe("JobRoleController", () => {
 	const jobRoleService = {
 		getAll: vi.fn(),
+		getPage: vi.fn(),
 		getById: vi.fn(),
 		applyForRole: vi.fn(),
 		createJobRole: vi.fn(),
@@ -59,6 +60,7 @@ describe("JobRoleController", () => {
 	};
 	const adminApplicationService = {
 		getAll: vi.fn(),
+		getPage: vi.fn(),
 	};
 
 	const controller = new JobRoleController(
@@ -72,7 +74,21 @@ describe("JobRoleController", () => {
 		jobRoleService.getAllLocations.mockResolvedValue([]);
 		jobRoleService.getAllCapabilities.mockResolvedValue([]);
 		jobRoleService.getAllBands.mockResolvedValue([]);
+		jobRoleService.getPage.mockResolvedValue({
+			items: [],
+			page: 1,
+			pageSize: 10,
+			totalItems: 0,
+			totalPages: 0,
+		});
 		adminApplicationService.getAll.mockResolvedValue([]);
+		adminApplicationService.getPage.mockResolvedValue({
+			items: [],
+			page: 1,
+			pageSize: 10,
+			totalItems: 0,
+			totalPages: 0,
+		});
 	});
 
 	it("should call service with JWT token and render job roles", async () => {
@@ -92,18 +108,22 @@ describe("JobRoleController", () => {
 			},
 		];
 
-		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
+		jobRoleService.getPage.mockResolvedValueOnce({
+			items: jobRoles,
+			page: 1,
+			pageSize: 10,
+			totalItems: 1,
+			totalPages: 1,
+		});
 
 		await controller.getAll(req as unknown as Request, res);
 
-		expect(jobRoleService.getAll).toHaveBeenCalledWith("jwt-token", {
-			roleName: undefined,
-			locationId: undefined,
-			capabilityId: undefined,
-			bandId: undefined,
-			closingDateFrom: undefined,
-			closingDateTo: undefined,
-		});
+		expect(jobRoleService.getPage).toHaveBeenCalledWith(
+			"jwt-token",
+			expect.any(Object),
+			1,
+			10,
+		);
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
 			jobRoles,
 			filters: expect.any(Object),
@@ -113,6 +133,7 @@ describe("JobRoleController", () => {
 			selectedLocationIds: {},
 			selectedCapabilityIds: {},
 			selectedBandIds: {},
+			pagination: expect.objectContaining({ page: 1, totalPages: 1 }),
 		});
 	});
 
@@ -131,13 +152,21 @@ describe("JobRoleController", () => {
 			},
 		];
 
-		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
+		jobRoleService.getPage.mockResolvedValueOnce({
+			items: jobRoles,
+			page: 1,
+			pageSize: 10,
+			totalItems: 1,
+			totalPages: 1,
+		});
 
 		await controller.getAll(req as unknown as Request, res);
 
-		expect(jobRoleService.getAll).toHaveBeenCalledWith(
+		expect(jobRoleService.getPage).toHaveBeenCalledWith(
 			undefined,
 			expect.any(Object),
+			1,
+			10,
 		);
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleList.njk", {
 			jobRoles,
@@ -148,6 +177,7 @@ describe("JobRoleController", () => {
 			selectedLocationIds: {},
 			selectedCapabilityIds: {},
 			selectedBandIds: {},
+			pagination: expect.objectContaining({ page: 1, totalPages: 1 }),
 		});
 	});
 
@@ -163,7 +193,13 @@ describe("JobRoleController", () => {
 			},
 		});
 		const res = createResponse();
-		jobRoleService.getAll.mockResolvedValueOnce([]);
+		jobRoleService.getPage.mockResolvedValueOnce({
+			items: [],
+			page: 1,
+			pageSize: 10,
+			totalItems: 0,
+			totalPages: 0,
+		});
 
 		await controller.getAll(req as unknown as Request, res);
 
@@ -175,7 +211,12 @@ describe("JobRoleController", () => {
 			closingDateFrom: "2026-09-01",
 			closingDateTo: "2026-12-31",
 		};
-		expect(jobRoleService.getAll).toHaveBeenCalledWith(undefined, filters);
+		expect(jobRoleService.getPage).toHaveBeenCalledWith(
+			undefined,
+			filters,
+			1,
+			10,
+		);
 		expect(res.render).toHaveBeenCalledWith(
 			"pages/jobRoleList.njk",
 			expect.objectContaining({ filters }),
@@ -188,7 +229,7 @@ describe("JobRoleController", () => {
 		});
 		const res = createResponse();
 
-		jobRoleService.getAll.mockRejectedValueOnce({
+		jobRoleService.getPage.mockRejectedValueOnce({
 			isAxiosError: true,
 			response: { status: 401 },
 		});
@@ -207,7 +248,7 @@ describe("JobRoleController", () => {
 		});
 		const res = createResponse();
 
-		jobRoleService.getAll.mockRejectedValueOnce(
+		jobRoleService.getPage.mockRejectedValueOnce(
 			new Error("Backend server error"),
 		);
 
@@ -1185,7 +1226,7 @@ describe("JobRoleController", () => {
 		});
 		const res = createResponse();
 
-		jobRoleService.getAll.mockRejectedValueOnce({
+		jobRoleService.getPage.mockRejectedValueOnce({
 			isAxiosError: true,
 			response: { status: 401 },
 		});
@@ -1229,12 +1270,22 @@ describe("JobRoleController", () => {
 		];
 
 		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
-		adminApplicationService.getAll.mockResolvedValueOnce(applications);
+		adminApplicationService.getPage.mockResolvedValueOnce({
+			items: applications,
+			page: 1,
+			pageSize: 10,
+			totalItems: 3,
+			totalPages: 1,
+		});
 
 		await controller.getApplications(req as unknown as Request, res);
 
 		expect(jobRoleService.getAll).toHaveBeenCalledWith("jwt-token");
-		expect(adminApplicationService.getAll).toHaveBeenCalledWith("jwt-token");
+		expect(adminApplicationService.getPage).toHaveBeenCalledWith(
+			"jwt-token",
+			1,
+			10,
+		);
 		expect(res.render).toHaveBeenCalledWith("pages/jobApplicationAdmin.njk", {
 			applications: [
 				{ ...applications[0], location: "Belfast" },
@@ -1244,6 +1295,13 @@ describe("JobRoleController", () => {
 			applicationCounts: { total: 3, pending: 1, approved: 1, rejected: 1 },
 			filters: { search: "", status: "", role: "", location: "" },
 			jobRoles,
+			pagination: {
+				items: applications,
+				page: 1,
+				pageSize: 10,
+				totalItems: 3,
+				totalPages: 1,
+			},
 		});
 	});
 
@@ -1274,14 +1332,17 @@ describe("JobRoleController", () => {
 		jobRoleService.getAll.mockResolvedValueOnce([
 			{ roleName: "Engineer", location: "Belfast" },
 		]);
-		adminApplicationService.getAll.mockResolvedValueOnce([
-			matchingApplication,
-			excludedApplication,
-		]);
+		adminApplicationService.getPage.mockResolvedValueOnce({
+			items: [matchingApplication, excludedApplication],
+			page: 1,
+			pageSize: 10,
+			totalItems: 2,
+			totalPages: 1,
+		});
 
 		await controller.getApplications(req as unknown as Request, res);
 
-		expect(adminApplicationService.getAll).toHaveBeenCalledWith("");
+		expect(adminApplicationService.getPage).toHaveBeenCalledWith("", 1, 10);
 		expect(res.render).toHaveBeenCalledWith(
 			"pages/jobApplicationAdmin.njk",
 			expect.objectContaining({
@@ -1301,7 +1362,7 @@ describe("JobRoleController", () => {
 			session: { jwtToken: "jwt-token", userRole: "ADMIN" },
 		});
 		const res = createResponse();
-		adminApplicationService.getAll.mockRejectedValueOnce({
+		adminApplicationService.getPage.mockRejectedValueOnce({
 			isAxiosError: true,
 			response: { status: 401 },
 		});
@@ -1316,7 +1377,7 @@ describe("JobRoleController", () => {
 	it("should render an application loading error", async () => {
 		const req = createRequest();
 		const res = createResponse();
-		adminApplicationService.getAll.mockRejectedValueOnce("unknown");
+		adminApplicationService.getPage.mockRejectedValueOnce("unknown");
 
 		await controller.getApplications(req as unknown as Request, res);
 

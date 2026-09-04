@@ -14,6 +14,22 @@ interface ApiApplication {
 	status: string;
 }
 
+interface ApiApplicationPage {
+	items: ApiApplication[];
+	page: number;
+	pageSize: number;
+	totalItems: number;
+	totalPages: number;
+}
+
+export interface ApplicationPage {
+	items: Application[];
+	page: number;
+	pageSize: number;
+	totalItems: number;
+	totalPages: number;
+}
+
 type StatusAction = "approve" | "reject";
 type NormalizedStatus = "pending" | "approved" | "rejected" | "withdrawn";
 
@@ -76,25 +92,44 @@ export class AdminApplicationService {
 		return action === "approve" ? "HIRED" : "REJECTED";
 	}
 
-	async getAll(jwtToken?: string): Promise<Application[]> {
+	async getPage(
+		jwtToken?: string,
+		page?: number,
+		pageSize?: number,
+	): Promise<ApplicationPage> {
 		try {
-			const response = jwtToken
-				? await apiClient.get<ApiApplication[]>(
-						AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT,
-						{
-							headers: this.getAuthHeaders(jwtToken),
-						},
-					)
-				: await apiClient.get<ApiApplication[]>(
-						AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT,
-					);
+			const response = await apiClient.get<
+				ApiApplicationPage | ApiApplication[]
+			>(AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT, {
+				...(jwtToken ? { headers: this.getAuthHeaders(jwtToken) } : {}),
+				...(page && pageSize ? { params: { page, pageSize } } : {}),
+			});
+			const responsePage = Array.isArray(response.data)
+				? {
+						items: response.data,
+						page: 1,
+						pageSize: response.data.length,
+						totalItems: response.data.length,
+						totalPages: response.data.length > 0 ? 1 : 0,
+					}
+				: response.data;
 
-			return response.data.map((app) => this.mapApiApplicationToModel(app));
+			return {
+				...responsePage,
+				items: responsePage.items.map((app) =>
+					this.mapApiApplicationToModel(app),
+				),
+			};
 		} catch (error) {
 			throw new Error(
 				`Failed to fetch applications: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);
 		}
+	}
+
+	async getAll(jwtToken?: string): Promise<Application[]> {
+		const page = await this.getPage(jwtToken);
+		return page.items;
 	}
 
 	async getCvTextById(

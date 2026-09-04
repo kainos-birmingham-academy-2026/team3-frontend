@@ -726,22 +726,31 @@ describe("routes", () => {
 
 	it("should return applications list for admin api route", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce(
-			[
-				{
-					applicationId: 1,
-					applicantEmail: "a@example.com",
-					roleName: "Engineer",
-					applicationDate: "2026-08-01",
-					status: "pending",
-				},
-			],
+		const getPage = vi
+			.spyOn(AdminApplicationService.prototype, "getPage")
+			.mockResolvedValueOnce({
+				items: [
+					{
+						applicationId: 1,
+						applicantEmail: "a@example.com",
+						roleName: "Engineer",
+						applicationDate: "2026-08-01",
+						status: "pending",
+					},
+				],
+				page: 2,
+				pageSize: 10,
+				totalItems: 11,
+				totalPages: 2,
+			});
+
+		const response = await request(adminApp).get(
+			"/api/job-applications/admin?page=2",
 		);
 
-		const response = await request(adminApp).get("/api/job-applications/admin");
-
 		expect(response.status).toBe(200);
-		expect(Array.isArray(response.body)).toBe(true);
+		expect(response.body.totalPages).toBe(2);
+		expect(getPage).toHaveBeenCalledWith("admin-token", 2, 10);
 	});
 
 	it("should update an application from an HTML form and redirect", async () => {
@@ -762,9 +771,10 @@ describe("routes", () => {
 
 	it("should return 500 for admin api list failures", async () => {
 		const adminApp = createAdminApp();
-		vi.spyOn(AdminApplicationService.prototype, "getAll").mockRejectedValueOnce(
-			new Error("list failed"),
-		);
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getPage",
+		).mockRejectedValueOnce(new Error("list failed"));
 
 		const response = await request(adminApp).get("/api/job-applications/admin");
 

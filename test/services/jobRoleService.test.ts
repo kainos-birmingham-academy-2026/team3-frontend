@@ -84,6 +84,38 @@ describe("JobRoleService", () => {
 		);
 	});
 
+	it("should request and map a page of job roles", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: {
+				items: [
+					{
+						jobRoleId: 1,
+						roleName: "Software Engineer",
+						status: "OPEN",
+					},
+				],
+				page: 2,
+				pageSize: 10,
+				totalItems: 11,
+				totalPages: 2,
+			},
+		});
+
+		const result = await service.getPage(
+			undefined,
+			{ roleName: "Engineer" },
+			2,
+			10,
+		);
+
+		const config = vi.mocked(apiClient.get).mock.calls[0]?.[1];
+		expect(config?.params.toString()).toBe(
+			"roleName=Engineer&page=2&pageSize=10",
+		);
+		expect(result.items[0]?.status).toBe("open");
+		expect(result.totalPages).toBe(2);
+	});
+
 	it("should keeps role status values from backend for view filtering", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: [

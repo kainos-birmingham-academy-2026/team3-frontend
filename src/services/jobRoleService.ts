@@ -34,6 +34,22 @@ interface ApiJobRole {
 	postcode?: string;
 }
 
+interface ApiJobRolePage {
+	items: ApiJobRole[];
+	page: number;
+	pageSize: number;
+	totalItems: number;
+	totalPages: number;
+}
+
+export interface JobRolePage {
+	items: JobRole[];
+	page: number;
+	pageSize: number;
+	totalItems: number;
+	totalPages: number;
+}
+
 export class JobRoleService {
 	private mapWritePayload(jobRoleData: CreateJobRoleInput) {
 		const toOptionalNumber = (value: string | number | undefined) => {
@@ -95,55 +111,107 @@ export class JobRoleService {
 		};
 	}
 
+	private getListParams(
+		filters: JobRoleFilters,
+		page?: number,
+		pageSize?: number,
+	): URLSearchParams {
+		const params = new URLSearchParams();
+		if (filters.roleName) params.set("roleName", filters.roleName);
+		if (filters.closingDateFrom) {
+			params.set("closingDateFrom", filters.closingDateFrom);
+		}
+		if (filters.closingDateTo) {
+			params.set("closingDateTo", filters.closingDateTo);
+		}
+		for (const locationId of filters.locationId ?? []) {
+			params.append("locationId", locationId);
+		}
+		for (const capabilityId of filters.capabilityId ?? []) {
+			params.append("capabilityId", capabilityId);
+		}
+		for (const bandId of filters.bandId ?? []) {
+			params.append("bandId", bandId);
+		}
+		if (page && pageSize) {
+			params.set("page", String(page));
+			params.set("pageSize", String(pageSize));
+		}
+		return params;
+	}
+
+	private async requestList(
+		jwtToken?: string,
+		filters: JobRoleFilters = {},
+		page?: number,
+		pageSize?: number,
+	): Promise<ApiJobRolePage | ApiJobRole[]> {
+		const params = this.getListParams(filters, page, pageSize);
+		const config = {
+			...(jwtToken ? { headers: { Authorization: `Bearer ${jwtToken}` } } : {}),
+			...(params.size > 0 ? { params } : {}),
+		};
+		const response =
+			Object.keys(config).length > 0
+				? await apiClient.get<ApiJobRolePage | ApiJobRole[]>(
+						"/api/job-roles",
+						config,
+					)
+				: await apiClient.get<ApiJobRolePage | ApiJobRole[]>("/api/job-roles");
+		return response.data;
+	}
+
+	async getPage(
+		jwtToken?: string,
+		filters: JobRoleFilters = {},
+		page = 1,
+		pageSize = 10,
+	): Promise<JobRolePage> {
+		try {
+			const data = await this.requestList(jwtToken, filters, page, pageSize);
+			const responsePage = Array.isArray(data)
+				? {
+						items: data,
+						page: 1,
+						pageSize: data.length,
+						totalItems: data.length,
+						totalPages: data.length > 0 ? 1 : 0,
+					}
+				: data;
+			return {
+				...responsePage,
+				items: responsePage.items.map((jobRole) => this.mapJobRole(jobRole)),
+			};
+		} catch (error) {
+			this.handleListError(error);
+		}
+	}
+
+	private handleListError(error: unknown): never {
+		if (axios.isAxiosError(error)) {
+			const status = error.response?.status;
+			if (status === 404) {
+				throw new Error("No job roles found");
+			}
+			if (status === 500) {
+				throw new Error(
+					"Job roles cannot be loaded right now. Please try again in a moment.",
+				);
+			}
+		}
+		throw error;
+	}
+
 	async getAll(
 		jwtToken?: string,
 		filters: JobRoleFilters = {},
 	): Promise<JobRole[]> {
 		try {
-			const params = new URLSearchParams();
-			if (filters.roleName) params.set("roleName", filters.roleName);
-			if (filters.closingDateFrom) {
-				params.set("closingDateFrom", filters.closingDateFrom);
-			}
-			if (filters.closingDateTo) {
-				params.set("closingDateTo", filters.closingDateTo);
-			}
-			for (const locationId of filters.locationId ?? []) {
-				params.append("locationId", locationId);
-			}
-			for (const capabilityId of filters.capabilityId ?? []) {
-				params.append("capabilityId", capabilityId);
-			}
-			for (const bandId of filters.bandId ?? []) {
-				params.append("bandId", bandId);
-			}
-
-			const config = {
-				...(jwtToken
-					? { headers: { Authorization: `Bearer ${jwtToken}` } }
-					: {}),
-				...(params.size > 0 ? { params } : {}),
-			};
-			const response =
-				Object.keys(config).length > 0
-					? await apiClient.get<ApiJobRole[]>("/api/job-roles", config)
-					: await apiClient.get<ApiJobRole[]>("/api/job-roles");
-
-			return response.data.map((jobRole) => this.mapJobRole(jobRole));
+			const data = await this.requestList(jwtToken, filters);
+			const jobRoles = Array.isArray(data) ? data : data.items;
+			return jobRoles.map((jobRole) => this.mapJobRole(jobRole));
 		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				const status = error.response?.status;
-				if (status === 404) {
-					throw new Error("No job roles found");
-				}
-				if (status === 500) {
-					throw new Error(
-						"Job roles cannot be loaded right now. Please try again in a moment.",
-					);
-				}
-			}
-
-			throw error;
+			this.handleListError(error);
 		}
 	}
 
