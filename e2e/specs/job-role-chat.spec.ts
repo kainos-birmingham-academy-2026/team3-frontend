@@ -45,6 +45,11 @@ test("applicant can ask the chatbot about a job role @smoke", async ({
 	await expect(
 		page.getByText("Belfast · 2 positions · Closes 1 Oct 2026"),
 	).toBeVisible();
+	await expect(
+		page.getByText(
+			"If you want more details on a specific role, tell me which one.",
+		),
+	).toBeVisible();
 
 	await page.keyboard.press("Escape");
 	await expect(page.locator("#job-chat-panel")).toBeHidden();
