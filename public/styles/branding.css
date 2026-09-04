@@ -1548,6 +1548,13 @@ body.modal-open {
 	font: inherit;
 }
 
+.job-chat-character-count {
+	margin: 0.3rem 0 0;
+	color: var(--kainos-text-muted);
+	font-size: 0.75rem;
+	text-align: left;
+}
+
 .job-chat-send {
 	min-width: 4rem;
 	border: 0;

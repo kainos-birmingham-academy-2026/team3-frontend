@@ -4,9 +4,23 @@
 	const close = document.getElementById("job-chat-close");
 	const form = document.getElementById("job-chat-form");
 	const input = document.getElementById("job-chat-input");
+	const characterCount = document.getElementById("job-chat-character-count");
 	const messages = document.getElementById("job-chat-messages");
 
-	if (!panel || !toggle || !close || !form || !input || !messages) return;
+	if (
+		!panel ||
+		!toggle ||
+		!close ||
+		!form ||
+		!input ||
+		!characterCount ||
+		!messages
+	)
+		return;
+
+	const updateCharacterCount = () => {
+		characterCount.textContent = `${input.value.length} / ${input.maxLength} characters`;
+	};
 
 	const setOpen = (isOpen) => {
 		panel.hidden = !isOpen;
@@ -73,6 +87,7 @@
 	};
 
 	toggle.addEventListener("click", () => setOpen(panel.hidden));
+	input.addEventListener("input", updateCharacterCount);
 	close.addEventListener("click", () => {
 		setOpen(false);
 		toggle.focus();
@@ -85,6 +100,7 @@
 
 		addMessage(question, "user");
 		input.value = "";
+		updateCharacterCount();
 		input.disabled = true;
 		const submitButton = form.querySelector("button[type='submit']");
 		submitButton.disabled = true;
