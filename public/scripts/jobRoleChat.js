@@ -53,7 +53,10 @@
 		input.disabled = true;
 		const submitButton = form.querySelector("button[type='submit']");
 		submitButton.disabled = true;
-		const loadingMessage = addMessage("Finding role information...", "assistant");
+		const loadingMessage = addMessage(
+			"Finding role information...",
+			"assistant",
+		);
 
 		try {
 			const response = await fetch("/api/job-role-chat", {

@@ -237,6 +237,15 @@ npm run e2e:bdd
 
 ## Routes
 
+### `POST /api/job-role-chat`
+
+Public same-origin proxy for applicant job role questions.
+
+- Forwards only the current question to the backend
+- Limits each IP address to 10 requests per 10 minutes
+- Returns grounded answers and matching job role links to the shared chat widget
+- Returns a user-safe unavailable message when the backend or AI provider fails
+
 ### `GET /`
 
 Renders the branded home page.
