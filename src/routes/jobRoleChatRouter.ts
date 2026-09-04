@@ -5,6 +5,9 @@ import { JobRoleChatService } from "../services/jobRoleChatService";
 
 const jobRoleChatRouter = Router();
 const service = new JobRoleChatService();
+const unavailableMessage = {
+	message: "The job role assistant is unavailable. Please try again later.",
+};
 const limiter = rateLimit({
 	windowMs: 10 * 60 * 1000,
 	limit: 10,
@@ -20,17 +23,16 @@ jobRoleChatRouter.post("/api/job-role-chat", limiter, async (req, res) => {
 		const response = await service.ask(String(req.body.message ?? ""));
 		res.status(200).json(response);
 	} catch (error) {
-		if (axios.isAxiosError(error) && error.response) {
-			const status = [400, 429].includes(error.response.status)
-				? error.response.status
-				: 503;
-			res.status(status).json(error.response.data);
+		if (
+			axios.isAxiosError(error) &&
+			error.response &&
+			[400, 429].includes(error.response.status)
+		) {
+			res.status(error.response.status).json(error.response.data);
 			return;
 		}
 
-		res.status(503).json({
-			message: "The job role assistant is unavailable. Please try again later.",
-		});
+		res.status(503).json(unavailableMessage);
 	}
 });
 

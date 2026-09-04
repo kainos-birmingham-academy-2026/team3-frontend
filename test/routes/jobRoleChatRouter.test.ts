@@ -43,4 +43,57 @@ describe("job role chat proxy", () => {
 		expect(response.status).toBe(200);
 		expect(response.body.roles[0].jobRoleId).toBe(1);
 	});
+
+	it.each([400, 429])(
+		"preserves a safe backend %i response",
+		async (status) => {
+			const backendBody = { message: `Backend response ${status}` };
+			vi.mocked(apiClient.post).mockRejectedValueOnce({
+				isAxiosError: true,
+				response: { status, data: backendBody },
+			});
+
+			const response = await request(app)
+				.post("/api/job-role-chat")
+				.send({ message: "What roles are open?" });
+
+			expect(response.status).toBe(status);
+			expect(response.body).toEqual(backendBody);
+		},
+	);
+
+	it("replaces an unexpected backend error with a safe response", async () => {
+		vi.mocked(apiClient.post).mockRejectedValueOnce({
+			isAxiosError: true,
+			response: {
+				status: 500,
+				data: { message: "Internal database details" },
+			},
+		});
+
+		const response = await request(app)
+			.post("/api/job-role-chat")
+			.send({ message: "What roles are open?" });
+
+		expect(response.status).toBe(503);
+		expect(response.body).toEqual({
+			message: "The job role assistant is unavailable. Please try again later.",
+		});
+	});
+
+	it("returns a safe response when the backend cannot be reached", async () => {
+		vi.mocked(apiClient.post).mockRejectedValueOnce({
+			isAxiosError: true,
+			message: "connect ECONNREFUSED",
+		});
+
+		const response = await request(app)
+			.post("/api/job-role-chat")
+			.send({ message: "What roles are open?" });
+
+		expect(response.status).toBe(503);
+		expect(response.body).toEqual({
+			message: "The job role assistant is unavailable. Please try again later.",
+		});
+	});
 });
