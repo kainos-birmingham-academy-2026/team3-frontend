@@ -242,7 +242,7 @@ npm run e2e:bdd
 Public same-origin proxy for applicant job role questions.
 
 - Forwards only the current question to the backend
-- Limits each IP address to 10 requests per 10 minutes
+- Limits each IP address to 100 requests per 10 minutes
 - Returns grounded answers and matching job role links to the shared chat widget
 - Returns a user-safe unavailable message when the backend or AI provider fails
 
