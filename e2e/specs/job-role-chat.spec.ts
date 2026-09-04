@@ -1,0 +1,77 @@
+import { expect, test } from "../fixtures/test";
+
+test("applicant can ask the chatbot about a job role @smoke", async ({
+	page,
+}) => {
+	await page.route("**/api/job-role-chat", async (route) => {
+		await route.fulfill({
+			status: 200,
+			contentType: "application/json",
+			body: JSON.stringify({
+				answer:
+					"The Software Engineer role is based in Belfast and has two open positions.",
+				roles: [
+					{
+						jobRoleId: 1,
+						roleName: "Software Engineer",
+						location: "Belfast",
+						status: "OPEN",
+						openPositions: 2,
+						closingDate: "2026-10-01T00:00:00.000Z",
+					},
+				],
+			}),
+		});
+	});
+
+	await page.goto("/");
+	const toggle = page.getByRole("button", {
+		name: "Open job role assistant",
+	});
+	await toggle.click();
+	await page
+		.getByLabel("Your question")
+		.fill("Where is Software Engineer based?");
+	await page.getByRole("button", { name: "Send" }).click();
+
+	await expect(
+		page.getByText(
+			"The Software Engineer role is based in Belfast and has two open positions.",
+		),
+	).toBeVisible();
+	await expect(
+		page.getByRole("link", { name: "Software Engineer" }),
+	).toHaveAttribute("href", "/job-role-list/1");
+	await expect(
+		page.getByText("Belfast · 2 positions · Closes 1 Oct 2026"),
+	).toBeVisible();
+	const guidance = page.locator(".job-chat-role-guidance");
+	await expect(guidance).toHaveText(
+		"To see more roles, visit the job roles page.",
+	);
+	await expect(
+		guidance.getByRole("link", { name: "job roles page" }),
+	).toHaveAttribute("href", "/job-role-list");
+
+	await page.goto("/job-role-list");
+	await page.getByRole("button", { name: "Open job role assistant" }).click();
+	const restoredMessages = page.locator("#job-chat-messages");
+	await expect(
+		restoredMessages.getByText("Where is Software Engineer based?"),
+	).toBeVisible();
+	await expect(
+		restoredMessages.getByText(
+			"The Software Engineer role is based in Belfast and has two open positions.",
+		),
+	).toBeVisible();
+	await expect(
+		restoredMessages.getByRole("link", {
+			name: "Software Engineer",
+			exact: true,
+		}),
+	).toHaveAttribute("href", "/job-role-list/1");
+
+	await page.keyboard.press("Escape");
+	await expect(page.locator("#job-chat-panel")).toBeHidden();
+	await expect(toggle).toBeFocused();
+});
