@@ -10,7 +10,7 @@ const unavailableMessage = {
 };
 const limiter = rateLimit({
 	windowMs: 10 * 60 * 1000,
-	limit: 10,
+	limit: 100,
 	standardHeaders: "draft-8",
 	legacyHeaders: false,
 	message: {
