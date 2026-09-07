@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import path from "node:path";
 import nunjucks from "nunjucks";
 import { describe, expect, it } from "vitest";
