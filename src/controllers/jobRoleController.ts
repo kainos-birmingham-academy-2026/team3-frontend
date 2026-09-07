@@ -91,11 +91,7 @@ export class JobRoleController {
 	async getAll(req: Request, res: Response): Promise<void> {
 		try {
 			const filters = this.getFilters(req);
-			const requestedPage = Number(this.getQueryString(req.query.page) ?? "1");
-			const page =
-				Number.isInteger(requestedPage) && requestedPage > 0
-					? requestedPage
-					: 1;
+			const page = Number(this.getQueryString(req.query.page) ?? 1);
 			const [jobRolePage, locationOptions, capabilityOptions, bandOptions] =
 				await Promise.all([
 					this.jobRoleService.getPage(this.getJwtToken(req), filters, page, 10),
@@ -465,11 +461,7 @@ export class JobRoleController {
 	async getApplications(req: Request, res: Response): Promise<void> {
 		try {
 			const jwtToken = this.getJwtToken(req);
-			const requestedPage = Number(this.getQueryString(req.query.page) ?? "1");
-			const page =
-				Number.isInteger(requestedPage) && requestedPage > 0
-					? requestedPage
-					: 1;
+			const page = Number(this.getQueryString(req.query.page) ?? 1);
 			const [jobRoles, applicationPage] = await Promise.all([
 				this.jobRoleService.getAll(jwtToken),
 				this.adminApplicationService.getPage(jwtToken ?? "", page, 10),
