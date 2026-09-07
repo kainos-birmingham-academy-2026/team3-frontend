@@ -101,17 +101,23 @@ describe("routes", () => {
 		vi.mocked(apiClient.get).mockImplementation(async (url) => {
 			if (url === "/api/job-roles") {
 				return {
-					data: [
-						{
-							jobRoleId: 1,
-							roleName: "Software Engineer",
-							locationName: "Birmingham",
-							capabilityName: "Software Engineering",
-							bandName: "Engineer",
-							closingDate: "2026-08-06T00:00:00.000Z",
-							status: "OPEN",
-						},
-					],
+					data: {
+						items: [
+							{
+								jobRoleId: 1,
+								roleName: "Software Engineer",
+								locationName: "Birmingham",
+								capabilityName: "Software Engineering",
+								bandName: "Engineer",
+								closingDate: "2026-08-06T00:00:00.000Z",
+								status: "OPEN",
+							},
+						],
+						page: 1,
+						pageSize: 10,
+						totalItems: 1,
+						totalPages: 1,
+					},
 				};
 			}
 

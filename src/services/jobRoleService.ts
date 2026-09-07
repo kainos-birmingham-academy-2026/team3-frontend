@@ -113,8 +113,8 @@ export class JobRoleService {
 
 	private getListParams(
 		filters: JobRoleFilters,
-		page?: number,
-		pageSize?: number,
+		page: number,
+		pageSize: number,
 	): URLSearchParams {
 		const params = new URLSearchParams();
 		if (filters.roleName) params.set("roleName", filters.roleName);
@@ -133,31 +133,22 @@ export class JobRoleService {
 		for (const bandId of filters.bandId ?? []) {
 			params.append("bandId", bandId);
 		}
-		if (page && pageSize) {
-			params.set("page", String(page));
-			params.set("pageSize", String(pageSize));
-		}
+		params.set("page", String(page));
+		params.set("pageSize", String(pageSize));
 		return params;
 	}
 
 	private async requestList(
 		jwtToken?: string,
 		filters: JobRoleFilters = {},
-		page?: number,
-		pageSize?: number,
-	): Promise<ApiJobRolePage | ApiJobRole[]> {
+		page = 1,
+		pageSize = 10,
+	): Promise<ApiJobRolePage> {
 		const params = this.getListParams(filters, page, pageSize);
-		const config = {
+		const response = await apiClient.get<ApiJobRolePage>("/api/job-roles", {
 			...(jwtToken ? { headers: { Authorization: `Bearer ${jwtToken}` } } : {}),
-			...(params.size > 0 ? { params } : {}),
-		};
-		const response =
-			Object.keys(config).length > 0
-				? await apiClient.get<ApiJobRolePage | ApiJobRole[]>(
-						"/api/job-roles",
-						config,
-					)
-				: await apiClient.get<ApiJobRolePage | ApiJobRole[]>("/api/job-roles");
+			params,
+		});
 		return response.data;
 	}
 
@@ -168,16 +159,12 @@ export class JobRoleService {
 		pageSize = 10,
 	): Promise<JobRolePage> {
 		try {
-			const data = await this.requestList(jwtToken, filters, page, pageSize);
-			const responsePage = Array.isArray(data)
-				? {
-						items: data,
-						page: 1,
-						pageSize: data.length,
-						totalItems: data.length,
-						totalPages: data.length > 0 ? 1 : 0,
-					}
-				: data;
+			const responsePage = await this.requestList(
+				jwtToken,
+				filters,
+				page,
+				pageSize,
+			);
 			return {
 				...responsePage,
 				items: responsePage.items.map((jobRole) => this.mapJobRole(jobRole)),
@@ -206,13 +193,8 @@ export class JobRoleService {
 		jwtToken?: string,
 		filters: JobRoleFilters = {},
 	): Promise<JobRole[]> {
-		try {
-			const data = await this.requestList(jwtToken, filters);
-			const jobRoles = Array.isArray(data) ? data : data.items;
-			return jobRoles.map((jobRole) => this.mapJobRole(jobRole));
-		} catch (error) {
-			this.handleListError(error);
-		}
+		const page = await this.getPage(jwtToken, filters, 1, 100);
+		return page.items;
 	}
 
 	async getById(jobRoleId: string, jwtToken?: string): Promise<JobRole> {

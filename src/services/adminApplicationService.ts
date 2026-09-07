@@ -94,29 +94,21 @@ export class AdminApplicationService {
 
 	async getPage(
 		jwtToken?: string,
-		page?: number,
-		pageSize?: number,
+		page = 1,
+		pageSize = 100,
 	): Promise<ApplicationPage> {
 		try {
-			const response = await apiClient.get<
-				ApiApplicationPage | ApiApplication[]
-			>(AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT, {
-				...(jwtToken ? { headers: this.getAuthHeaders(jwtToken) } : {}),
-				...(page && pageSize ? { params: { page, pageSize } } : {}),
-			});
-			const responsePage = Array.isArray(response.data)
-				? {
-						items: response.data,
-						page: 1,
-						pageSize: response.data.length,
-						totalItems: response.data.length,
-						totalPages: response.data.length > 0 ? 1 : 0,
-					}
-				: response.data;
+			const response = await apiClient.get<ApiApplicationPage>(
+				AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT,
+				{
+					...(jwtToken ? { headers: this.getAuthHeaders(jwtToken) } : {}),
+					params: { page, pageSize },
+				},
+			);
 
 			return {
-				...responsePage,
-				items: responsePage.items.map((app) =>
+				...response.data,
+				items: response.data.items.map((app) =>
 					this.mapApiApplicationToModel(app),
 				),
 			};

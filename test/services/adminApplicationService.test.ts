@@ -9,6 +9,16 @@ vi.mock("../../src/config/apiClient", () => ({
 	},
 }));
 
+function applicationPage<T>(items: T[]) {
+	return {
+		items,
+		page: 1,
+		pageSize: 10,
+		totalItems: items.length,
+		totalPages: items.length > 0 ? 1 : 0,
+	};
+}
+
 describe("AdminApplicationService", () => {
 	const service = new AdminApplicationService();
 	const jwtToken = "test-jwt-token";
@@ -19,7 +29,7 @@ describe("AdminApplicationService", () => {
 
 	it("should request applications list from admin endpoint", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 7,
 					applicantEmail: "jane@example.com",
@@ -27,13 +37,14 @@ describe("AdminApplicationService", () => {
 					applicationDate: "2026-08-12T00:00:00.000Z",
 					status: "PENDING",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
 
 		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
+			params: { page: 1, pageSize: 100 },
 		});
 		expect(result[0]?.status).toBe("pending");
 		expect(result[0]?.applicationDate).toBe("2026-08-12");
@@ -68,7 +79,7 @@ describe("AdminApplicationService", () => {
 
 	it("should map cvText from nested payload fields", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 8,
 					applicantEmail: "jane@example.com",
@@ -79,7 +90,7 @@ describe("AdminApplicationService", () => {
 						cvText: "Nested CV",
 					},
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -90,7 +101,7 @@ describe("AdminApplicationService", () => {
 
 	it("should map canonical API statuses correctly", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 9,
 					applicantEmail: "jane@example.com",
@@ -112,7 +123,7 @@ describe("AdminApplicationService", () => {
 					applicationDate: "2026-08-12T00:00:00.000Z",
 					status: "WITHDRAWN",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -124,7 +135,7 @@ describe("AdminApplicationService", () => {
 
 	it("should return cv text for the matching application from the list", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 99,
 					applicantEmail: "a@example.com",
@@ -133,7 +144,7 @@ describe("AdminApplicationService", () => {
 					status: "pending",
 					cvText: "Detailed CV",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getCvTextById(99, jwtToken);
@@ -141,12 +152,13 @@ describe("AdminApplicationService", () => {
 		expect(result).toBe("Detailed CV");
 		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
+			params: { page: 1, pageSize: 100 },
 		});
 	});
 
 	it("should read cv text from nested application payload in the list", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 7,
 					applicantEmail: "a@example.com",
@@ -155,7 +167,7 @@ describe("AdminApplicationService", () => {
 					status: "pending",
 					application: { cvText: "Fallback CV" },
 				},
-			],
+			]),
 		});
 
 		const result = await service.getCvTextById(7, jwtToken);
@@ -177,7 +189,7 @@ describe("AdminApplicationService", () => {
 
 	it("should return empty string when the application is not in the list", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 7,
 					applicantEmail: "a@example.com",
@@ -186,7 +198,7 @@ describe("AdminApplicationService", () => {
 					status: "pending",
 					cvText: "List CV text",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getCvTextById(404, jwtToken);
@@ -196,7 +208,7 @@ describe("AdminApplicationService", () => {
 
 	it("should return empty string when the matching application has no cv text", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: applicationPage([
 				{
 					applicationId: 404,
 					applicantEmail: "a@example.com",
@@ -204,7 +216,7 @@ describe("AdminApplicationService", () => {
 					applicationDate: "2026-08-12T00:00:00.000Z",
 					status: "pending",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getCvTextById(404, jwtToken);
