@@ -1,0 +1,129 @@
+.site-header {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background: var(--kainos-white);
+	border-bottom: 1px solid #d9def0;
+	font-family:
+		"Galano Grotesque", "Avenir Next", "Century Gothic", "Segoe UI", sans-serif;
+}
+
+.header-inner {
+	display: flex;
+	gap: 0.45rem;
+	align-items: center;
+	justify-content: flex-start;
+	min-height: 68px;
+	padding-right: 0.6rem;
+}
+
+.logo {
+	height: 30px;
+	width: auto;
+}
+
+.site-nav {
+	display: flex;
+	flex-wrap: wrap;
+	flex: 1;
+	justify-content: flex-start;
+	margin-left: 0.2rem;
+	gap: clamp(1rem, 2vw, 1.7rem);
+	align-items: center;
+}
+
+.nav-link {
+	display: inline-block;
+	padding: 0.58rem 0.88rem;
+	color: var(--kainos-navy);
+	font-size: 0.95rem;
+	font-weight: 500;
+	letter-spacing: 0;
+	transition:
+		background-color 0.2s ease,
+		color 0.2s ease;
+}
+
+.nav-link:hover {
+	text-decoration: underline;
+	text-decoration-color: var(--kainos-blue);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.28em;
+	background: transparent;
+}
+
+.nav-link-active {
+	background: var(--kainos-blue);
+	color: var(--kainos-white);
+	font-weight: 500;
+}
+
+.nav-link-active:hover {
+	background: var(--kainos-blue-dark);
+	text-decoration: none;
+}
+
+.header-cta {
+	padding: 0.72rem 1.15rem;
+	border-width: 2px;
+	border-color: #1b2db5;
+	color: #1b2db5;
+	font-size: 0.9rem;
+	font-weight: 500;
+	line-height: 1;
+	margin-left: 0.55rem;
+	white-space: nowrap;
+}
+
+.header-cta:hover {
+	background: rgba(27, 45, 181, 0.08);
+}
+
+.header-cta-danger {
+	border-color: #c62828;
+	background: #c62828;
+	color: #ffffff;
+}
+
+.header-cta-danger:hover {
+	background: #a61f1f;
+}
+
+@media (max-width: 900px) {
+	.header-inner {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		grid-template-areas:
+			"logo . cta"
+			"nav nav nav";
+		column-gap: 0.6rem;
+		row-gap: 0.7rem;
+		padding: 0.55rem 0;
+	}
+
+	.logo-link {
+		grid-area: logo;
+	}
+
+	.header-cta {
+		grid-area: cta;
+		margin-left: 0;
+		justify-self: end;
+		padding: 0.7rem 1.05rem;
+		font-size: 0.94rem;
+	}
+
+	.site-nav {
+		grid-area: nav;
+		width: 100%;
+		justify-content: flex-start;
+		margin-left: 0;
+		gap: 0.6rem;
+		border-top: 1px solid #e4e8f6;
+		padding-top: 0.7rem;
+	}
+
+	.nav-link {
+		padding: 0.54rem 0.82rem;
+	}
+}

@@ -1,0 +1,155 @@
+body.modal-open {
+	overflow: hidden;
+}
+
+.logout-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: grid;
+	place-items: center;
+	padding: 1.25rem;
+	background: rgba(15, 24, 61, 0.48);
+}
+
+.logout-modal-backdrop[hidden] {
+	display: none;
+}
+
+.logout-modal {
+	width: min(540px, 100%);
+	background: var(--kainos-white);
+	border: 1px solid #d9def0;
+	border-top: 6px solid var(--kainos-blue);
+	box-shadow: 0 22px 46px rgba(26, 41, 114, 0.26);
+	padding: 1.8rem;
+}
+
+.logout-modal h2 {
+	margin: 0 0 0.8rem;
+	font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+	line-height: 1.25;
+}
+
+.logout-modal p {
+	margin: 0;
+	font-size: 1.02rem;
+	line-height: 1.65;
+	color: var(--kainos-text-muted);
+}
+
+.logout-modal-actions {
+	margin-top: 1.25rem;
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+}
+
+.confirmation-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: grid;
+	place-items: center;
+	padding: 1.25rem;
+	background: rgba(15, 24, 61, 0.48);
+}
+
+.confirmation-modal-backdrop[hidden] {
+	display: none;
+}
+
+.confirmation-modal {
+	width: min(540px, 100%);
+	background: var(--kainos-white);
+	border: 1px solid #d9def0;
+	border-top: 6px solid #c62828;
+	box-shadow: 0 22px 46px rgba(26, 41, 114, 0.26);
+	padding: 1.8rem;
+}
+
+.confirmation-modal h2 {
+	margin: 0 0 0.8rem;
+	font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+	line-height: 1.25;
+}
+
+.confirmation-modal p {
+	margin: 0;
+	font-size: 1.02rem;
+	line-height: 1.65;
+	color: var(--kainos-text-muted);
+}
+
+.confirmation-modal-actions {
+	margin-top: 1.25rem;
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+}
+
+.withdraw-application-button:hover {
+	cursor: pointer;
+}
+
+.withdraw-popup-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 120;
+	display: grid;
+	place-items: center;
+	padding: 1.25rem;
+	background: rgba(15, 24, 61, 0.48);
+}
+
+.withdraw-popup-overlay[hidden] {
+	display: none;
+}
+
+.withdraw-popup-dialog {
+	width: min(540px, 100%);
+	padding: 1.8rem;
+	background: var(--kainos-white);
+	border: 1px solid #d9def0;
+	border-top: 6px solid var(--kainos-blue);
+	box-shadow: 0 22px 46px rgba(26, 41, 114, 0.26);
+}
+
+.withdraw-popup-dialog h2 {
+	margin: 0 0 0.8rem;
+	font-size: clamp(1.45rem, 2.5vw, 1.95rem);
+	line-height: 1.25;
+}
+
+.withdraw-popup-dialog p {
+	margin: 0;
+	font-size: 1.02rem;
+	line-height: 1.65;
+	color: var(--kainos-text-muted);
+}
+
+.withdraw-popup-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.7rem;
+	margin-top: 1.25rem;
+	flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+	.logout-modal {
+		width: min(460px, 100%);
+		padding: 1.4rem;
+	}
+
+	.logout-modal-actions {
+		justify-content: stretch;
+	}
+
+	.logout-modal-actions .button {
+		flex: 1;
+		text-align: center;
+	}
+}

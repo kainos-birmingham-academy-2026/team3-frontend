@@ -21,6 +21,32 @@ describe("job role chat widget", () => {
 			'id="job-chat-character-count" class="job-chat-character-count" aria-live',
 		);
 		expect(html).toContain("0 / 500 characters");
+
+		const stylesheetHrefs = Array.from(
+			html.matchAll(/<link rel="stylesheet" href="([^"]+)" \/>/g),
+			(match) => match[1],
+		);
+		const expectedStylesheetHrefs = [
+			"/styles/branding.css",
+			"/styles/header.css",
+			"/styles/modals.css",
+			"/styles/home.css",
+			"/styles/jobRoles.css",
+			"/styles/forms.css",
+			"/styles/footer.css",
+			"/styles/errorPages.css",
+			"/styles/jobRoleDetail.css",
+			"/styles/jobRoleChat.css",
+		];
+		expect(stylesheetHrefs).toEqual(
+			expect.arrayContaining(expectedStylesheetHrefs),
+		);
+		const stylesheetIndexes = expectedStylesheetHrefs.map((href) =>
+			stylesheetHrefs.indexOf(href),
+		);
+		expect(stylesheetIndexes).toEqual(
+			[...stylesheetIndexes].sort((left, right) => left - right),
+		);
 		expect(html).toContain("/scripts/jobRoleChat.js");
 	});
 });
