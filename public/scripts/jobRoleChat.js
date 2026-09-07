@@ -1,6 +1,7 @@
 (() => {
 	const HISTORY_STORAGE_KEY = "jobRoleChatHistory";
 	const MAX_HISTORY_MESSAGES = 20;
+	const widget = document.querySelector(".job-chat");
 	const panel = document.getElementById("job-chat-panel");
 	const toggle = document.getElementById("job-chat-toggle");
 	const close = document.getElementById("job-chat-close");
@@ -9,16 +10,31 @@
 	const characterCount = document.getElementById("job-chat-character-count");
 	const messages = document.getElementById("job-chat-messages");
 
-	if (
-		!panel ||
-		!toggle ||
-		!close ||
-		!form ||
-		!input ||
-		!characterCount ||
-		!messages
-	)
+	const requiredElements = {
+		"job-chat-panel": panel,
+		"job-chat-toggle": toggle,
+		"job-chat-close": close,
+		"job-chat-form": form,
+		"job-chat-input": input,
+		"job-chat-character-count": characterCount,
+		"job-chat-messages": messages,
+	};
+	const missingElementIds = Object.entries(requiredElements)
+		.filter(([, element]) => !element)
+		.map(([id]) => id);
+
+	if (missingElementIds.length > 0) {
+		if (widget) {
+			widget.hidden = true;
+		} else {
+			if (panel) panel.hidden = true;
+			if (toggle) toggle.hidden = true;
+		}
+		console.error(
+			`Unable to initialise job role chat: missing required element(s): ${missingElementIds.join(", ")}`,
+		);
 		return;
+	}
 
 	const updateCharacterCount = () => {
 		characterCount.textContent = `${input.value.length} / ${input.maxLength} characters`;
