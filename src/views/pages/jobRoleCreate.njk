@@ -12,25 +12,26 @@
             {% endfor %}
          {% endif %}
       {% endif %}
+      <p class="form-hint"><span aria-hidden="true">*</span> Required fields</p>
       <form method="post" action="/job-role-create" class="login-form" novalidate>
          <div class="form-field">
-            <label for="roleName">Role name</label>
+            <label for="roleName">Role name <span aria-hidden="true">*</span></label>
             <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" required/>
          </div>
          <div class="form-field">
-            <label for="description">Description</label>
+            <label for="description">Description <span aria-hidden="true">*</span></label>
             <textarea id="description" name="description" rows="3" required>{{ jobRole.description | default('', true) }}</textarea>
          </div>
          <div class="form-field">
-            <label for="responsibilities">Responsibilities</label>
+            <label for="responsibilities">Responsibilities <span aria-hidden="true">*</span></label>
             <textarea id="responsibilities" name="responsibilities" rows="3" required>{{ jobRole.responsibilities | default('', true) }}</textarea>
          </div>
          <div class="form-field">
-            <label for="sharepointUrl">Job specification URL</label>
+            <label for="sharepointUrl">Job specification URL <span aria-hidden="true">*</span></label>
             <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." required/>
          </div>
          <div class="form-field">
-            <label for="numberOfOpenPositions">Number of open positions</label>
+            <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>
             <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" value="{{ jobRole.numberOfOpenPositions | default('', true) }}" min="1" required/>
          </div>
          <div class="form-field">
@@ -39,7 +40,7 @@
             <p class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
          </div>
          <div class="form-field">
-            <label for="capabilityId">Capability</label>
+            <label for="capabilityId">Capability <span aria-hidden="true">*</span></label>
             <select id="capabilityId" name="capabilityId" required>
                <option value="">Select capability</option>
                {% for capability in capabilityOptions | default([], true) %}
@@ -48,7 +49,7 @@
             </select>
          </div>
          <div class="form-field">
-            <label for="bandId">Band</label>
+            <label for="bandId">Band <span aria-hidden="true">*</span></label>
             <select id="bandId" name="bandId" required>
                <option value="">Select band</option>
                {% for band in bandOptions | default([], true) %}
@@ -57,7 +58,7 @@
             </select>
          </div>
          <div class="form-field">
-            <label for="locationId">Location</label>
+            <label for="locationId">Location <span aria-hidden="true">*</span></label>
             <select id="locationId" name="locationId" required>
                <option value="">Select location</option>
                {% for location in locationOptions | default([], true) %}
