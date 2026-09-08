@@ -1,9 +1,40 @@
 {% extends "layouts/base.njk" %}
+{% macro renderFieldErrors(fieldName) %}
+   {% if errorVariant == "A" and fieldErrors[fieldName] %}
+      <div id="{{ fieldName }}-error" class="form-alert form-field-error" role="alert">
+         {% for message in fieldErrors[fieldName] %}
+            <p>{{ message }}</p>
+         {% endfor %}
+      </div>
+   {% endif %}
+{% endmacro %}
 {% block title %}Kainos | Create job role{% endblock %}
 {% block content %}
    <section class="login-panel" aria-labelledby="create-job-role-title">
       <h1 id="create-job-role-title">Create job role</h1>
-      {% if errorMessage %}
+      {% if formErrors %}
+         {% if errorVariant == "B" %}
+            <div id="create-job-role-error-summary" class="form-alert form-error-summary" role="alert" tabindex="-1" data-error-summary>
+               <h2>There is a problem</h2>
+               <ul>
+                  {% for field, messages in fieldErrors %}
+                     <li id="{{ field }}-summary-error">
+                        {% for message in messages %}
+                           <a href="#{{ field }}">{{ message }}</a>
+                        {% endfor %}
+                     </li>
+                  {% endfor %}
+                  {% for error in generalErrors %}
+                     <li>{{ error.message }}</li>
+                  {% endfor %}
+               </ul>
+            </div>
+         {% else %}
+            {% for error in generalErrors %}
+               <p class="form-alert" role="alert">{{ error.message }}</p>
+            {% endfor %}
+         {% endif %}
+      {% elif errorMessage %}
          {% if errorMessage is string %}
             <p class="form-alert" role="alert">{{ errorMessage }}</p>
          {% else %}
@@ -16,59 +47,68 @@
       <form method="post" action="/job-role-create" class="login-form" novalidate>
          <div class="form-field">
             <label for="roleName">Role name <span aria-hidden="true">*</span></label>
-            <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" maxlength="100" aria-describedby="roleName-character-count" required/>
+            <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" maxlength="100"{% if fieldErrors.roleName %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}roleName-error{% else %}roleName-summary-error{% endif %} roleName-character-count"{% else %} aria-describedby="roleName-character-count"{% endif %} required/>
+            {{ renderFieldErrors("roleName") }}
             <p id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">Maximum 100 characters</p>
          </div>
          <div class="form-field">
             <label for="description">Description <span aria-hidden="true">*</span></label>
-            <textarea id="description" name="description" rows="3" maxlength="2000" aria-describedby="description-character-count" required>{{ jobRole.description | default('', true) }}</textarea>
+            <textarea id="description" name="description" rows="3" maxlength="2000"{% if fieldErrors.description %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}description-error{% else %}description-summary-error{% endif %} description-character-count"{% else %} aria-describedby="description-character-count"{% endif %} required>{{ jobRole.description | default('', true) }}</textarea>
+            {{ renderFieldErrors("description") }}
             <p id="description-character-count" class="form-character-count" data-character-count-for="description">Maximum 2000 characters</p>
          </div>
          <div class="form-field">
             <label for="responsibilities">Responsibilities <span aria-hidden="true">*</span></label>
-            <textarea id="responsibilities" name="responsibilities" rows="3" maxlength="2000" aria-describedby="responsibilities-character-count" required>{{ jobRole.responsibilities | default('', true) }}</textarea>
+            <textarea id="responsibilities" name="responsibilities" rows="3" maxlength="2000"{% if fieldErrors.responsibilities %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}responsibilities-error{% else %}responsibilities-summary-error{% endif %} responsibilities-character-count"{% else %} aria-describedby="responsibilities-character-count"{% endif %} required>{{ jobRole.responsibilities | default('', true) }}</textarea>
+            {{ renderFieldErrors("responsibilities") }}
             <p id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">Maximum 2000 characters</p>
          </div>
          <div class="form-field">
             <label for="sharepointUrl">Job specification URL <span aria-hidden="true">*</span></label>
-            <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." maxlength="255" aria-describedby="sharepointUrl-character-count" required/>
+            <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." maxlength="255"{% if fieldErrors.sharepointUrl %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}sharepointUrl-error{% else %}sharepointUrl-summary-error{% endif %} sharepointUrl-character-count"{% else %} aria-describedby="sharepointUrl-character-count"{% endif %} required/>
+            {{ renderFieldErrors("sharepointUrl") }}
             <p id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">Maximum 255 characters</p>
          </div>
          <div class="form-field">
             <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>
-            <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" value="{{ jobRole.numberOfOpenPositions | default('', true) }}" min="1" required/>
+            <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" value="{{ jobRole.numberOfOpenPositions | default('', true) }}" min="1"{% if fieldErrors.numberOfOpenPositions %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}numberOfOpenPositions-error{% else %}numberOfOpenPositions-summary-error{% endif %}"{% endif %} required/>
+            {{ renderFieldErrors("numberOfOpenPositions") }}
          </div>
          <div class="form-field">
             <label for="closingDate">Closing date</label>
-            <input id="closingDate" name="closingDate" type="date" value="{{ jobRole.closingDate | default('', true) }}"/>
-            <p class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
+            <input id="closingDate" name="closingDate" type="date" value="{{ jobRole.closingDate | default('', true) }}"{% if fieldErrors.closingDate %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}closingDate-error{% else %}closingDate-summary-error{% endif %} closingDate-hint"{% else %} aria-describedby="closingDate-hint"{% endif %}/>
+            {{ renderFieldErrors("closingDate") }}
+            <p id="closingDate-hint" class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
          </div>
          <div class="form-field">
             <label for="capabilityId">Capability <span aria-hidden="true">*</span></label>
-            <select id="capabilityId" name="capabilityId" required>
+            <select id="capabilityId" name="capabilityId"{% if fieldErrors.capabilityId %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}capabilityId-error{% else %}capabilityId-summary-error{% endif %}"{% endif %} required>
                <option value="">Select capability</option>
                {% for capability in capabilityOptions | default([], true) %}
                   <option value="{{ capability.capabilityId }}"{% if jobRole.capabilityId == capability.capabilityId %} selected{% endif %}>{{ capability.capabilityName }}</option>
                {% endfor %}
             </select>
+            {{ renderFieldErrors("capabilityId") }}
          </div>
          <div class="form-field">
             <label for="bandId">Band <span aria-hidden="true">*</span></label>
-            <select id="bandId" name="bandId" required>
+            <select id="bandId" name="bandId"{% if fieldErrors.bandId %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}bandId-error{% else %}bandId-summary-error{% endif %}"{% endif %} required>
                <option value="">Select band</option>
                {% for band in bandOptions | default([], true) %}
                   <option value="{{ band.bandId }}"{% if jobRole.bandId == band.bandId %} selected{% endif %}>{{ band.bandName }}</option>
                {% endfor %}
             </select>
+            {{ renderFieldErrors("bandId") }}
          </div>
          <div class="form-field">
             <label for="locationId">Location <span aria-hidden="true">*</span></label>
-            <select id="locationId" name="locationId" required>
+            <select id="locationId" name="locationId"{% if fieldErrors.locationId %} aria-invalid="true" aria-describedby="{% if errorVariant == 'A' %}locationId-error{% else %}locationId-summary-error{% endif %}"{% endif %} required>
                <option value="">Select location</option>
                {% for location in locationOptions | default([], true) %}
                   <option value="{{ location.locationId }}"{% if jobRole.locationId == location.locationId %} selected{% endif %}>{{ location.locationName }}</option>
                {% endfor %}
             </select>
+            {{ renderFieldErrors("locationId") }}
          </div>
          <div class="form-field">
             <label for="statusName">Status</label>

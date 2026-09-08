@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import axios from "axios";
 import type { Request, Response } from "express";
 import type {
@@ -14,14 +15,128 @@ import type {
 import { AdminApplicationService } from "../services/adminApplicationService";
 import type { JobRoleService } from "../services/jobRoleService";
 
+type CreateJobRoleErrorVariant = "A" | "B";
+
+const CREATE_JOB_ROLE_FIELDS = new Set([
+	"roleName",
+	"description",
+	"responsibilities",
+	"sharepointUrl",
+	"numberOfOpenPositions",
+	"closingDate",
+	"capabilityId",
+	"bandId",
+	"locationId",
+]);
+
 export class JobRoleController {
 	constructor(
 		private jobRoleService: JobRoleService,
 		private adminApplicationService = new AdminApplicationService(),
+		private logExperimentEvent: (event: Record<string, unknown>) => void = (
+			event,
+		) => console.info(JSON.stringify(event)),
 	) {}
 
 	private getJwtToken(req: Request): string | undefined {
 		return req.session.jwtToken;
+	}
+
+	private getCreateJobRoleErrorVariant(
+		req: Request,
+	): CreateJobRoleErrorVariant {
+		const requestedVariant = this.getQueryString(
+			req.query.errorVariant,
+		)?.toUpperCase();
+
+		if (
+			process.env.NODE_ENV !== "production" &&
+			(requestedVariant === "A" || requestedVariant === "B")
+		) {
+			if (req.session.createJobRoleErrorVariant !== requestedVariant) {
+				req.session.createJobRoleErrorExperiment = undefined;
+			}
+			req.session.createJobRoleErrorVariant = requestedVariant;
+		}
+
+		if (!req.session.createJobRoleErrorVariant) {
+			req.session.createJobRoleErrorVariant = Math.random() < 0.5 ? "A" : "B";
+		}
+
+		return req.session.createJobRoleErrorVariant;
+	}
+
+	private getCreateJobRoleExperiment(req: Request): {
+		attemptId: string;
+		exposed: boolean;
+	} {
+		req.session.createJobRoleErrorExperiment ??= {
+			attemptId: randomUUID(),
+			exposed: false,
+		};
+		return req.session.createJobRoleErrorExperiment;
+	}
+
+	private normalizeCreateJobRoleErrors(
+		errorMessage: string | SchemaError[],
+	): SchemaError[] {
+		const errors = Array.isArray(errorMessage)
+			? errorMessage
+			: [{ message: errorMessage }];
+
+		return errors.map((error) => ({
+			message: error.message,
+			field:
+				error.field && CREATE_JOB_ROLE_FIELDS.has(error.field)
+					? error.field
+					: undefined,
+		}));
+	}
+
+	private getCreateJobRoleFieldErrors(
+		errors: SchemaError[],
+	): Record<string, string[]> {
+		const fieldErrors: Record<string, string[]> = {};
+		for (const error of errors) {
+			if (error.field) {
+				fieldErrors[error.field] = [
+					...(fieldErrors[error.field] ?? []),
+					error.message,
+				];
+			}
+		}
+		return fieldErrors;
+	}
+
+	private trackCreateJobRoleErrorExposure(
+		req: Request,
+		variant: CreateJobRoleErrorVariant,
+		errorCount: number,
+	): void {
+		const experiment = this.getCreateJobRoleExperiment(req);
+		if (experiment.exposed) return;
+
+		experiment.exposed = true;
+		this.logExperimentEvent({
+			event: "create_job_role_error_experiment",
+			action: "exposure",
+			variant,
+			attemptId: experiment.attemptId,
+			errorCount,
+		});
+	}
+
+	private trackCreateJobRoleErrorConversion(req: Request): void {
+		const experiment = req.session.createJobRoleErrorExperiment;
+		if (experiment?.exposed && req.session.createJobRoleErrorVariant) {
+			this.logExperimentEvent({
+				event: "create_job_role_error_experiment",
+				action: "conversion",
+				variant: req.session.createJobRoleErrorVariant,
+				attemptId: experiment.attemptId,
+			});
+		}
+		req.session.createJobRoleErrorExperiment = undefined;
 	}
 
 	private getRoleIdParam(req: Request): string {
@@ -137,9 +252,12 @@ export class JobRoleController {
 	async showCreateForm(req: Request, res: Response): Promise<void> {
 		try {
 			const dropdownOptions = await this.getDropdownOptions();
+			const errorVariant = this.getCreateJobRoleErrorVariant(req);
+			this.getCreateJobRoleExperiment(req);
 			req.session.dropdownOptions = dropdownOptions;
 			res.render("pages/jobRoleCreate.njk", {
 				canCreate: true,
+				errorVariant,
 				capabilityOptions: dropdownOptions.capabilities,
 				bandOptions: dropdownOptions.bands,
 				locationOptions: dropdownOptions.locations,
@@ -160,6 +278,7 @@ export class JobRoleController {
 				jobRoleData,
 				this.getJwtToken(req),
 			);
+			this.trackCreateJobRoleErrorConversion(req);
 			res.redirect("/job-role-list");
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -203,9 +322,30 @@ export class JobRoleController {
 				errorMessage = error.message;
 			}
 
+			const formErrors =
+				statusCode === 400
+					? this.normalizeCreateJobRoleErrors(errorMessage)
+					: undefined;
+			const errorVariant = formErrors
+				? this.getCreateJobRoleErrorVariant(req)
+				: undefined;
+			if (formErrors && errorVariant) {
+				this.trackCreateJobRoleErrorExposure(
+					req,
+					errorVariant,
+					formErrors.length,
+				);
+			}
+
 			res.status(statusCode).render("pages/jobRoleCreate.njk", {
 				canCreate: statusCode !== 403,
 				errorMessage,
+				errorVariant,
+				formErrors,
+				fieldErrors: formErrors
+					? this.getCreateJobRoleFieldErrors(formErrors)
+					: undefined,
+				generalErrors: formErrors?.filter((formError) => !formError.field),
 				jobRole: req.body as CreateJobRoleInput,
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
 				bandOptions: req.session.dropdownOptions?.bands ?? [],

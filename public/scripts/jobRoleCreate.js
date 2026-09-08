@@ -1,4 +1,12 @@
 (() => {
+	const errorSummary = document.querySelector("[data-error-summary]");
+	const firstInvalidField = document.querySelector('[aria-invalid="true"]');
+	if (errorSummary) {
+		errorSummary.focus();
+	} else if (firstInvalidField) {
+		firstInvalidField.focus();
+	}
+
 	for (const characterCount of document.querySelectorAll(
 		"[data-character-count-for]",
 	)) {

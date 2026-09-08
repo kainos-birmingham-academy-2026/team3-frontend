@@ -14,6 +14,11 @@ type TestRequest = {
 			capabilities: unknown[];
 			bands: unknown[];
 		};
+		createJobRoleErrorVariant?: "A" | "B";
+		createJobRoleErrorExperiment?: {
+			attemptId: string;
+			exposed: boolean;
+		};
 	};
 	params?: {
 		id?: string | string[];
@@ -62,10 +67,12 @@ describe("JobRoleController", () => {
 		getAll: vi.fn(),
 		getPage: vi.fn(),
 	};
+	const logExperimentEvent = vi.fn();
 
 	const controller = new JobRoleController(
 		jobRoleService as unknown as JobRoleService,
 		adminApplicationService as unknown as AdminApplicationService,
+		logExperimentEvent,
 	);
 
 	beforeEach(() => {
@@ -337,7 +344,11 @@ describe("JobRoleController", () => {
 
 	it("should load dropdown options and render the create form", async () => {
 		const req = createRequest({
-			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			session: {
+				jwtToken: "admin-token",
+				userRole: "ADMIN",
+				createJobRoleErrorVariant: "A",
+			},
 		});
 		const res = createResponse();
 		const statuses = [{ statusId: 1, statusName: "OPEN" }];
@@ -354,6 +365,7 @@ describe("JobRoleController", () => {
 
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
+			errorVariant: "A",
 			capabilityOptions: capabilities,
 			bandOptions: bands,
 			locationOptions: locations,
@@ -387,7 +399,11 @@ describe("JobRoleController", () => {
 
 	it("should render backend validation errors when creating a job role fails", async () => {
 		const req = createRequest({
-			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			session: {
+				jwtToken: "admin-token",
+				userRole: "ADMIN",
+				createJobRoleErrorVariant: "A",
+			},
 			body: { roleName: "Software Engineer", capabilityId: "3" },
 		});
 		const res = createResponse();
@@ -408,12 +424,115 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
 			errorMessage: [{ field: "roleName", message: "Role name is required" }],
+			errorVariant: "A",
+			formErrors: [{ field: "roleName", message: "Role name is required" }],
+			fieldErrors: { roleName: ["Role name is required"] },
+			generalErrors: [],
 			jobRole: { roleName: "Software Engineer", capabilityId: "3" },
 			capabilityOptions: [],
 			bandOptions: [],
 			locationOptions: [],
 			statusOptions: [],
 		});
+		expect(logExperimentEvent).toHaveBeenCalledWith(
+			expect.objectContaining({
+				event: "create_job_role_error_experiment",
+				action: "exposure",
+				variant: "A",
+				errorCount: 1,
+			}),
+		);
+	});
+
+	it("should use a non-production query override and retain it in the session", async () => {
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			query: { errorVariant: "B" },
+		});
+		const res = createResponse();
+
+		await controller.showCreateForm(req as unknown as Request, res);
+
+		expect(req.session.createJobRoleErrorVariant).toBe("B");
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobRoleCreate.njk",
+			expect.objectContaining({ errorVariant: "B" }),
+		);
+	});
+
+	it("should ignore a query override in production", async () => {
+		const originalNodeEnv = process.env.NODE_ENV;
+		process.env.NODE_ENV = "production";
+		const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.75);
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			query: { errorVariant: "A" },
+		});
+		const res = createResponse();
+
+		try {
+			await controller.showCreateForm(req as unknown as Request, res);
+
+			expect(req.session.createJobRoleErrorVariant).toBe("B");
+		} finally {
+			process.env.NODE_ENV = originalNodeEnv;
+			randomSpy.mockRestore();
+		}
+	});
+
+	it("should log exposure only once for repeated errors in one attempt", async () => {
+		const req = createRequest({
+			session: {
+				jwtToken: "admin-token",
+				userRole: "ADMIN",
+				createJobRoleErrorVariant: "A",
+				createJobRoleErrorExperiment: {
+					attemptId: "attempt-1",
+					exposed: true,
+				},
+			},
+		});
+		const res = createResponse();
+		jobRoleService.createJobRole.mockRejectedValueOnce({
+			isAxiosError: true,
+			response: {
+				status: 400,
+				data: {
+					errors: [{ field: "roleName", message: "Role name is required" }],
+				},
+			},
+		});
+
+		await controller.createJobRole(req as unknown as Request, res);
+
+		expect(logExperimentEvent).not.toHaveBeenCalled();
+	});
+
+	it("should log a conversion after an exposed attempt succeeds", async () => {
+		const req = createRequest({
+			session: {
+				jwtToken: "admin-token",
+				userRole: "ADMIN",
+				createJobRoleErrorVariant: "B",
+				createJobRoleErrorExperiment: {
+					attemptId: "attempt-1",
+					exposed: true,
+				},
+			},
+			body: { roleName: "Software Engineer" },
+		});
+		const res = createResponse();
+		jobRoleService.createJobRole.mockResolvedValueOnce(undefined);
+
+		await controller.createJobRole(req as unknown as Request, res);
+
+		expect(logExperimentEvent).toHaveBeenCalledWith({
+			event: "create_job_role_error_experiment",
+			action: "conversion",
+			variant: "B",
+			attemptId: "attempt-1",
+		});
+		expect(req.session.createJobRoleErrorExperiment).toBeUndefined();
 	});
 
 	it.each([

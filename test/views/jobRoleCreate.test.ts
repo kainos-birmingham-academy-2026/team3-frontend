@@ -14,7 +14,7 @@ const environment = new nunjucks.Environment(
 	new nunjucks.FileSystemLoader(viewsPath),
 );
 
-function renderView(jobRole = {}): string {
+function renderView(jobRole = {}, context = {}): string {
 	if (!template.length) {
 		throw new Error("Template should not be empty");
 	}
@@ -26,6 +26,7 @@ function renderView(jobRole = {}): string {
 		bandOptions: [{ bandId: 2, bandName: "Engineer" }],
 		locationOptions: [{ locationId: 3, locationName: "Birmingham" }],
 		statusOptions: [{ statusId: 4, statusName: "OPEN" }],
+		...context,
 	});
 }
 
@@ -115,6 +116,49 @@ describe("jobRoleCreate", () => {
 			'id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">Maximum 255 characters',
 		);
 		expect(html).toContain("/scripts/jobRoleCreate.js");
+	});
+
+	it("should render variant A errors beside their fields", () => {
+		const html = renderView(
+			{},
+			{
+				errorVariant: "A",
+				formErrors: [{ field: "roleName", message: "Role name is required" }],
+				fieldErrors: { roleName: ["Role name is required"] },
+				generalErrors: [],
+			},
+		);
+
+		expect(html).toContain('id="roleName-error"');
+		expect(html).toContain('aria-invalid="true"');
+		expect(html).toContain(
+			'aria-describedby="roleName-error roleName-character-count"',
+		);
+		expect(html).not.toContain("data-error-summary");
+	});
+
+	it("should render variant B as one linked error summary", () => {
+		const html = renderView(
+			{},
+			{
+				errorVariant: "B",
+				formErrors: [
+					{ field: "roleName", message: "Role name is required" },
+					{ message: "Role data is incomplete" },
+				],
+				fieldErrors: { roleName: ["Role name is required"] },
+				generalErrors: [{ message: "Role data is incomplete" }],
+			},
+		);
+
+		expect(html).toContain("data-error-summary");
+		expect(html).toContain("There is a problem");
+		expect(html).toContain('<a href="#roleName">Role name is required</a>');
+		expect(html).toContain("Role data is incomplete");
+		expect(html).toContain(
+			'aria-describedby="roleName-summary-error roleName-character-count"',
+		);
+		expect(html).not.toContain('id="roleName-error"');
 	});
 
 	it("should preserve submitted values when the form is re-rendered", () => {
