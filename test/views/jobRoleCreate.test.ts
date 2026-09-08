@@ -82,6 +82,41 @@ describe("jobRoleCreate", () => {
 		expect(html).toContain('<label for="statusName">Status</label>');
 	});
 
+	it("should show character limits without requiring JavaScript", () => {
+		const html = renderView({
+			roleName: "Engineer",
+			description: "Build software",
+			responsibilities: "Write tests",
+			sharepointUrl: "https://example.com/job",
+		});
+
+		expect(html).toContain(
+			'maxlength="100" aria-describedby="roleName-character-count"',
+		);
+		expect(html).toContain(
+			'id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">8 / 100 characters',
+		);
+		expect(html).toContain(
+			'maxlength="2000" aria-describedby="description-character-count"',
+		);
+		expect(html).toContain(
+			'id="description-character-count" class="form-character-count" data-character-count-for="description">14 / 2000 characters',
+		);
+		expect(html).toContain(
+			'maxlength="2000" aria-describedby="responsibilities-character-count"',
+		);
+		expect(html).toContain(
+			'id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">11 / 2000 characters',
+		);
+		expect(html).toContain(
+			'maxlength="255" aria-describedby="sharepointUrl-character-count"',
+		);
+		expect(html).toContain(
+			'id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">23 / 255 characters',
+		);
+		expect(html).toContain("/scripts/jobRoleCreate.js");
+	});
+
 	it("should preserve submitted values when the form is re-rendered", () => {
 		const html = renderView({
 			roleName: "Software Engineer",
