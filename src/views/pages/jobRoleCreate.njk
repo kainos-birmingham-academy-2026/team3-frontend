@@ -17,22 +17,22 @@
          <div class="form-field">
             <label for="roleName">Role name <span aria-hidden="true">*</span></label>
             <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" maxlength="100" aria-describedby="roleName-character-count" required/>
-            <p id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">{{ jobRole.roleName | default('', true) | length }} / 100 characters</p>
+            <p id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">Maximum 100 characters</p>
          </div>
          <div class="form-field">
             <label for="description">Description <span aria-hidden="true">*</span></label>
             <textarea id="description" name="description" rows="3" maxlength="2000" aria-describedby="description-character-count" required>{{ jobRole.description | default('', true) }}</textarea>
-            <p id="description-character-count" class="form-character-count" data-character-count-for="description">{{ jobRole.description | default('', true) | length }} / 2000 characters</p>
+            <p id="description-character-count" class="form-character-count" data-character-count-for="description">Maximum 2000 characters</p>
          </div>
          <div class="form-field">
             <label for="responsibilities">Responsibilities <span aria-hidden="true">*</span></label>
             <textarea id="responsibilities" name="responsibilities" rows="3" maxlength="2000" aria-describedby="responsibilities-character-count" required>{{ jobRole.responsibilities | default('', true) }}</textarea>
-            <p id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">{{ jobRole.responsibilities | default('', true) | length }} / 2000 characters</p>
+            <p id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">Maximum 2000 characters</p>
          </div>
          <div class="form-field">
             <label for="sharepointUrl">Job specification URL <span aria-hidden="true">*</span></label>
             <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." maxlength="255" aria-describedby="sharepointUrl-character-count" required/>
-            <p id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">{{ jobRole.sharepointUrl | default('', true) | length }} / 255 characters</p>
+            <p id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">Maximum 255 characters</p>
          </div>
          <div class="form-field">
             <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>

@@ -94,25 +94,25 @@ describe("jobRoleCreate", () => {
 			'maxlength="100" aria-describedby="roleName-character-count"',
 		);
 		expect(html).toContain(
-			'id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">8 / 100 characters',
+			'id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">Maximum 100 characters',
 		);
 		expect(html).toContain(
 			'maxlength="2000" aria-describedby="description-character-count"',
 		);
 		expect(html).toContain(
-			'id="description-character-count" class="form-character-count" data-character-count-for="description">14 / 2000 characters',
+			'id="description-character-count" class="form-character-count" data-character-count-for="description">Maximum 2000 characters',
 		);
 		expect(html).toContain(
 			'maxlength="2000" aria-describedby="responsibilities-character-count"',
 		);
 		expect(html).toContain(
-			'id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">11 / 2000 characters',
+			'id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">Maximum 2000 characters',
 		);
 		expect(html).toContain(
 			'maxlength="255" aria-describedby="sharepointUrl-character-count"',
 		);
 		expect(html).toContain(
-			'id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">23 / 255 characters',
+			'id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">Maximum 255 characters',
 		);
 		expect(html).toContain("/scripts/jobRoleCreate.js");
 	});
