@@ -78,7 +78,9 @@ describe("AdminApplicationService", () => {
 	});
 
 	it("should send filters with the pagination request", async () => {
-		vi.mocked(apiClient.get).mockResolvedValueOnce({ data: applicationPage([]) });
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: applicationPage([]),
+		});
 
 		await service.getPage(jwtToken, 2, 10, {
 			search: "jane@example.com",
