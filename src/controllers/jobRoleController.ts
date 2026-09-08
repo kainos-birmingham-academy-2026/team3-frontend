@@ -12,6 +12,7 @@ import type {
 	UpdateJobRoleInput,
 } from "../models/jobRole";
 import { AdminApplicationService } from "../services/adminApplicationService";
+import type { NormalizedStatus } from "../services/adminApplicationService";
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
@@ -30,6 +31,20 @@ export class JobRoleController {
 
 	private getQueryString(value: unknown): string | undefined {
 		return typeof value === "string" && value.trim() ? value.trim() : undefined;
+	}
+
+	private getApplicationStatusFilter(value: unknown): NormalizedStatus | "" {
+		const status = this.getQueryString(value)?.toLowerCase();
+		if (status === "hired") return "approved";
+		if (
+			status === "pending" ||
+			status === "approved" ||
+			status === "rejected" ||
+			status === "withdrawn"
+		) {
+			return status;
+		}
+		return "";
 	}
 
 	private getQueryList(value: unknown): string[] | undefined {
@@ -462,19 +477,17 @@ export class JobRoleController {
 		try {
 			const jwtToken = this.getJwtToken(req);
 			const page = Number(this.getQueryString(req.query.page) ?? 1);
-			const [jobRoles, applicationPage] = await Promise.all([
-				this.jobRoleService.getAll(jwtToken),
-				this.adminApplicationService.getPage(jwtToken ?? "", page, 10),
-			]);
-			const applications = applicationPage.items;
-			const requestedStatus =
-				this.getQueryString(req.query.status)?.toLowerCase() ?? "";
 			const filters = {
 				search: this.getQueryString(req.query.search)?.toLowerCase() ?? "",
-				status: requestedStatus === "hired" ? "approved" : requestedStatus,
+				status: this.getApplicationStatusFilter(req.query.status),
 				role: this.getQueryString(req.query.role) ?? "",
 				location: this.getQueryString(req.query.location) ?? "",
 			};
+			const [jobRoles, applicationPage] = await Promise.all([
+				this.jobRoleService.getAll(jwtToken),
+				this.adminApplicationService.getPage(jwtToken ?? "", page, 10, filters),
+			]);
+			const applications = applicationPage.items;
 			const roleLocations = new Map(
 				jobRoles.map((role) => [role.roleName.toLowerCase(), role.location]),
 			);
@@ -483,18 +496,8 @@ export class JobRoleController {
 				location:
 					roleLocations.get(application.roleName.toLowerCase()) ?? "Unknown",
 			}));
-			const filteredApplications = applicationsWithLocations.filter(
-				(application) =>
-					(!filters.search ||
-						application.applicantEmail
-							.toLowerCase()
-							.includes(filters.search)) &&
-					(!filters.status || application.status === filters.status) &&
-					(!filters.role || application.roleName === filters.role) &&
-					(!filters.location || application.location === filters.location),
-			);
 			res.render("pages/jobApplicationAdmin.njk", {
-				applications: filteredApplications,
+				applications: applicationsWithLocations,
 				applicationCounts: {
 					total: applicationPage.totalItems,
 					pending: applications.filter((item) => item.status === "pending")

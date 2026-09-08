@@ -30,8 +30,19 @@ export interface ApplicationPage {
 	totalPages: number;
 }
 
+export interface AdminApplicationFilters {
+	search?: string;
+	status?: NormalizedStatus | "";
+	role?: string;
+	location?: string;
+}
+
 type StatusAction = "approve" | "reject";
-type NormalizedStatus = "pending" | "approved" | "rejected" | "withdrawn";
+export type NormalizedStatus =
+	| "pending"
+	| "approved"
+	| "rejected"
+	| "withdrawn";
 
 export class AdminApplicationService {
 	private static readonly ADMIN_APPLICATIONS_ENDPOINT =
@@ -92,17 +103,39 @@ export class AdminApplicationService {
 		return action === "approve" ? "HIRED" : "REJECTED";
 	}
 
+	private getFilterStatus(
+		status?: NormalizedStatus | "",
+	): "IN_PROGRESS" | "HIRED" | "REJECTED" | "WITHDRAWN" | undefined {
+		const statuses = {
+			pending: "IN_PROGRESS",
+			approved: "HIRED",
+			rejected: "REJECTED",
+			withdrawn: "WITHDRAWN",
+		} as const;
+		return status ? statuses[status] : undefined;
+	}
+
 	async getPage(
 		jwtToken?: string,
 		page = 1,
 		pageSize = 100,
+		filters: AdminApplicationFilters = {},
 	): Promise<ApplicationPage> {
 		try {
 			const response = await apiClient.get<ApiApplicationPage>(
 				AdminApplicationService.ADMIN_APPLICATIONS_ENDPOINT,
 				{
 					...(jwtToken ? { headers: this.getAuthHeaders(jwtToken) } : {}),
-					params: { page, pageSize },
+					params: {
+						...(filters.search ? { search: filters.search } : {}),
+						...(filters.status
+							? { status: this.getFilterStatus(filters.status) }
+							: {}),
+						...(filters.role ? { role: filters.role } : {}),
+						...(filters.location ? { location: filters.location } : {}),
+						page,
+						pageSize,
+					},
 				},
 			);
 
