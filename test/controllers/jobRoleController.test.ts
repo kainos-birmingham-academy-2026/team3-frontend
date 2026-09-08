@@ -348,6 +348,10 @@ describe("JobRoleController", () => {
 				jwtToken: "admin-token",
 				userRole: "ADMIN",
 				createJobRoleErrorVariant: "A",
+				createJobRoleErrorExperiment: {
+					attemptId: "stale-attempt",
+					exposed: true,
+				},
 			},
 		});
 		const res = createResponse();
@@ -376,6 +380,11 @@ describe("JobRoleController", () => {
 			locations,
 			capabilities,
 			bands,
+		});
+		expect(req.session.createJobRoleErrorVariant).toBe("A");
+		expect(req.session.createJobRoleErrorExperiment).toEqual({
+			attemptId: expect.not.stringMatching("stale-attempt"),
+			exposed: false,
 		});
 	});
 

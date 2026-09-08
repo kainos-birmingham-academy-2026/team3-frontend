@@ -253,7 +253,10 @@ export class JobRoleController {
 		try {
 			const dropdownOptions = await this.getDropdownOptions();
 			const errorVariant = this.getCreateJobRoleErrorVariant(req);
-			this.getCreateJobRoleExperiment(req);
+			req.session.createJobRoleErrorExperiment = {
+				attemptId: randomUUID(),
+				exposed: false,
+			};
 			req.session.dropdownOptions = dropdownOptions;
 			res.render("pages/jobRoleCreate.njk", {
 				canCreate: true,
