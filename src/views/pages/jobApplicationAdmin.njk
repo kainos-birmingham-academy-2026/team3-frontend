@@ -485,17 +485,6 @@
    margin: 2rem 0;
   }
 
-  .no-results {
-   display: none;
-   text-align: center;
-   padding: 2rem;
-   color: #999;
-  }
-
-  .no-results.show {
-   display: block;
-  }
-
   .popup-overlay {
    position: fixed;
    inset: 0;
@@ -630,256 +619,13 @@
  </style>
 
  <script>
-  let allApplications = [];
-  let totalApplicationCount = {{ applicationCounts.total or 0 }};
-  const statusOverrides = new Map();
-  let filtersBound = false;
-
-  // DOM Elements
-  const searchInput = document.getElementById("search-input");
-  const statusFilter = document.getElementById("status-filter");
-  const roleFilter = document.getElementById("role-filter");
-  const locationFilter = document.getElementById("location-filter");
-  const tbody = document.getElementById("applications-tbody");
-  const tableContainer = document.getElementById("table-container");
-  const summaryContainer = document.getElementById("summary-container");
-  const emptyState = document.getElementById("empty-state");
   const actionPopup = document.getElementById("action-popup");
   const popupTitle = document.getElementById("popup-title");
   const popupMessage = document.getElementById("popup-message");
   const popupCancelButton = document.getElementById("popup-cancel");
   const popupConfirmButton = document.getElementById("popup-confirm");
-  const roleLocationByName = new Map();
   let popupResolve = null;
   let popupPreviousFocus = null;
-
-  Array.from(roleFilter.options).forEach((option) => {
-   if (!option.value) {
-    return;
-   }
-
-   const normalizedRole = option.value.trim().toLowerCase();
-   const locationValue = (option.dataset.location || "Unknown").trim();
-   if (normalizedRole && !roleLocationByName.has(normalizedRole)) {
-    roleLocationByName.set(normalizedRole, locationValue);
-   }
-  });
-
-  function getApplicationKey(applicationId) {
-   return String(applicationId);
-  }
-
-  function normalizeApplicationStatus(status) {
-   const normalizedStatus = String(status || "").trim().toLowerCase();
-
-    if (normalizedStatus === "withdrawn") {
-     return "withdrawn";
-    }
-
-   if (
-    normalizedStatus === "hired" ||
-    normalizedStatus === "approved" ||
-    normalizedStatus === "approve" ||
-    normalizedStatus === "accepted" ||
-    normalizedStatus === "success"
-   ) {
-    return "hired";
-   }
-
-   if (
-    normalizedStatus === "rejected" ||
-    normalizedStatus === "reject" ||
-    normalizedStatus === "declined" ||
-    normalizedStatus === "denied" ||
-    normalizedStatus === "failed"
-   ) {
-    return "rejected";
-   }
-
-   return "pending";
-  }
-
-  // Fetch applications on page load
-  async function loadApplications() {
-   try {
-    const page = new URLSearchParams(window.location.search).get("page") || "1";
-    const response = await fetch(`/api/job-applications/admin?page=${encodeURIComponent(page)}`, {
-     method: "GET",
-    });
-
-    if (!response.ok) {
-     throw new Error(`Failed to fetch applications: ${response.statusText}`);
-    }
-
-    const applicationPage = await response.json();
-    const fetchedApplications = applicationPage.items;
-    totalApplicationCount = applicationPage.totalItems;
-    allApplications = fetchedApplications.map((app) => {
-     const overrideStatus = statusOverrides.get(getApplicationKey(app.applicationId));
-     const effectiveStatus = overrideStatus ?? app.status;
-     return { ...app, status: normalizeApplicationStatus(effectiveStatus) };
-    });
-    renderApplications();
-    populateRoleFilter();
-    attachEventListeners();
-   } catch (error) {
-    console.error("Error loading applications:", error);
-    showError("Failed to load applications. Please refresh the page.");
-   }
-  }
-
-  function renderApplications() {
-   tbody.innerHTML = "";
-
-   if (allApplications.length === 0) {
-    emptyState.style.display = "block";
-    tableContainer.style.display = "none";
-    summaryContainer.style.display = "none";
-    return;
-   }
-
-   emptyState.style.display = "none";
-   tableContainer.style.display = "block";
-   summaryContainer.style.display = "grid";
-
-   allApplications.forEach((app) => {
-    const row = document.createElement("tr");
-    row.className = "application-row";
-    row.setAttribute("data-application-id", app.applicationId);
-
-    const statusLower = normalizeApplicationStatus(app.status);
-    const isPending = statusLower === "pending";
-    const roleKey = String(app.roleName || "").trim().toLowerCase();
-    const appLocation = roleLocationByName.get(roleKey) || "Unknown";
-    const jobRoleId = Number.parseInt(String(app.jobRoleId), 10);
-    const detailsHref = Number.isNaN(jobRoleId)
-     ? "/job-role-list"
-     : `/job-role-list/${jobRoleId}`;
-    const normalizedLocation = appLocation.toLowerCase();
-
-    const cvLinkText = `${app.applicantEmail} — ${app.roleName}`;
-
-    row.innerHTML = `
-     <td class="applicant-cell">
-      <a class="applicant-link" href="/job-applications/${app.applicationId}/cv" aria-label="View CV for ${escapeHtml(app.applicantEmail)} for ${escapeHtml(app.roleName)}">
-       ${escapeHtml(cvLinkText)}
-      </a>
-     </td>
-     <td class="role-cell">${escapeHtml(app.roleName)}</td>
-     <td class="date-cell">${escapeHtml(app.applicationDate)}</td>
-     <td class="status-cell">
-      <span class="status-badge status-${statusLower}">
-       ${capitalize(statusLower)}
-      </span>
-     </td>
-     <td class="actions-cell">
-      <div class="actions-content">
-       <button 
-        class="btn-view" 
-        data-href="${detailsHref}"
-        aria-label="View full application details for ${escapeHtml(app.applicantEmail)}"
-       >
-        View job role
-       </button>
-       ${isPending ? `
-        <div class="inline-actions">
-         <button 
-          class="btn-hire" 
-          data-application-id="${app.applicationId}"
-          aria-label="Hire ${escapeHtml(app.applicantEmail)}"
-         >
-          Hire
-         </button>
-         <button 
-          class="btn-reject" 
-          data-application-id="${app.applicationId}"
-          aria-label="Reject ${escapeHtml(app.applicantEmail)}'s application"
-         >
-          Reject
-         </button>
-        </div>
-       ` : ''}
-      </div>
-     </td>
-    `;
-
-    row.setAttribute("data-location", normalizedLocation);
-
-    tbody.appendChild(row);
-   });
-
-   updateSummary();
-  }
-
-  function populateRoleFilter() {
-   const roles = new Set(allApplications.map((app) => app.roleName));
-    roleFilter.innerHTML = '<option value="">All Roles</option>';
-
-    Array.from(roles).sort().forEach((role) => {
-    const option = document.createElement("option");
-    option.value = role;
-    option.textContent = role;
-     const roleKey = String(role || "").trim().toLowerCase();
-     option.dataset.location = roleLocationByName.get(roleKey) || "Unknown";
-     roleFilter.appendChild(option);
-   });
-
-    populateLocationFilter();
-    }
-
-    function populateLocationFilter() {
-    const locations = new Set();
-
-    allApplications.forEach((app) => {
-     const roleKey = String(app.roleName || "").trim().toLowerCase();
-     locations.add(roleLocationByName.get(roleKey) || "Unknown");
-    });
-
-    locationFilter.innerHTML = '<option value="">All Locations</option>';
-
-    Array.from(locations).sort().forEach((location) => {
-     const option = document.createElement("option");
-     option.value = location;
-     option.textContent = location;
-     locationFilter.appendChild(option);
-    });
-  }
-
-  function updateSummary() {
-  const total = totalApplicationCount;
-    const pending = allApplications.filter(
-     (app) => normalizeApplicationStatus(app.status) === "pending"
-    ).length;
-    const hired = allApplications.filter(
-     (app) => normalizeApplicationStatus(app.status) === "hired"
-    ).length;
-    const rejected = allApplications.filter(
-     (app) => normalizeApplicationStatus(app.status) === "rejected"
-    ).length;
-    const withdrawn = allApplications.filter(
-     (app) => normalizeApplicationStatus(app.status) === "withdrawn"
-    ).length;
-
-   document.getElementById("total-count").textContent = total;
-   document.getElementById("pending-count").textContent = pending;
-    document.getElementById("hired-count").textContent = hired;
-   document.getElementById("rejected-count").textContent = rejected;
-     document.getElementById("withdrawn-count").textContent = withdrawn;
-  }
-
-  function updateApplicationStatusInView(applicationId, newStatus) {
-    const applicationKey = getApplicationKey(applicationId);
-    const normalizedStatus = normalizeApplicationStatus(newStatus);
-    statusOverrides.set(applicationKey, normalizedStatus);
-   allApplications = allApplications.map((app) =>
-     getApplicationKey(app.applicationId) === applicationKey
-      ? { ...app, status: normalizedStatus }
-      : app
-   );
-   renderApplications();
-   filterApplications();
-   bindRowActionListeners();
-  }
 
   function closePopup(result) {
    actionPopup.hidden = true;
@@ -954,14 +700,6 @@
   });
 
   function bindRowActionListeners() {
-   // View details buttons
-   document.querySelectorAll(".btn-view").forEach((btn) => {
-    btn.addEventListener("click", () => {
-     const href = btn.getAttribute("data-href");
-     if (href) window.location.href = href;
-    });
-   });
-
    // Hire/Reject buttons
    document.querySelectorAll(".btn-hire").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -978,79 +716,6 @@
     rejectApplication(applicationId);
     });
    });
-  }
-
-  function attachEventListeners() {
-   if (!filtersBound) {
-    searchInput.addEventListener("input", filterApplications);
-    statusFilter.addEventListener("change", filterApplications);
-    roleFilter.addEventListener("change", filterApplications);
-      locationFilter.addEventListener("change", filterApplications);
-    filtersBound = true;
-   }
-
-   bindRowActionListeners();
-  }
-
-  function filterApplications() {
-   const searchTerm = searchInput.value.toLowerCase();
-   const statusValue = statusFilter.value.toLowerCase();
-   const roleValue = roleFilter.value;
-  const locationValue = locationFilter.value.toLowerCase();
-
-   const rows = document.querySelectorAll(".application-row");
-   let visibleCount = 0;
-
-   rows.forEach((row) => {
-    let shouldShow = true;
-
-    // Search filter
-    if (searchTerm) {
-     const applicantEmail = row.querySelector(".applicant-cell").textContent.toLowerCase();
-     shouldShow = shouldShow && applicantEmail.includes(searchTerm);
-    }
-
-    // Status filter
-    if (statusValue) {
-     const statusBadge = row.querySelector(".status-badge");
-     const rowStatus = statusBadge.textContent.trim().toLowerCase();
-     shouldShow = shouldShow && rowStatus === statusValue;
-    }
-
-    // Role filter
-    if (roleValue) {
-     const roleCell = row.querySelector(".role-cell").textContent.toLowerCase();
-     shouldShow = shouldShow && roleCell === roleValue.toLowerCase();
-    }
-
-    // Location filter
-    if (locationValue) {
-     const rowLocation = (row.getAttribute("data-location") || "").toLowerCase();
-     shouldShow = shouldShow && rowLocation === locationValue;
-    }
-
-    row.style.display = shouldShow ? "" : "none";
-    if (shouldShow) visibleCount++;
-   });
-
-   // Show/hide no results message
-   if (visibleCount === 0 && rows.length > 0) {
-    let noResults = document.querySelector(".no-results");
-    if (!noResults) {
-     noResults = document.createElement("tr");
-     noResults.className = "no-results show";
-     noResults.innerHTML =
-      '<td colspan="6" style="text-align: center; padding: 2rem; color: #999;">No applications match your filters.</td>';
-     tbody.appendChild(noResults);
-    } else {
-     noResults.classList.add("show");
-    }
-   } else {
-    const noResults = document.querySelector(".no-results");
-    if (noResults) {
-     noResults.classList.remove("show");
-    }
-   }
   }
 
   async function hireApplication(applicationId) {
@@ -1074,26 +739,24 @@
     });
 
     if (response.ok) {
-     updateApplicationStatusInView(applicationId, "hired");
      await showPopup({
       title: "Success",
       message: "Applicant hired!",
       confirmText: "OK",
       confirmStyle: "default",
      });
-     loadApplications();
+      window.location.reload();
      return;
     }
 
     if (response.status === 409) {
-     updateApplicationStatusInView(applicationId, "hired");
      await showPopup({
       title: "Already Updated",
       message: "Applicant is already hired.",
       confirmText: "OK",
       confirmStyle: "default",
      });
-     loadApplications();
+      window.location.reload();
      return;
     }
 
@@ -1142,26 +805,24 @@
     });
 
     if (response.ok) {
-     updateApplicationStatusInView(applicationId, "rejected");
      await showPopup({
       title: "Success",
       message: "Application rejected!",
       confirmText: "OK",
       confirmStyle: "default",
      });
-     loadApplications();
+      window.location.reload();
      return;
     }
 
     if (response.status === 409) {
-     updateApplicationStatusInView(applicationId, "rejected");
      await showPopup({
       title: "Already Updated",
       message: "Application is already rejected.",
       confirmText: "OK",
       confirmStyle: "default",
      });
-     loadApplications();
+      window.location.reload();
      return;
     }
 
@@ -1189,24 +850,6 @@
    }
   }
 
-  function escapeHtml(text) {
-   const div = document.createElement("div");
-   div.textContent = text;
-   return div.innerHTML;
-  }
-
-  function capitalize(str) {
-   return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  function showError(message) {
-   emptyState.innerHTML = `<p>${escapeHtml(message)}</p>`;
-   emptyState.style.display = "block";
-   tableContainer.style.display = "none";
-   summaryContainer.style.display = "none";
-  }
-
-  // Load applications when page loads
-  window.addEventListener("DOMContentLoaded", loadApplications);
+  window.addEventListener("DOMContentLoaded", bindRowActionListeners);
  </script>
 {% endblock %}
