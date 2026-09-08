@@ -1285,6 +1285,7 @@ describe("JobRoleController", () => {
 			"jwt-token",
 			1,
 			10,
+			{ search: "", status: "", role: "", location: "" },
 		);
 		expect(res.render).toHaveBeenCalledWith("pages/jobApplicationAdmin.njk", {
 			applications: [
@@ -1323,26 +1324,25 @@ describe("JobRoleController", () => {
 			applicationDate: "2026-09-01",
 			status: "approved",
 		};
-		const excludedApplication = {
-			...matchingApplication,
-			applicationId: 2,
-			applicantEmail: "taylor@other.test",
-		};
-
 		jobRoleService.getAll.mockResolvedValueOnce([
 			{ roleName: "Engineer", location: "Belfast" },
 		]);
 		adminApplicationService.getPage.mockResolvedValueOnce({
-			items: [matchingApplication, excludedApplication],
+			items: [matchingApplication],
 			page: 1,
 			pageSize: 10,
-			totalItems: 2,
+			totalItems: 1,
 			totalPages: 1,
 		});
 
 		await controller.getApplications(req as unknown as Request, res);
 
-		expect(adminApplicationService.getPage).toHaveBeenCalledWith("", 1, 10);
+		expect(adminApplicationService.getPage).toHaveBeenCalledWith("", 1, 10, {
+			search: "example.com",
+			status: "approved",
+			role: "Engineer",
+			location: "Belfast",
+		});
 		expect(res.render).toHaveBeenCalledWith(
 			"pages/jobApplicationAdmin.njk",
 			expect.objectContaining({
