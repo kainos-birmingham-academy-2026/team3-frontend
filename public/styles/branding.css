@@ -478,6 +478,28 @@ body.modal-open {
 	margin-top: 1rem;
 }
 
+.application-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin: 2rem 0;
+}
+
+.pagination-link {
+	border: 0;
+	padding: 0.35rem;
+	color: var(--kainos-blue);
+	background: transparent;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.pagination-link:hover {
+	text-decoration: underline;
+}
+
 @media (max-width: 900px) {
 	.job-role-filter-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -149,4 +149,37 @@ describe("jobRoleList", () => {
 		);
 		expect(html.match(/checked/g)).toHaveLength(3);
 	});
+
+	it("should render pagination controls using the filter form", () => {
+		const html = renderView([], undefined, {
+			filters: {},
+			pagination: { page: 2, pageSize: 10, totalItems: 25, totalPages: 3 },
+		});
+
+		expect(html).toContain('aria-label="Job role pages"');
+		expect(html).toContain(
+			'value="1" form="job-role-filters" aria-label="First page"',
+		);
+		expect(html).toContain(
+			'value="1" form="job-role-filters" aria-label="Previous page"',
+		);
+		expect(html).toContain("Page 2 of 3");
+		expect(html).toContain(
+			'value="3" form="job-role-filters" aria-label="Next page"',
+		);
+		expect(html).toContain(
+			'value="3" form="job-role-filters" aria-label="Last page"',
+		);
+	});
+
+	it("should hide first and last controls when there are two pages", () => {
+		const html = renderView([], undefined, {
+			filters: {},
+			pagination: { page: 1, pageSize: 10, totalItems: 20, totalPages: 2 },
+		});
+
+		expect(html).toContain('aria-label="Next page"');
+		expect(html).not.toContain('aria-label="First page"');
+		expect(html).not.toContain('aria-label="Last page"');
+	});
 });

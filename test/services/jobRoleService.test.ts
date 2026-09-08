@@ -11,6 +11,16 @@ vi.mock("../../src/config/apiClient", () => ({
 	},
 }));
 
+function jobRolePage<T>(items: T[]) {
+	return {
+		items,
+		page: 1,
+		pageSize: 100,
+		totalItems: items.length,
+		totalPages: items.length > 0 ? 1 : 0,
+	};
+}
+
 describe("JobRoleService", () => {
 	const service = new JobRoleService();
 	const jwtToken = "test-jwt-token";
@@ -21,7 +31,7 @@ describe("JobRoleService", () => {
 
 	it("should convert closingDate from datetime to date-only", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -31,13 +41,14 @@ describe("JobRoleService", () => {
 					closingDate: "2026-08-06T00:00:00.000Z",
 					status: "OPEN",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
 
 		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
+			params: expect.any(URLSearchParams),
 		});
 		expect(result[0]?.closingDate).toBe("2026-08-06");
 		expect(result[0]?.status).toBe("open");
@@ -46,7 +57,7 @@ describe("JobRoleService", () => {
 
 	it("should fetch public job roles without authorization header", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -56,18 +67,20 @@ describe("JobRoleService", () => {
 					closingDate: "2026-08-06T00:00:00.000Z",
 					status: "OPEN",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll();
 
-		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles");
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles", {
+			params: expect.any(URLSearchParams),
+		});
 		expect(result).toHaveLength(1);
 		expect(result[0]?.status).toBe("open");
 	});
 
 	it("should send role filters as API query parameters", async () => {
-		vi.mocked(apiClient.get).mockResolvedValueOnce({ data: [] });
+		vi.mocked(apiClient.get).mockResolvedValueOnce({ data: jobRolePage([]) });
 
 		await service.getAll(undefined, {
 			roleName: "Engineer",
@@ -80,13 +93,45 @@ describe("JobRoleService", () => {
 
 		const config = vi.mocked(apiClient.get).mock.calls[0]?.[1];
 		expect(config?.params.toString()).toBe(
-			"roleName=Engineer&closingDateFrom=2026-09-01&closingDateTo=2026-12-31&locationId=1&locationId=2&capabilityId=3&bandId=4",
+			"roleName=Engineer&closingDateFrom=2026-09-01&closingDateTo=2026-12-31&locationId=1&locationId=2&capabilityId=3&bandId=4&page=1&pageSize=100",
 		);
+	});
+
+	it("should request and map a page of job roles", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: {
+				items: [
+					{
+						jobRoleId: 1,
+						roleName: "Software Engineer",
+						status: "OPEN",
+					},
+				],
+				page: 2,
+				pageSize: 10,
+				totalItems: 11,
+				totalPages: 2,
+			},
+		});
+
+		const result = await service.getPage(
+			undefined,
+			{ roleName: "Engineer" },
+			2,
+			10,
+		);
+
+		const config = vi.mocked(apiClient.get).mock.calls[0]?.[1];
+		expect(config?.params.toString()).toBe(
+			"roleName=Engineer&page=2&pageSize=10",
+		);
+		expect(result.items[0]?.status).toBe("open");
+		expect(result.totalPages).toBe(2);
 	});
 
 	it("should keeps role status values from backend for view filtering", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -105,7 +150,7 @@ describe("JobRoleService", () => {
 					closingDate: "2026-09-01T00:00:00.000Z",
 					status: "CLOSED",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -116,7 +161,7 @@ describe("JobRoleService", () => {
 
 	it("should read statusName when status is not present", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -126,7 +171,7 @@ describe("JobRoleService", () => {
 					closingDate: "2026-08-06T00:00:00.000Z",
 					statusName: "OPEN",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -158,7 +203,7 @@ describe("JobRoleService", () => {
 
 	it("should map sharepointUrl to jobSpecUrl for getAll", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -169,7 +214,7 @@ describe("JobRoleService", () => {
 					status: "OPEN",
 					sharepointUrl: "https://sharepoint.com/jobs/engineer",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -179,7 +224,7 @@ describe("JobRoleService", () => {
 
 	it("should map numberOfOpenPositions to openPositions", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -190,7 +235,7 @@ describe("JobRoleService", () => {
 					status: "OPEN",
 					numberOfOpenPositions: 3,
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -200,7 +245,7 @@ describe("JobRoleService", () => {
 
 	it("should include responsibilities in response", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -211,7 +256,7 @@ describe("JobRoleService", () => {
 					status: "OPEN",
 					responsibilities: "Build and maintain software systems",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -223,7 +268,7 @@ describe("JobRoleService", () => {
 
 	it("should map address fields for getAll", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 1,
 					roleName: "Software Engineer",
@@ -236,7 +281,7 @@ describe("JobRoleService", () => {
 					addressLine2: "Suite 100",
 					postcode: "B1 1AA",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);
@@ -307,31 +352,32 @@ describe("JobRoleService", () => {
 
 	it("should send authorization header when token is provided", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 9,
 					roleName: "Platform Engineer",
 					closingDate: "2026-10-01T00:00:00.000Z",
 				},
-			],
+			]),
 		});
 
 		await service.getAll("jwt-token");
 
 		expect(apiClient.get).toHaveBeenCalledWith("/api/job-roles", {
 			headers: { Authorization: "Bearer jwt-token" },
+			params: expect.any(URLSearchParams),
 		});
 	});
 
 	it("should use fallback values for missing location, capability, and band", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
-			data: [
+			data: jobRolePage([
 				{
 					jobRoleId: 10,
 					roleName: "Data Engineer",
 					closingDate: "2026-11-12T00:00:00.000Z",
 				},
-			],
+			]),
 		});
 
 		const result = await service.getAll(jwtToken);

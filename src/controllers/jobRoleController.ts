@@ -91,15 +91,16 @@ export class JobRoleController {
 	async getAll(req: Request, res: Response): Promise<void> {
 		try {
 			const filters = this.getFilters(req);
-			const [jobRoles, locationOptions, capabilityOptions, bandOptions] =
+			const page = Number(this.getQueryString(req.query.page) ?? 1);
+			const [jobRolePage, locationOptions, capabilityOptions, bandOptions] =
 				await Promise.all([
-					this.jobRoleService.getAll(this.getJwtToken(req), filters),
+					this.jobRoleService.getPage(this.getJwtToken(req), filters, page, 10),
 					this.jobRoleService.getAllLocations(),
 					this.jobRoleService.getAllCapabilities(),
 					this.jobRoleService.getAllBands(),
 				]);
 			res.render("pages/jobRoleList.njk", {
-				jobRoles,
+				jobRoles: jobRolePage.items,
 				filters,
 				locationOptions,
 				capabilityOptions,
@@ -107,6 +108,7 @@ export class JobRoleController {
 				selectedLocationIds: this.getSelectedIds(filters.locationId),
 				selectedCapabilityIds: this.getSelectedIds(filters.capabilityId),
 				selectedBandIds: this.getSelectedIds(filters.bandId),
+				pagination: jobRolePage,
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -459,10 +461,12 @@ export class JobRoleController {
 	async getApplications(req: Request, res: Response): Promise<void> {
 		try {
 			const jwtToken = this.getJwtToken(req);
-			const [jobRoles, applications] = await Promise.all([
+			const page = Number(this.getQueryString(req.query.page) ?? 1);
+			const [jobRoles, applicationPage] = await Promise.all([
 				this.jobRoleService.getAll(jwtToken),
-				this.adminApplicationService.getAll(jwtToken ?? ""),
+				this.adminApplicationService.getPage(jwtToken ?? "", page, 10),
 			]);
+			const applications = applicationPage.items;
 			const requestedStatus =
 				this.getQueryString(req.query.status)?.toLowerCase() ?? "";
 			const filters = {
@@ -492,7 +496,7 @@ export class JobRoleController {
 			res.render("pages/jobApplicationAdmin.njk", {
 				applications: filteredApplications,
 				applicationCounts: {
-					total: applications.length,
+					total: applicationPage.totalItems,
 					pending: applications.filter((item) => item.status === "pending")
 						.length,
 					approved: applications.filter((item) => item.status === "approved")
@@ -502,6 +506,7 @@ export class JobRoleController {
 				},
 				filters,
 				jobRoles,
+				pagination: applicationPage,
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
