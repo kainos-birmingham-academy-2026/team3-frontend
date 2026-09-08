@@ -11,8 +11,8 @@ import type {
 	StatusOption,
 	UpdateJobRoleInput,
 } from "../models/jobRole";
-import { AdminApplicationService } from "../services/adminApplicationService";
 import type { NormalizedStatus } from "../services/adminApplicationService";
+import { AdminApplicationService } from "../services/adminApplicationService";
 import type { JobRoleService } from "../services/jobRoleService";
 
 export class JobRoleController {
