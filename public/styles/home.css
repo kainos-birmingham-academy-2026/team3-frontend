@@ -1,0 +1,55 @@
+.home-hero,
+.page-hero {
+	background: var(--kainos-white);
+	border: 1px solid #dde3f5;
+	padding: 2rem;
+}
+
+.home-hero h1,
+.page-hero h1 {
+	margin: 0;
+	font-size: clamp(1.8rem, 2.8vw, 3rem);
+	line-height: 1.1;
+}
+
+.hero-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin-top: 1.2rem;
+}
+
+.home-cards {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	margin-top: 1.1rem;
+}
+
+.card {
+	background: var(--kainos-navy);
+	color: var(--kainos-white);
+	padding: 1.5rem;
+}
+
+.card h2 {
+	margin-top: 0;
+}
+
+.card a {
+	color: var(--kainos-white);
+	font-weight: 600;
+}
+
+.link-underlined {
+	text-decoration: underline;
+	text-decoration-color: var(--kainos-white);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 0.28em;
+}
+
+@media (max-width: 900px) {
+	.home-cards {
+		grid-template-columns: 1fr;
+	}
+}

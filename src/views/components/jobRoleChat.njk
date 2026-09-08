@@ -1,0 +1,32 @@
+<aside class="job-chat" aria-label="Job role assistant">
+ <section id="job-chat-panel" class="job-chat-panel" aria-labelledby="job-chat-title" hidden>
+  <header class="job-chat-header">
+   <div>
+    <h2 id="job-chat-title">Ask about job roles</h2>
+    <p>Answers use current role information.</p>
+   </div>
+   <button id="job-chat-close" class="job-chat-close" type="button" aria-label="Close job role assistant">&times;</button>
+  </header>
+  <div id="job-chat-messages" class="job-chat-messages" role="log" aria-live="polite" aria-relevant="additions">
+   <p class="job-chat-message job-chat-message-assistant">Hello. What would you like to know about our job roles?</p>
+  </div>
+  <form id="job-chat-form" class="job-chat-form">
+   <label for="job-chat-input">Your question</label>
+   <div class="job-chat-input-row">
+    <input id="job-chat-input" name="message" type="text" maxlength="500" autocomplete="off" aria-describedby="job-chat-character-count" required />
+    <button class="job-chat-send" type="submit">Send</button>
+   </div>
+   <p id="job-chat-character-count" class="job-chat-character-count">0 / 500 characters</p>
+  </form>
+ </section>
+ <button
+  id="job-chat-toggle"
+  class="job-chat-toggle"
+  type="button"
+  aria-label="Open job role assistant"
+  aria-controls="job-chat-panel"
+  aria-expanded="false"
+ >
+  <span class="job-chat-icon" aria-hidden="true"></span>
+ </button>
+</aside>

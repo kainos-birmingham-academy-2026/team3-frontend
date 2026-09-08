@@ -7,6 +7,15 @@
   <title>{% block title %}Kainos Careers{% endblock %}</title>
   <link rel="icon" type="image/png" href="/images/kainos-favicon.png" />
   <link rel="stylesheet" href="/styles/branding.css" />
+  <link rel="stylesheet" href="/styles/header.css" />
+  <link rel="stylesheet" href="/styles/modals.css" />
+  <link rel="stylesheet" href="/styles/home.css" />
+  <link rel="stylesheet" href="/styles/jobRoles.css" />
+  <link rel="stylesheet" href="/styles/forms.css" />
+  <link rel="stylesheet" href="/styles/footer.css" />
+  <link rel="stylesheet" href="/styles/errorPages.css" />
+  <link rel="stylesheet" href="/styles/jobRoleDetail.css" />
+  <link rel="stylesheet" href="/styles/jobRoleChat.css" />
  </head>
  <body>
   {% include "layouts/header.njk" %}
@@ -17,6 +26,8 @@
    </div>
   </main>
 
+  {% include "components/jobRoleChat.njk" %}
   {% include "layouts/footer.njk" %}
+  <script src="/scripts/jobRoleChat.js" defer></script>
  </body>
 </html>
