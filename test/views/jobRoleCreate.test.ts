@@ -14,13 +14,14 @@ const environment = new nunjucks.Environment(
 	new nunjucks.FileSystemLoader(viewsPath),
 );
 
-function renderView(): string {
+function renderView(jobRole = {}): string {
 	if (!template.length) {
 		throw new Error("Template should not be empty");
 	}
 
 	return environment.render("pages/jobRoleCreate.njk", {
 		canCreate: true,
+		jobRole,
 		capabilityOptions: [{ capabilityId: 1, capabilityName: "Engineering" }],
 		bandOptions: [{ bandId: 2, bandName: "Engineer" }],
 		locationOptions: [{ locationId: 3, locationName: "Birmingham" }],
@@ -54,5 +55,31 @@ describe("jobRoleCreate", () => {
 			"If no closing date is set, the role will remain open until manually closed.",
 		);
 		expect(html).not.toContain('name="statusId"');
+	});
+
+	it("should preserve submitted values when the form is re-rendered", () => {
+		const html = renderView({
+			roleName: "Software Engineer",
+			description: "Build & maintain services",
+			responsibilities: "Design and test systems",
+			sharepointUrl: "https://example.com/jobs/software-engineer",
+			numberOfOpenPositions: "2",
+			closingDate: "2026-12-31",
+			capabilityId: "1",
+			bandId: "2",
+			locationId: "3",
+		});
+
+		expect(html).toContain('value="Software Engineer"');
+		expect(html).toContain("Build &amp; maintain services");
+		expect(html).toContain("Design and test systems");
+		expect(html).toContain(
+			'value="https://example.com/jobs/software-engineer"',
+		);
+		expect(html).toContain('value="2" min="1"');
+		expect(html).toContain('value="2026-12-31"');
+		expect(html).toContain('value="1" selected>Engineering</option>');
+		expect(html).toContain('value="2" selected>Engineer</option>');
+		expect(html).toContain('value="3" selected>Birmingham</option>');
 	});
 });

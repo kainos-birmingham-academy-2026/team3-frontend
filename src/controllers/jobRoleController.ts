@@ -221,6 +221,7 @@ export class JobRoleController {
 			res.status(statusCode).render("pages/jobRoleCreate.njk", {
 				canCreate: statusCode !== 403,
 				errorMessage,
+				jobRole: req.body as CreateJobRoleInput,
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
 				bandOptions: req.session.dropdownOptions?.bands ?? [],
 				locationOptions: req.session.dropdownOptions?.locations ?? [],
