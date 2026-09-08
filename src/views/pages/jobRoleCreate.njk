@@ -15,27 +15,27 @@
       <form method="post" action="/job-role-create" class="login-form" novalidate>
          <div class="form-field">
             <label for="roleName">Role name</label>
-            <input id="roleName" name="roleName" type="text" placeholder="e.g. Software Engineer" required/>
+            <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" required/>
          </div>
          <div class="form-field">
             <label for="description">Description</label>
-            <textarea id="description" name="description" rows="3" required></textarea>
+            <textarea id="description" name="description" rows="3" required>{{ jobRole.description | default('', true) }}</textarea>
          </div>
          <div class="form-field">
             <label for="responsibilities">Responsibilities</label>
-            <textarea id="responsibilities" name="responsibilities" rows="3" required></textarea>
+            <textarea id="responsibilities" name="responsibilities" rows="3" required>{{ jobRole.responsibilities | default('', true) }}</textarea>
          </div>
          <div class="form-field">
             <label for="sharepointUrl">Job specification URL</label>
-            <input id="sharepointUrl" name="sharepointUrl" type="url" placeholder="https://..." required/>
+            <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." required/>
          </div>
          <div class="form-field">
             <label for="numberOfOpenPositions">Number of open positions</label>
-            <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" min="1" required/>
+            <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" value="{{ jobRole.numberOfOpenPositions | default('', true) }}" min="1" required/>
          </div>
          <div class="form-field">
             <label for="closingDate">Closing date</label>
-            <input id="closingDate" name="closingDate" type="date"/>
+            <input id="closingDate" name="closingDate" type="date" value="{{ jobRole.closingDate | default('', true) }}"/>
             <p class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
          </div>
          <div class="form-field">
@@ -43,7 +43,7 @@
             <select id="capabilityId" name="capabilityId" required>
                <option value="">Select capability</option>
                {% for capability in capabilityOptions | default([], true) %}
-                  <option value="{{ capability.capabilityId }}">{{ capability.capabilityName }}</option>
+                  <option value="{{ capability.capabilityId }}"{% if jobRole.capabilityId == capability.capabilityId %} selected{% endif %}>{{ capability.capabilityName }}</option>
                {% endfor %}
             </select>
          </div>
@@ -52,7 +52,7 @@
             <select id="bandId" name="bandId" required>
                <option value="">Select band</option>
                {% for band in bandOptions | default([], true) %}
-                  <option value="{{ band.bandId }}">{{ band.bandName }}</option>
+                  <option value="{{ band.bandId }}"{% if jobRole.bandId == band.bandId %} selected{% endif %}>{{ band.bandName }}</option>
                {% endfor %}
             </select>
          </div>
@@ -61,7 +61,7 @@
             <select id="locationId" name="locationId" required>
                <option value="">Select location</option>
                {% for location in locationOptions | default([], true) %}
-                  <option value="{{ location.locationId }}">{{ location.locationName }}</option>
+                  <option value="{{ location.locationId }}"{% if jobRole.locationId == location.locationId %} selected{% endif %}>{{ location.locationName }}</option>
                {% endfor %}
             </select>
          </div>

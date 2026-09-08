@@ -388,6 +388,7 @@ describe("JobRoleController", () => {
 	it("should render backend validation errors when creating a job role fails", async () => {
 		const req = createRequest({
 			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			body: { roleName: "Software Engineer", capabilityId: "3" },
 		});
 		const res = createResponse();
 
@@ -407,6 +408,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
 			errorMessage: [{ field: "roleName", message: "Role name is required" }],
+			jobRole: { roleName: "Software Engineer", capabilityId: "3" },
 			capabilityOptions: [],
 			bandOptions: [],
 			locationOptions: [],
