@@ -77,6 +77,31 @@ describe("AdminApplicationService", () => {
 		expect(result.totalPages).toBe(2);
 	});
 
+	it("should send filters with the pagination request", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: applicationPage([]),
+		});
+
+		await service.getPage(jwtToken, 2, 10, {
+			search: "jane@example.com",
+			status: "approved",
+			role: "Engineer",
+			location: "Belfast",
+		});
+
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/admin", {
+			headers: { Authorization: `Bearer ${jwtToken}` },
+			params: {
+				search: "jane@example.com",
+				status: "HIRED",
+				role: "Engineer",
+				location: "Belfast",
+				page: 2,
+				pageSize: 10,
+			},
+		});
+	});
+
 	it("should map cvText from nested payload fields", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: applicationPage([
