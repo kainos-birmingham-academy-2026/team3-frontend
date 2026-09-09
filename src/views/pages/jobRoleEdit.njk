@@ -14,7 +14,7 @@
       {% endif %}
     {% endif %}
     <p class="form-hint"><span aria-hidden="true">*</span> Required fields</p>
-    <form method="post" action="/job-role-edit" class="login-form">
+    <form method="post" action="/job-role-edit" class="login-form" novalidate>
       <input type="hidden" name="jobRoleId" value="{{ jobRole.jobRoleId }}"/>
       <div class="form-field">
         <label for="roleName">Role name <span aria-hidden="true">*</span></label>

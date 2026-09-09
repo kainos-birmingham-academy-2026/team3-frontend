@@ -54,10 +54,10 @@ describe("jobRoleEdit", () => {
 		expect(html).toContain('value="3" selected');
 	});
 
-	it("should enforce browser validation constraints", () => {
+	it("should submit validation to the server while retaining input constraints", () => {
 		const html = renderView();
 
-		expect(html).not.toContain("novalidate");
+		expect(html).toContain("novalidate");
 		expect(html).toContain('type="url" maxlength="255"');
 		expect(html).toContain('type="number" min="1" step="1"');
 		expect(html).toContain('type="date" min="2026-08-18"');
