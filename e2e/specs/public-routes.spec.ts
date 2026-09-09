@@ -59,6 +59,32 @@ test("home header sign-in link navigates to login @smoke", async ({
 test.describe("without browser JavaScript", () => {
 	test.use({ javaScriptEnabled: false });
 
+	test("navigation collapses at a 400 percent zoom equivalent", async ({
+		page,
+	}) => {
+		await page.setViewportSize({ width: 320, height: 720 });
+		await page.goto("/");
+
+		const header = page.locator(".site-header");
+		const menuToggle = page.getByRole("checkbox", { name: "Menu" });
+		const navigation = page.getByRole("navigation", {
+			name: "Main navigation",
+		});
+
+		expect(await header.evaluate((element) => element.clientHeight)).toBeLessThan(
+			80,
+		);
+		await expect(navigation).not.toBeVisible();
+		await menuToggle.focus();
+		await menuToggle.press("Space");
+		await expect(navigation).toBeVisible();
+		expect(
+			await page.evaluate(
+				() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+			),
+		).toBe(false);
+	});
+
 	test("core public navigation uses server-rendered links @smoke", async ({
 		page,
 	}) => {
