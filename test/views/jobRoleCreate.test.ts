@@ -118,18 +118,31 @@ describe("jobRoleCreate", () => {
 		expect(html).toContain("/scripts/jobRoleCreate.js");
 	});
 
-	it("should render variant A errors beside their fields", () => {
+	it("should render variant A errors in separate boxes above the form", () => {
 		const html = renderView(
 			{},
 			{
 				errorVariant: "A",
-				formErrors: [{ field: "roleName", message: "Role name is required" }],
-				fieldErrors: { roleName: ["Role name is required"] },
+				formErrors: [
+					{ field: "roleName", message: "Role name is required" },
+					{ field: "description", message: "Description is required" },
+				],
+				fieldErrors: {
+					roleName: ["Role name is required"],
+					description: ["Description is required"],
+				},
 				generalErrors: [],
 			},
 		);
 
 		expect(html).toContain('id="roleName-error"');
+		expect(html).toContain('id="description-error"');
+		expect(html.indexOf('id="roleName-error"')).toBeLessThan(
+			html.indexOf('<form method="post"'),
+		);
+		expect(html.indexOf('id="description-error"')).toBeLessThan(
+			html.indexOf('<form method="post"'),
+		);
 		expect(html).toContain('aria-invalid="true"');
 		expect(html).toContain(
 			'aria-describedby="roleName-error roleName-character-count"',
