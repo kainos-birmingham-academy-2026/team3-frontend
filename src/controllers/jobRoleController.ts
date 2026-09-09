@@ -1,6 +1,9 @@
 import axios from "axios";
 import type { Request, Response } from "express";
-import { JOB_ROLE_CHARACTER_LIMITS } from "../config/jobRoleValidation";
+import {
+	CV_TEXT_CHARACTER_LIMIT,
+	JOB_ROLE_CHARACTER_LIMITS,
+} from "../config/jobRoleValidation";
 import type {
 	BandOption,
 	CapabilityOption,
@@ -357,6 +360,7 @@ export class JobRoleController {
 				res.status(400).render("pages/jobRoleApply.njk", {
 					jobRoleId,
 					canApply: false,
+					cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 					errorMessage: "This role is not currently accepting applications.",
 				});
 				return;
@@ -365,6 +369,7 @@ export class JobRoleController {
 			res.render("pages/jobRoleApply.njk", {
 				jobRoleId,
 				canApply: true,
+				cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -378,6 +383,7 @@ export class JobRoleController {
 
 			res.status(500).render("pages/jobRoleApply.njk", {
 				canApply: false,
+				cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 				errorMessage,
 			});
 		}
@@ -394,6 +400,7 @@ export class JobRoleController {
 				res.status(400).render("pages/jobRoleApply.njk", {
 					jobRoleId,
 					canApply: false,
+					cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 					errorMessage: "This role is not currently accepting applications.",
 				});
 				return;
@@ -405,15 +412,17 @@ export class JobRoleController {
 				res.status(400).render("pages/jobRoleApply.njk", {
 					jobRoleId,
 					canApply: true,
+					cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 					errorMessage: "Please enter your CV text before submitting.",
 				});
 				return;
 			}
 
-			if (cvText.length > 5000) {
+			if (cvText.length > CV_TEXT_CHARACTER_LIMIT) {
 				res.status(400).render("pages/jobRoleApply.njk", {
 					jobRoleId,
 					canApply: true,
+					cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 					cvText,
 					errorMessage: "Your CV must be 5,000 characters or fewer.",
 				});
@@ -450,6 +459,7 @@ export class JobRoleController {
 			res.status(statusCode).render("pages/jobRoleApply.njk", {
 				jobRoleId,
 				canApply: jobRoleId ? this.canApplyForRole(jobRoleId) : false,
+				cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 				errorMessage,
 			});
 		}

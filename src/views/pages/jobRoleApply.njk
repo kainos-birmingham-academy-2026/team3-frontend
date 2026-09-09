@@ -49,11 +49,11 @@
             name="cvText"
             rows="12"
             placeholder="Paste your CV text here."
-            maxlength="5000"
+            maxlength="{{ cvTextCharacterLimit }}"
             aria-describedby="cvText-character-count"
             required
           >{{ cvText | default('', true) }}</textarea>
-          <p id="cvText-character-count" class="form-character-count" data-character-count-for="cvText">Maximum 5000 characters</p>
+          <p id="cvText-character-count" class="form-character-count" data-character-count-for="cvText">Maximum {{ cvTextCharacterLimit }} characters</p>
         </div>
 
         <button type="submit" class="button button-primary">Submit Application</button>

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import nunjucks from "nunjucks";
 import { describe, expect, it } from "vitest";
+import { CV_TEXT_CHARACTER_LIMIT } from "../../src/config/jobRoleValidation";
 
 const templatePath = path.resolve(
 	process.cwd(),
@@ -15,6 +16,7 @@ const environment = new nunjucks.Environment(
 
 type ApplyViewData = {
 	canApply: boolean;
+	cvTextCharacterLimit?: number;
 	errorMessage?: string;
 	successMessage?: string;
 	applicationStatus?: string;
@@ -30,7 +32,10 @@ function renderView(data: ApplyViewData): string {
 		throw new Error("Template should not be empty");
 	}
 
-	return environment.render("pages/jobRoleApply.njk", data);
+	return environment.render("pages/jobRoleApply.njk", {
+		cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
+		...data,
+	});
 }
 
 describe("jobRoleApply", () => {
@@ -48,8 +53,8 @@ describe("jobRoleApply", () => {
 		expect(html).toContain('action="/job-role-list/3/apply"');
 		expect(html).not.toContain('name="cvFile"');
 		expect(html).toContain('name="cvText"');
-		expect(html).toContain('maxlength="5000"');
-		expect(html).toContain("Maximum 5000 characters");
+		expect(html).toContain(`maxlength="${CV_TEXT_CHARACTER_LIMIT}"`);
+		expect(html).toContain(`Maximum ${CV_TEXT_CHARACTER_LIMIT} characters`);
 		expect(html).toContain('data-character-count-for="cvText"');
 		expect(html).toContain("/scripts/jobRoleCreate.js");
 		expect(html).toContain("textarea");

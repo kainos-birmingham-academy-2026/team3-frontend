@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { JOB_ROLE_CHARACTER_LIMITS } from "../../src/config/jobRoleValidation";
+import {
+	CV_TEXT_CHARACTER_LIMIT,
+	JOB_ROLE_CHARACTER_LIMITS,
+} from "../../src/config/jobRoleValidation";
 import { JobRoleController } from "../../src/controllers/jobRoleController";
 import type { AdminApplicationService } from "../../src/services/adminApplicationService";
 import type { JobRoleService } from "../../src/services/jobRoleService";
@@ -733,6 +736,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 3 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 		});
 	});
 
@@ -756,6 +760,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 3 }),
 			canApply: false,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "This role is not currently accepting applications.",
 		});
 	});
@@ -828,12 +833,13 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 9 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Please enter your CV text before submitting.",
 		});
 	});
 
 	it("should submit a CV containing exactly 5,000 characters", async () => {
-		const cvText = "a".repeat(5000);
+		const cvText = "a".repeat(CV_TEXT_CHARACTER_LIMIT);
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },
 			params: { id: "9" },
@@ -858,7 +864,7 @@ describe("JobRoleController", () => {
 	});
 
 	it("should reject a CV containing more than 5,000 characters", async () => {
-		const cvText = "a".repeat(5001);
+		const cvText = "a".repeat(CV_TEXT_CHARACTER_LIMIT + 1);
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },
 			params: { id: "9" },
@@ -880,6 +886,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 9 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			cvText,
 			errorMessage: "Your CV must be 5,000 characters or fewer.",
 		});
@@ -906,6 +913,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 10 }),
 			canApply: false,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "This role is not currently accepting applications.",
 		});
 	});
@@ -936,6 +944,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 11 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Job role not found.",
 		});
 	});
@@ -966,6 +975,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 12 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "You have already applied for this role.",
 		});
 	});
@@ -996,6 +1006,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 13 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Please provide a valid CV file.",
 		});
 	});
@@ -1026,6 +1037,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 14 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "The uploaded CV is too large.",
 		});
 	});
@@ -1056,6 +1068,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 15 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Unable to submit your application",
 		});
 	});
@@ -1085,6 +1098,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 16 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Network error",
 		});
 	});
@@ -1122,6 +1136,7 @@ describe("JobRoleController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			canApply: false,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Server error",
 		});
 	});
@@ -1140,6 +1155,7 @@ describe("JobRoleController", () => {
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			canApply: false,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "This page cannot be loaded right now. Please try again.",
 		});
 	});
@@ -1275,6 +1291,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 25 }),
 			canApply: true,
+			cvTextCharacterLimit: CV_TEXT_CHARACTER_LIMIT,
 			errorMessage: "Unable to submit your application",
 		});
 	});
