@@ -37,6 +37,11 @@ describe("login", () => {
 		expect(html).toContain('autocomplete="email"');
 		expect(html).toContain('value="jane.doe@example.com"');
 		expect(html).toContain('type="password"');
+		expect(html.match(/class="field-icon"/g)).toHaveLength(2);
+		expect(html).toContain('class="password-toggle"');
+		expect(html).toContain('aria-label="Show password"');
+		expect(html).toContain('aria-controls="password"');
+		expect(html).toContain('src="/scripts/register.js"');
 		expect(html).not.toContain(">Home<");
 		expect(html).not.toContain(">Job roles<");
 		expect(html).not.toContain("header-cta");
