@@ -502,15 +502,7 @@ export class JobRoleController {
 			}));
 			res.render("pages/jobApplicationAdmin.njk", {
 				applications: applicationsWithLocations,
-				applicationCounts: {
-					total: applicationPage.totalItems,
-					pending: applications.filter((item) => item.status === "pending")
-						.length,
-					approved: applications.filter((item) => item.status === "approved")
-						.length,
-					rejected: applications.filter((item) => item.status === "rejected")
-						.length,
-				},
+				applicationCounts: applicationPage.counts,
 				filters,
 				jobRoles,
 				pagination: applicationPage,

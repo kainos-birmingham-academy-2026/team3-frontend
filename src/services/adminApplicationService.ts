@@ -14,8 +14,17 @@ interface ApiApplication {
 	status: string;
 }
 
+interface ApplicationCounts {
+	total: number;
+	pending: number;
+	approved: number;
+	rejected: number;
+	withdrawn: number;
+}
+
 interface ApiApplicationPage {
 	items: ApiApplication[];
+	counts: ApplicationCounts;
 	page: number;
 	pageSize: number;
 	totalItems: number;
@@ -24,6 +33,7 @@ interface ApiApplicationPage {
 
 export interface ApplicationPage {
 	items: Application[];
+	counts: ApplicationCounts;
 	page: number;
 	pageSize: number;
 	totalItems: number;

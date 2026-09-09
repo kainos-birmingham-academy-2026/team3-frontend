@@ -12,6 +12,7 @@ vi.mock("../../src/config/apiClient", () => ({
 function applicationPage<T>(items: T[]) {
 	return {
 		items,
+		counts: { total: 36, pending: 20, approved: 8, rejected: 5, withdrawn: 3 },
 		page: 1,
 		pageSize: 10,
 		totalItems: items.length,
@@ -64,6 +65,13 @@ describe("AdminApplicationService", () => {
 				pageSize: 10,
 				totalItems: 11,
 				totalPages: 2,
+				counts: {
+					total: 36,
+					pending: 20,
+					approved: 8,
+					rejected: 5,
+					withdrawn: 3,
+				},
 			},
 		});
 
@@ -75,6 +83,13 @@ describe("AdminApplicationService", () => {
 		});
 		expect(result.items[0]?.status).toBe("approved");
 		expect(result.totalPages).toBe(2);
+		expect(result.counts).toEqual({
+			total: 36,
+			pending: 20,
+			approved: 8,
+			rejected: 5,
+			withdrawn: 3,
+		});
 	});
 
 	it("should send filters with the pagination request", async () => {
