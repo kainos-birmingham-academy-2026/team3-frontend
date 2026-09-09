@@ -21,7 +21,13 @@ describe("jobApplicationAdmin", () => {
 				location: "Belfast",
 			},
 		],
-		applicationCounts: { total: 1, pending: 1, approved: 0, rejected: 0 },
+		applicationCounts: {
+			total: 36,
+			pending: 20,
+			approved: 8,
+			rejected: 5,
+			withdrawn: 3,
+		},
 		filters: { search: "", status: "", role: "", location: "" },
 		jobRoles: [{ roleName: "Engineer", location: "Belfast" }],
 	};
@@ -38,6 +44,22 @@ describe("jobApplicationAdmin", () => {
 		expect(html).toContain('name="action" value="approve"');
 		expect(html).toContain('name="action" value="reject"');
 	});
+
+	it.each([viewData.applications, []])(
+		"renders global summary counts independently of visible rows: %j",
+		(applications) => {
+			const html = environment.render("pages/jobApplicationAdmin.njk", {
+				...viewData,
+				applications,
+			});
+
+			expect(html).toContain('id="total-count">36</span>');
+			expect(html).toContain('id="pending-count">20</span>');
+			expect(html).toContain('id="hired-count">8</span>');
+			expect(html).toContain('id="rejected-count">5</span>');
+			expect(html).toContain('id="withdrawn-count">3</span>');
+		},
+	);
 
 	it("only applies filters when the filter form is submitted", () => {
 		const html = environment.render("pages/jobApplicationAdmin.njk", viewData);

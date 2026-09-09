@@ -85,6 +85,7 @@ describe("JobRoleController", () => {
 		adminApplicationService.getAll.mockResolvedValue([]);
 		adminApplicationService.getPage.mockResolvedValue({
 			items: [],
+			counts: { total: 0, pending: 0, approved: 0, rejected: 0, withdrawn: 0 },
 			page: 1,
 			pageSize: 10,
 			totalItems: 0,
@@ -1243,7 +1244,7 @@ describe("JobRoleController", () => {
 		expect(res.redirect).toHaveBeenCalledWith("/login");
 	});
 
-	it("should render applications with locations and status counts", async () => {
+	it("should render applications with locations and database-wide status counts", async () => {
 		const req = createRequest({ session: { jwtToken: "jwt-token" } });
 		const res = createResponse();
 		const jobRoles = [
@@ -1275,8 +1276,16 @@ describe("JobRoleController", () => {
 		];
 
 		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
+		const counts = {
+			total: 36,
+			pending: 20,
+			approved: 8,
+			rejected: 5,
+			withdrawn: 3,
+		};
 		adminApplicationService.getPage.mockResolvedValueOnce({
 			items: applications,
+			counts,
 			page: 1,
 			pageSize: 10,
 			totalItems: 3,
@@ -1298,11 +1307,12 @@ describe("JobRoleController", () => {
 				{ ...applications[1], location: "London" },
 				{ ...applications[2], location: "Unknown" },
 			],
-			applicationCounts: { total: 3, pending: 1, approved: 1, rejected: 1 },
+			applicationCounts: counts,
 			filters: { search: "", status: "", role: "", location: "" },
 			jobRoles,
 			pagination: {
 				items: applications,
+				counts,
 				page: 1,
 				pageSize: 10,
 				totalItems: 3,
@@ -1334,6 +1344,13 @@ describe("JobRoleController", () => {
 		]);
 		adminApplicationService.getPage.mockResolvedValueOnce({
 			items: [matchingApplication],
+			counts: {
+				total: 36,
+				pending: 20,
+				approved: 8,
+				rejected: 5,
+				withdrawn: 3,
+			},
 			page: 1,
 			pageSize: 10,
 			totalItems: 1,
@@ -1352,12 +1369,54 @@ describe("JobRoleController", () => {
 			"pages/jobApplicationAdmin.njk",
 			expect.objectContaining({
 				applications: [{ ...matchingApplication, location: "Belfast" }],
+				applicationCounts: {
+					total: 36,
+					pending: 20,
+					approved: 8,
+					rejected: 5,
+					withdrawn: 3,
+				},
 				filters: {
 					search: "example.com",
 					status: "approved",
 					role: "Engineer",
 					location: "Belfast",
 				},
+			}),
+		);
+	});
+
+	it("should preserve global counts on an empty filtered page", async () => {
+		const counts = {
+			total: 36,
+			pending: 20,
+			approved: 8,
+			rejected: 5,
+			withdrawn: 3,
+		};
+		const req = createRequest({
+			session: { jwtToken: "jwt-token" },
+			query: { page: "2", search: "missing@example.com", status: "HIRED" },
+		});
+		const res = createResponse();
+		jobRoleService.getAll.mockResolvedValueOnce([]);
+		adminApplicationService.getPage.mockResolvedValueOnce({
+			items: [],
+			counts,
+			page: 2,
+			pageSize: 10,
+			totalItems: 0,
+			totalPages: 0,
+		});
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobApplicationAdmin.njk",
+			expect.objectContaining({
+				applications: [],
+				applicationCounts: counts,
+				pagination: expect.objectContaining({ page: 2, totalItems: 0 }),
 			}),
 		);
 	});
