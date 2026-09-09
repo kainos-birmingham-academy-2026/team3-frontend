@@ -9,7 +9,7 @@ on:
     types: [backend-dev-deployed, backend-test-deployed]
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.action == 'backend-test-deployed' && 'test-environment' || github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.action == 'backend-test-deployed' && format('test-environment-{0}', github.event.client_payload.test_environment) || github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -18,7 +18,19 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.source.outputs.sha }}
+      test_environment: ${{ steps.slot.outputs.environment }}
     steps:
+      - name: Validate test slot
+        if: github.event.action == 'backend-test-deployed'
+        id: slot
+        env:
+          TEST_ENVIRONMENT: ${{ github.event.client_payload.test_environment }}
+        run: |
+          case "$TEST_ENVIRONMENT" in
+            test1|test2|test3) ;;
+            *) echo "Unsupported test environment"; exit 1 ;;
+          esac
+          echo "environment=$TEST_ENVIRONMENT" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.action == 'backend-test-deployed' && github.event.client_payload.frontend_ref || github.sha }}
@@ -330,7 +342,7 @@ jobs:
     needs: [resolve-source, push-test-image]
     runs-on: ubuntu-latest
     concurrency:
-      group: frontend-infrastructure-test
+      group: frontend-infrastructure-${{ needs.resolve-source.outputs.test_environment }}
       cancel-in-progress: false
     permissions:
       contents: read
@@ -338,7 +350,7 @@ jobs:
     env:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
-      TF_VAR_environment: test
+      TF_VAR_environment: ${{ needs.resolve-source.outputs.test_environment }}
       TF_VAR_image_tag: test-${{ needs.resolve-source.outputs.sha }}
       TF_VAR_container_revision_suffix: run-${{ github.run_id }}-${{ github.run_attempt }}
       ARM_USE_OIDC: "true"
@@ -369,14 +381,16 @@ jobs:
       - name: Verify test backend deployment
         run: |
           az containerapp show \
-            --name "ca-team3-backend-test" \
-            --resource-group "rg-team3-test" \
+            --name "ca-team3-backend-${TF_VAR_environment}" \
+            --resource-group "rg-team3-${TF_VAR_environment}" \
             --only-show-errors \
             --output none
       - name: Check formatting
         run: terraform fmt -check -recursive ../..
       - name: Initialize Terraform
-        run: terraform init -input=false -backend-config=backend.hcl
+        run: >-
+          terraform init -input=false -backend-config=backend.hcl
+          -backend-config="key=team3-frontend-${TF_VAR_environment}.tfstate"
       - name: Validate Terraform
         run: terraform validate -no-color
       - name: Create Terraform plan

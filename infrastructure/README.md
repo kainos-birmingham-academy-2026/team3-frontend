@@ -10,7 +10,8 @@ Small independent roots under `infrastructure/environments/` configure the
 reusable `modules/frontend-app` module:
 
 - `dev` uses `team3-frontend-dev.tfstate`.
-- `test` uses the isolated `team3-frontend-test.tfstate` state key.
+- `test` is a reusable root for `test1`, `test2`, and `test3`,
+  using the isolated `team3-frontend-<slot>.tfstate` state key.
 - `prod` uses the separate `team3-frontend-prod.tfstate` state key.
 
 Each root owns only its frontend identity, role assignments, and Container App.
@@ -60,8 +61,9 @@ before planning or applying Terraform.
 - A successful backend dev deployment sends `backend-dev-deployed`, which
   builds and deploys frontend dev from its default branch.
 - A manual backend test deployment sends `backend-test-deployed` with the
-  resolved `frontend_ref`. The frontend tests that commit, publishes
-  `test-<commit-sha>`, and deploys it to `rg-team3-test`.
+  resolved `frontend_ref` and `test_environment`. The frontend validates the
+  slot, tests that commit, publishes `test-<commit-sha>`, and deploys it to
+  `rg-team3-<slot>`. Missing or unsupported slot payloads fail validation.
 - Pull requests run checks and a dev Terraform plan, but do not deploy.
 
 Start an isolated test deployment from the backend repository's **CI** workflow
@@ -69,6 +71,34 @@ on `main`. Choose `main` for a ref when that application should use current
 integrated code; choose a feature branch, tag, or SHA only for the application
 change under test. The backend infrastructure README contains the complete
 input table.
+
+Select the slot only in the backend workflow; the frontend receives it
+automatically. Each slot has separate state and deployment concurrency, while
+commit-tagged images can be shared. Merge this frontend support before enabling
+numbered slots in the backend repository. Existing legacy state is unchanged,
+but legacy `test` deployments are no longer supported. Avoid Test deployments
+between the two repository merges.
+
+For local numbered-slot deployments, override both the environment and state
+key. The checked-in `backend.hcl` and variable default now target `test1`.
+Reinitialise any locally cached legacy backend before planning. After setting the
+required image tag and Azure authentication:
+
+```bash
+export TF_VAR_environment=test2
+terraform -chdir=infrastructure/environments/test init -reconfigure \
+  -backend-config=backend.hcl \
+  -backend-config="key=team3-frontend-${TF_VAR_environment}.tfstate"
+```
+
+Do not use `-migrate-state` to switch slots or reuse another slot's state key.
+The backend lifecycle starts `test1` on weekday mornings and deletes all test
+slots in the evening; `test2` and `test3` are started manually when needed.
+
+To accept future slots such as `test4` and `test5`, extend the CI dispatch
+allowlist and the Test Terraform `environment` validation list. The backend
+must also update its dropdowns, allowlists and scheduled cleanup list. No new
+Terraform directories are required; state keys and resource names are dynamic.
 
 The selected frontend ref controls application code only. Terraform for the
 test deployment is checked out from the frontend default branch.
