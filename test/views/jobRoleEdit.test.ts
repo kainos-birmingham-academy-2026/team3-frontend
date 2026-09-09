@@ -63,4 +63,28 @@ describe("jobRoleEdit", () => {
 		expect(html).toContain('type="date" min="2026-08-18"');
 		expect(html).toContain('maxlength="100"');
 	});
+
+	it("should mark required fields with an explained asterisk", () => {
+		const html = renderView();
+		const requiredLabels = [
+			["roleName", "Role name"],
+			["description", "Description"],
+			["responsibilities", "Responsibilities"],
+			["sharepointUrl", "Job specification URL"],
+			["numberOfOpenPositions", "Number of open positions"],
+			["capabilityId", "Capability"],
+			["bandId", "Band"],
+			["locationId", "Location"],
+		];
+
+		expect(html).toContain(
+			'<p class="form-hint"><span aria-hidden="true">*</span> Required fields</p>',
+		);
+		for (const [fieldId, label] of requiredLabels) {
+			expect(html).toContain(
+				`<label for="${fieldId}">${label} <span aria-hidden="true">*</span></label>`,
+			);
+		}
+		expect(html).toContain('<label for="closingDate">Closing date</label>');
+	});
 });

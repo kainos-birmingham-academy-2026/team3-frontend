@@ -13,26 +13,27 @@
         {% endfor %}
       {% endif %}
     {% endif %}
+    <p class="form-hint"><span aria-hidden="true">*</span> Required fields</p>
     <form method="post" action="/job-role-edit" class="login-form">
       <input type="hidden" name="jobRoleId" value="{{ jobRole.jobRoleId }}"/>
       <div class="form-field">
-        <label for="roleName">Role name</label>
+        <label for="roleName">Role name <span aria-hidden="true">*</span></label>
         <input id="roleName" name="roleName" type="text" maxlength="100" value="{{ jobRole.roleName }}" required/>
       </div>
       <div class="form-field">
-        <label for="description">Description</label>
+        <label for="description">Description <span aria-hidden="true">*</span></label>
         <textarea id="description" name="description" rows="3" required>{{ jobRole.description }}</textarea>
       </div>
       <div class="form-field">
-        <label for="responsibilities">Responsibilities</label>
+        <label for="responsibilities">Responsibilities <span aria-hidden="true">*</span></label>
         <textarea id="responsibilities" name="responsibilities" rows="3" required>{{ jobRole.responsibilities }}</textarea>
       </div>
       <div class="form-field">
-        <label for="sharepointUrl">Job specification URL</label>
+        <label for="sharepointUrl">Job specification URL <span aria-hidden="true">*</span></label>
         <input id="sharepointUrl" name="sharepointUrl" type="url" maxlength="255" value="{{ jobRole.jobSpecUrl }}" required/>
       </div>
       <div class="form-field">
-        <label for="numberOfOpenPositions">Number of open positions</label>
+        <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>
         <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" min="1" step="1" value="{{ jobRole.openPositions }}" required/>
       </div>
       <div class="form-field">
@@ -40,7 +41,7 @@
         <input id="closingDate" name="closingDate" type="date" min="{{ minClosingDate }}" value="{{ jobRole.closingDate }}"/>
       </div>
       <div class="form-field">
-        <label for="capabilityId">Capability</label>
+        <label for="capabilityId">Capability <span aria-hidden="true">*</span></label>
         <select id="capabilityId" name="capabilityId" required>
           <option value="">Select capability</option>
           {% for capability in capabilityOptions | default([], true) %}
@@ -49,7 +50,7 @@
         </select>
       </div>
       <div class="form-field">
-        <label for="bandId">Band</label>
+        <label for="bandId">Band <span aria-hidden="true">*</span></label>
         <select id="bandId" name="bandId" required>
           <option value="">Select band</option>
           {% for band in bandOptions | default([], true) %}
@@ -58,7 +59,7 @@
         </select>
       </div>
       <div class="form-field">
-        <label for="locationId">Location</label>
+        <label for="locationId">Location <span aria-hidden="true">*</span></label>
         <select id="locationId" name="locationId" required>
           <option value="">Select location</option>
           {% for location in locationOptions | default([], true) %}
