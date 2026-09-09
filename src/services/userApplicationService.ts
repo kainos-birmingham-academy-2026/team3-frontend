@@ -31,7 +31,7 @@ export class UserApplicationService {
 
 	async getAll(jwtToken: string): Promise<UserApplication[]> {
 		const response = await apiClient.get<ApiUserApplication[]>(
-			"/job-applications",
+			"/api/job-applications",
 			{
 				headers: { Authorization: `Bearer ${jwtToken}` },
 			},
@@ -49,8 +49,8 @@ export class UserApplicationService {
 
 	async withdraw(applicationId: number, jwtToken: string): Promise<void> {
 		await apiClient.patch(
-			`/job-applications/${applicationId}/withdraw`,
-			{},
+			`/api/job-applications/${applicationId}/status`,
+			{ status: "WITHDRAWN" },
 			{
 				headers: { Authorization: `Bearer ${jwtToken}` },
 			},
