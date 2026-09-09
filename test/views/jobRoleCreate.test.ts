@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import nunjucks from "nunjucks";
 import { describe, expect, it } from "vitest";
+import { JOB_ROLE_CHARACTER_LIMITS } from "../../src/config/jobRoleValidation";
 
 const templatePath = path.resolve(
 	process.cwd(),
@@ -21,6 +22,7 @@ function renderView(jobRole = {}): string {
 
 	return environment.render("pages/jobRoleCreate.njk", {
 		canCreate: true,
+		characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 		jobRole,
 		capabilityOptions: [{ capabilityId: 1, capabilityName: "Engineering" }],
 		bandOptions: [{ bandId: 2, bandName: "Engineer" }],

@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { Request, Response } from "express";
+import { JOB_ROLE_CHARACTER_LIMITS } from "../config/jobRoleValidation";
 import type {
 	BandOption,
 	CapabilityOption,
@@ -155,6 +156,7 @@ export class JobRoleController {
 			req.session.dropdownOptions = dropdownOptions;
 			res.render("pages/jobRoleCreate.njk", {
 				canCreate: true,
+				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				capabilityOptions: dropdownOptions.capabilities,
 				bandOptions: dropdownOptions.bands,
 				locationOptions: dropdownOptions.locations,
@@ -220,6 +222,7 @@ export class JobRoleController {
 
 			res.status(statusCode).render("pages/jobRoleCreate.njk", {
 				canCreate: statusCode !== 403,
+				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				errorMessage,
 				jobRole: req.body as CreateJobRoleInput,
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
