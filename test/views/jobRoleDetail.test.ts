@@ -289,6 +289,7 @@ describe("jobRoleDetail", () => {
 		expect(html).toContain("Software Engineering");
 		expect(html).toContain("Closing Date");
 		expect(html).toContain("2026-08-06");
+		expect(html.match(/class="detail-row"/g)).toHaveLength(5);
 	});
 
 	it("should show admin actions with a keyboard-contained delete dialog", () => {

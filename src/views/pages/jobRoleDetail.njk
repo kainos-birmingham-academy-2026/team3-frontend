@@ -43,42 +43,58 @@
         <div class="detail-section">
           <h2>Job Details</h2>
           <dl>
-            <dt>Role Name</dt>
-            <dd>{{ jobRoleId.roleName }}</dd>
+            <div class="detail-row">
+              <dt>Role Name</dt>
+              <dd>{{ jobRoleId.roleName }}</dd>
+            </div>
 
-            <dt>Location</dt>
-            <dd>{{ jobRoleId.location }}</dd>
+            <div class="detail-row">
+              <dt>Location</dt>
+              <dd>{{ jobRoleId.location }}</dd>
+            </div>
 
             {% if jobRoleId.addressLine1 %}
-              <dt>Address</dt>
-              <dd>
-                {{ jobRoleId.addressLine1 }}
-                {% if jobRoleId.addressLine2 %}<br>{{ jobRoleId.addressLine2 }}{% endif %}
-                {% if jobRoleId.postcode %}<br>{{ jobRoleId.postcode }}{% endif %}
-              </dd>
+              <div class="detail-row">
+                <dt>Address</dt>
+                <dd>
+                  {{ jobRoleId.addressLine1 }}
+                  {% if jobRoleId.addressLine2 %}<br>{{ jobRoleId.addressLine2 }}{% endif %}
+                  {% if jobRoleId.postcode %}<br>{{ jobRoleId.postcode }}{% endif %}
+                </dd>
+              </div>
             {% endif %}
 
-            <dt>Band</dt>
-            <dd>{{ jobRoleId.band }}</dd>
+            <div class="detail-row">
+              <dt>Band</dt>
+              <dd>{{ jobRoleId.band }}</dd>
+            </div>
 
-            <dt>Capability</dt>
-            <dd>{{ jobRoleId.capability }}</dd>
+            <div class="detail-row">
+              <dt>Capability</dt>
+              <dd>{{ jobRoleId.capability }}</dd>
+            </div>
 
-            <dt>Closing Date</dt>
-            <dd>{{ jobRoleId.closingDate }}</dd>
+            <div class="detail-row">
+              <dt>Closing Date</dt>
+              <dd>{{ jobRoleId.closingDate }}</dd>
+            </div>
 
             {% if jobRoleId.openPositions %}
-              <dt>Open Positions</dt>
-              <dd>{{ jobRoleId.openPositions }}</dd>
+              <div class="detail-row">
+                <dt>Open Positions</dt>
+                <dd>{{ jobRoleId.openPositions }}</dd>
+              </div>
             {% endif %}
 
             {% if jobRoleId.jobSpecUrl %}
-              <dt>Job Spec</dt>
-              <dd>
-                <a href="{{ jobRoleId.jobSpecUrl }}" target="_blank" rel="noopener noreferrer" class="spec-link">
-                  View in SharePoint
-                </a>
-              </dd>
+              <div class="detail-row">
+                <dt>Job Spec</dt>
+                <dd>
+                  <a href="{{ jobRoleId.jobSpecUrl }}" target="_blank" rel="noopener noreferrer" class="spec-link">
+                    View in SharePoint
+                  </a>
+                </dd>
+              </div>
             {% endif %}
           </dl>
         </div>
