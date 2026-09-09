@@ -41,7 +41,7 @@ describe("UserApplicationService", () => {
 
 		const result = await service.getAll(jwtToken);
 
-		expect(apiClient.get).toHaveBeenCalledWith("/job-applications", {
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications", {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
 		expect(result).toEqual([
@@ -108,8 +108,8 @@ describe("UserApplicationService", () => {
 		await service.withdraw(12, jwtToken);
 
 		expect(apiClient.patch).toHaveBeenCalledWith(
-			"/job-applications/12/withdraw",
-			{},
+			"/api/job-applications/12/status",
+			{ status: "WITHDRAWN" },
 			{ headers: { Authorization: `Bearer ${jwtToken}` } },
 		);
 	});
