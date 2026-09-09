@@ -18,19 +18,23 @@
       <input type="hidden" name="jobRoleId" value="{{ jobRole.jobRoleId }}"/>
       <div class="form-field">
         <label for="roleName">Role name <span aria-hidden="true">*</span></label>
-        <input id="roleName" name="roleName" type="text" maxlength="100" value="{{ jobRole.roleName }}" required/>
+        <input id="roleName" name="roleName" type="text" maxlength="{{ characterLimits.roleName }}" value="{{ jobRole.roleName }}" aria-describedby="roleName-character-count" required/>
+        <p id="roleName-character-count" class="form-character-count" data-character-count-for="roleName"></p>
       </div>
       <div class="form-field">
         <label for="description">Description <span aria-hidden="true">*</span></label>
-        <textarea id="description" name="description" rows="3" required>{{ jobRole.description }}</textarea>
+        <textarea id="description" name="description" rows="3" maxlength="{{ characterLimits.description }}" aria-describedby="description-character-count" required>{{ jobRole.description }}</textarea>
+        <p id="description-character-count" class="form-character-count" data-character-count-for="description"></p>
       </div>
       <div class="form-field">
         <label for="responsibilities">Responsibilities <span aria-hidden="true">*</span></label>
-        <textarea id="responsibilities" name="responsibilities" rows="3" required>{{ jobRole.responsibilities }}</textarea>
+        <textarea id="responsibilities" name="responsibilities" rows="3" maxlength="{{ characterLimits.responsibilities }}" aria-describedby="responsibilities-character-count" required>{{ jobRole.responsibilities }}</textarea>
+        <p id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities"></p>
       </div>
       <div class="form-field">
         <label for="sharepointUrl">Job specification URL <span aria-hidden="true">*</span></label>
-        <input id="sharepointUrl" name="sharepointUrl" type="url" maxlength="255" value="{{ jobRole.jobSpecUrl }}" required/>
+        <input id="sharepointUrl" name="sharepointUrl" type="url" maxlength="{{ characterLimits.sharepointUrl }}" value="{{ jobRole.jobSpecUrl }}" aria-describedby="sharepointUrl-character-count" required/>
+        <p id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl"></p>
       </div>
       <div class="form-field">
         <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>
@@ -70,4 +74,5 @@
       <button type="submit" class="button button-solid">Save changes</button>
     </form>
   </section>
+  <script src="/scripts/jobRoleCreate.js" defer></script>
 {% endblock %}

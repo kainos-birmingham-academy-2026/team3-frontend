@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import nunjucks from "nunjucks";
 import { describe, expect, it } from "vitest";
+import { JOB_ROLE_CHARACTER_LIMITS } from "../../src/config/jobRoleValidation";
 
 const templatePath = path.resolve(
 	process.cwd(),
@@ -20,6 +21,7 @@ function renderView(): string {
 	}
 
 	return environment.render("pages/jobRoleEdit.njk", {
+		characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 		jobRole: {
 			jobRoleId: 7,
 			roleName: "Lead Engineer",
@@ -86,5 +88,27 @@ describe("jobRoleEdit", () => {
 			);
 		}
 		expect(html).toContain('<label for="closingDate">Closing date</label>');
+	});
+
+	it("should configure live character limits", () => {
+		const html = renderView();
+
+		expect(html).toContain(
+			'maxlength="100" value="Lead Engineer" aria-describedby="roleName-character-count"',
+		);
+		expect(html).toContain('data-character-count-for="roleName"');
+		expect(html).toContain(
+			'rows="3" maxlength="2000" aria-describedby="description-character-count"',
+		);
+		expect(html).toContain('data-character-count-for="description"');
+		expect(html).toContain(
+			'rows="3" maxlength="2000" aria-describedby="responsibilities-character-count"',
+		);
+		expect(html).toContain('data-character-count-for="responsibilities"');
+		expect(html).toContain(
+			'maxlength="255" value="https://example.com/spec" aria-describedby="sharepointUrl-character-count"',
+		);
+		expect(html).toContain('data-character-count-for="sharepointUrl"');
+		expect(html).toContain("/scripts/jobRoleCreate.js");
 	});
 });
