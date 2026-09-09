@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import nunjucks from "nunjucks";
 import { describe, expect, it } from "vitest";
+import { JOB_ROLE_CHARACTER_LIMITS } from "../../src/config/jobRoleValidation";
 
 const templatePath = path.resolve(
 	process.cwd(),
@@ -21,6 +22,7 @@ function renderView(jobRole = {}): string {
 
 	return environment.render("pages/jobRoleCreate.njk", {
 		canCreate: true,
+		characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 		jobRole,
 		capabilityOptions: [{ capabilityId: 1, capabilityName: "Engineering" }],
 		bandOptions: [{ bandId: 2, bandName: "Engineer" }],
@@ -80,6 +82,41 @@ describe("jobRoleCreate", () => {
 		}
 		expect(html).toContain('<label for="closingDate">Closing date</label>');
 		expect(html).toContain('<label for="statusName">Status</label>');
+	});
+
+	it("should show character limits without requiring JavaScript", () => {
+		const html = renderView({
+			roleName: "Engineer",
+			description: "Build software",
+			responsibilities: "Write tests",
+			sharepointUrl: "https://example.com/job",
+		});
+
+		expect(html).toContain(
+			'maxlength="100" aria-describedby="roleName-character-count"',
+		);
+		expect(html).toContain(
+			'id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">Maximum 100 characters',
+		);
+		expect(html).toContain(
+			'maxlength="2000" aria-describedby="description-character-count"',
+		);
+		expect(html).toContain(
+			'id="description-character-count" class="form-character-count" data-character-count-for="description">Maximum 2000 characters',
+		);
+		expect(html).toContain(
+			'maxlength="2000" aria-describedby="responsibilities-character-count"',
+		);
+		expect(html).toContain(
+			'id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">Maximum 2000 characters',
+		);
+		expect(html).toContain(
+			'maxlength="255" aria-describedby="sharepointUrl-character-count"',
+		);
+		expect(html).toContain(
+			'id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">Maximum 255 characters',
+		);
+		expect(html).toContain("/scripts/jobRoleCreate.js");
 	});
 
 	it("should preserve submitted values when the form is re-rendered", () => {

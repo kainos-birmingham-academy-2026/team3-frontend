@@ -16,19 +16,23 @@
       <form method="post" action="/job-role-create" class="login-form" novalidate>
          <div class="form-field">
             <label for="roleName">Role name <span aria-hidden="true">*</span></label>
-            <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" required/>
+            <input id="roleName" name="roleName" type="text" value="{{ jobRole.roleName | default('', true) }}" placeholder="e.g. Software Engineer" maxlength="{{ characterLimits.roleName }}" aria-describedby="roleName-character-count" required/>
+            <p id="roleName-character-count" class="form-character-count" data-character-count-for="roleName">Maximum {{ characterLimits.roleName }} characters</p>
          </div>
          <div class="form-field">
             <label for="description">Description <span aria-hidden="true">*</span></label>
-            <textarea id="description" name="description" rows="3" required>{{ jobRole.description | default('', true) }}</textarea>
+            <textarea id="description" name="description" rows="3" maxlength="{{ characterLimits.description }}" aria-describedby="description-character-count" required>{{ jobRole.description | default('', true) }}</textarea>
+            <p id="description-character-count" class="form-character-count" data-character-count-for="description">Maximum {{ characterLimits.description }} characters</p>
          </div>
          <div class="form-field">
             <label for="responsibilities">Responsibilities <span aria-hidden="true">*</span></label>
-            <textarea id="responsibilities" name="responsibilities" rows="3" required>{{ jobRole.responsibilities | default('', true) }}</textarea>
+            <textarea id="responsibilities" name="responsibilities" rows="3" maxlength="{{ characterLimits.responsibilities }}" aria-describedby="responsibilities-character-count" required>{{ jobRole.responsibilities | default('', true) }}</textarea>
+            <p id="responsibilities-character-count" class="form-character-count" data-character-count-for="responsibilities">Maximum {{ characterLimits.responsibilities }} characters</p>
          </div>
          <div class="form-field">
             <label for="sharepointUrl">Job specification URL <span aria-hidden="true">*</span></label>
-            <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." required/>
+            <input id="sharepointUrl" name="sharepointUrl" type="url" value="{{ jobRole.sharepointUrl | default('', true) }}" placeholder="https://..." maxlength="{{ characterLimits.sharepointUrl }}" aria-describedby="sharepointUrl-character-count" required/>
+            <p id="sharepointUrl-character-count" class="form-character-count" data-character-count-for="sharepointUrl">Maximum {{ characterLimits.sharepointUrl }} characters</p>
          </div>
          <div class="form-field">
             <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>
@@ -73,4 +77,5 @@
          <button type="submit" class="button button-solid">Create new role</button>
       </form>
    </section>
+   <script src="/scripts/jobRoleCreate.js" defer></script>
 {% endblock %}

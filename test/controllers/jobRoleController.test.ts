@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { JOB_ROLE_CHARACTER_LIMITS } from "../../src/config/jobRoleValidation";
 import { JobRoleController } from "../../src/controllers/jobRoleController";
 import type { AdminApplicationService } from "../../src/services/adminApplicationService";
 import type { JobRoleService } from "../../src/services/jobRoleService";
@@ -354,6 +355,7 @@ describe("JobRoleController", () => {
 
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
+			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 			capabilityOptions: capabilities,
 			bandOptions: bands,
 			locationOptions: locations,
@@ -407,6 +409,7 @@ describe("JobRoleController", () => {
 		expect(res.status).toHaveBeenCalledWith(400);
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
+			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 			errorMessage: [{ field: "roleName", message: "Role name is required" }],
 			jobRole: { roleName: "Software Engineer", capabilityId: "3" },
 			capabilityOptions: [],
