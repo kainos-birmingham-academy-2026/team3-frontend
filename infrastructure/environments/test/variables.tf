@@ -7,11 +7,11 @@ variable "project_name" {
 variable "environment" {
   description = "Deployment environment."
   type        = string
-  default     = "test"
+  default     = "test1"
 
   validation {
-    condition     = var.environment == "test"
-    error_message = "The test root requires environment to be test."
+    condition     = contains(["test1", "test2", "test3"], var.environment)
+    error_message = "The test root requires environment to be test1, test2 or test3."
   }
 }
 
