@@ -111,4 +111,21 @@ describe("jobRoleEdit", () => {
 		expect(html).toContain('data-character-count-for="sharepointUrl"');
 		expect(html).toContain("/scripts/jobRoleCreate.js");
 	});
+
+	it("should show maximum character limits without JavaScript", () => {
+		const html = renderView();
+
+		expect(html).toContain(
+			'data-character-count-for="roleName">Maximum 100 characters',
+		);
+		expect(html).toContain(
+			'data-character-count-for="description">Maximum 2000 characters',
+		);
+		expect(html).toContain(
+			'data-character-count-for="responsibilities">Maximum 2000 characters',
+		);
+		expect(html).toContain(
+			'data-character-count-for="sharepointUrl">Maximum 255 characters',
+		);
+	});
 });
