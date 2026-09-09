@@ -31,7 +31,8 @@
 	font-weight: 600;
 }
 
-.form-field input {
+.form-field input,
+.form-field select {
 	width: 100%;
 	border: 1px solid #b8c2e6;
 	padding: 0.68rem 0.75rem;
@@ -50,7 +51,8 @@
 	resize: vertical;
 }
 
-.form-field input:focus {
+.form-field input:focus,
+.form-field select:focus {
 	border-color: var(--kainos-blue);
 	outline: 3px solid rgba(40, 53, 131, 0.2);
 	outline-offset: 1px;
