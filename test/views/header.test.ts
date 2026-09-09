@@ -43,9 +43,7 @@ describe("header", () => {
 		});
 
 		expect(html).toContain('href="/job-role-create">Create role</a>');
-		expect(html).toContain(
-			'href="/job-applications/admin">Applications</a>',
-		);
+		expect(html).toContain('href="/job-applications/admin">Applications</a>');
 		expect(html).toContain('href="/logout/confirmation"');
 	});
 });

@@ -71,16 +71,18 @@ test.describe("without browser JavaScript", () => {
 			name: "Main navigation",
 		});
 
-		expect(await header.evaluate((element) => element.clientHeight)).toBeLessThan(
-			80,
-		);
+		expect(
+			await header.evaluate((element) => element.clientHeight),
+		).toBeLessThan(80);
 		await expect(navigation).not.toBeVisible();
 		await menuToggle.focus();
 		await menuToggle.press("Space");
 		await expect(navigation).toBeVisible();
 		expect(
 			await page.evaluate(
-				() => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+				() =>
+					document.documentElement.scrollWidth >
+					document.documentElement.clientWidth,
 			),
 		).toBe(false);
 	});
