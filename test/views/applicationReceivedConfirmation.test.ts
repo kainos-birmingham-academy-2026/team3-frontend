@@ -6,7 +6,7 @@ const environment = new nunjucks.Environment(
 );
 
 describe("application received confirmation", () => {
-	it("should render confirmation content and back-to-details link", () => {
+	it("should render confirmation content and a link to view applications", () => {
 		const html = environment.render(
 			"pages/applicationReceivedConfirmation.njk",
 			{
@@ -17,7 +17,8 @@ describe("application received confirmation", () => {
 
 		expect(html).toContain("Application received");
 		expect(html).toContain("Your application has been submitted successfully");
-		expect(html).toContain('href="/job-role-list/3"');
-		expect(html).toContain("Back to job details");
+		expect(html).toContain('href="/job-applications"');
+		expect(html).toContain("View your application");
+		expect(html).not.toContain("Back to job details");
 	});
 });
