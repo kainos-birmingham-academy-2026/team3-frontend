@@ -19,7 +19,7 @@
     <thead>
      <tr>
       <th scope="col">Job role</th>
-      <th scope="col">Application date</th>
+          <th scope="col">Progress</th>
       <th scope="col">Status</th>
       <th scope="col">CV</th>
       <th scope="col">Actions</th>
@@ -35,7 +35,49 @@
          {{ application.roleName }}
         {% endif %}
        </td>
-       <td>{{ application.applicationDate }}</td>
+                <td class="application-progress-cell">
+                    <ol class="application-progress" aria-label="Application progress for {{ application.roleName }}">
+                     <li class="application-progress-step application-progress-step-complete">
+                         <span class="application-progress-marker" aria-hidden="true"></span>
+                         <div>
+                          <strong>Submitted</strong>
+                          <span><time datetime="{{ application.applicationDate }}">{{ application.applicationDate }}</time></span>
+                         </div>
+                     </li>
+                     {% if application.status == 'pending' %}
+                         <li class="application-progress-step application-progress-step-current" aria-current="step">
+                          <span class="application-progress-marker" aria-hidden="true"></span>
+                          <div><strong>Under review</strong><span>Our hiring team is reviewing your application</span></div>
+                         </li>
+                         <li class="application-progress-step application-progress-step-upcoming">
+                          <span class="application-progress-marker" aria-hidden="true"></span>
+                          <div><strong>What happens next</strong><span>We will contact you when there is an update</span></div>
+                         </li>
+                     {% elif application.status == 'withdrawn' %}
+                         <li class="application-progress-step application-progress-step-stopped">
+                          <span class="application-progress-marker" aria-hidden="true"></span>
+                          <div><strong>Review ended</strong><span>The hiring process is no longer active</span></div>
+                         </li>
+                         <li class="application-progress-step application-progress-step-withdrawn" aria-current="step">
+                          <span class="application-progress-marker" aria-hidden="true"></span>
+                          <div><strong>Withdrawn</strong><span>Application withdrawn</span></div>
+                         </li>
+                     {% else %}
+                         <li class="application-progress-step application-progress-step-complete">
+                          <span class="application-progress-marker" aria-hidden="true"></span>
+                          <div><strong>Under review</strong><span>Review completed</span></div>
+                         </li>
+                         <li class="application-progress-step application-progress-step-{{ application.status }}" aria-current="step">
+                          <span class="application-progress-marker" aria-hidden="true"></span>
+                          {% if application.status == 'approved' %}
+                              <div><strong>Hired</strong><span>Application successful</span></div>
+                          {% else %}
+                              <div><strong>Not selected</strong><span>Application closed</span></div>
+                          {% endif %}
+                         </li>
+                     {% endif %}
+                    </ol>
+                </td>
        <td>
         <span class="status-badge application-status-{{ application.status | lower }}">
          {{ application.status | capitalize }}
