@@ -832,6 +832,59 @@ describe("JobRoleController", () => {
 		});
 	});
 
+	it("should submit a CV containing exactly 5,000 characters", async () => {
+		const cvText = "a".repeat(5000);
+		const req = createRequest({
+			session: { jwtToken: "jwt-token" },
+			params: { id: "9" },
+			body: { cvText },
+		});
+		const res = createResponse();
+
+		jobRoleService.getById.mockResolvedValueOnce({
+			jobRoleId: 9,
+			roleName: "Platform Engineer",
+			status: "open",
+			openPositions: 1,
+		});
+
+		await controller.submitApplication(req as unknown as Request, res);
+
+		expect(jobRoleService.applyForRole).toHaveBeenCalledWith(
+			"9",
+			cvText,
+			"jwt-token",
+		);
+	});
+
+	it("should reject a CV containing more than 5,000 characters", async () => {
+		const cvText = "a".repeat(5001);
+		const req = createRequest({
+			session: { jwtToken: "jwt-token" },
+			params: { id: "9" },
+			body: { cvText },
+		});
+		const res = createResponse();
+
+		jobRoleService.getById.mockResolvedValueOnce({
+			jobRoleId: 9,
+			roleName: "Platform Engineer",
+			status: "open",
+			openPositions: 1,
+		});
+
+		await controller.submitApplication(req as unknown as Request, res);
+
+		expect(jobRoleService.applyForRole).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.render).toHaveBeenCalledWith("pages/jobRoleApply.njk", {
+			jobRoleId: expect.objectContaining({ jobRoleId: 9 }),
+			canApply: true,
+			cvText,
+			errorMessage: "Your CV must be 5,000 characters or fewer.",
+		});
+	});
+
 	it("should block submitApplication when role is not accepting applications", async () => {
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },

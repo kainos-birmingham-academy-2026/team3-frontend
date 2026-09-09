@@ -410,6 +410,16 @@ export class JobRoleController {
 				return;
 			}
 
+			if (cvText.length > 5000) {
+				res.status(400).render("pages/jobRoleApply.njk", {
+					jobRoleId,
+					canApply: true,
+					cvText,
+					errorMessage: "Your CV must be 5,000 characters or fewer.",
+				});
+				return;
+			}
+
 			await this.jobRoleService.applyForRole(id, cvText, this.getJwtToken(req));
 
 			res.redirect(303, `/job-role-list/${id}/apply/confirmation`);

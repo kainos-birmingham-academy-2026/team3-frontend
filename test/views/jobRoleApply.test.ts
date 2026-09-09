@@ -48,6 +48,10 @@ describe("jobRoleApply", () => {
 		expect(html).toContain('action="/job-role-list/3/apply"');
 		expect(html).not.toContain('name="cvFile"');
 		expect(html).toContain('name="cvText"');
+		expect(html).toContain('maxlength="5000"');
+		expect(html).toContain("Maximum 5000 characters");
+		expect(html).toContain('data-character-count-for="cvText"');
+		expect(html).toContain("/scripts/jobRoleCreate.js");
 		expect(html).toContain("textarea");
 		expect(html).toContain("Submit Application");
 	});
