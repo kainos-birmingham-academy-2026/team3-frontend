@@ -49,12 +49,16 @@
             name="cvText"
             rows="12"
             placeholder="Paste your CV text here."
+            maxlength="{{ cvTextCharacterLimit }}"
+            aria-describedby="cvText-character-count"
             required
           >{{ cvText | default('', true) }}</textarea>
+          <p id="cvText-character-count" class="form-character-count" data-character-count-for="cvText">Maximum {{ cvTextCharacterLimit }} characters</p>
         </div>
 
         <button type="submit" class="button button-primary">Submit Application</button>
       </form>
+      <script src="/scripts/jobRoleCreate.js" defer></script>
     {% else %}
       <div class="info-message">
         <p>This role is not currently accepting applications.</p>
