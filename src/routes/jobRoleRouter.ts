@@ -9,6 +9,7 @@ import { AdminApplicationService } from "../services/adminApplicationService";
 import { JobRoleService } from "../services/jobRoleService";
 import { UserApplicationService } from "../services/userApplicationService";
 import { USER_ROLES } from "../types/auth";
+import { getAdminApplicationListUrl } from "../utils/adminApplicationListState";
 
 const router = Router();
 const service = new JobRoleService();
@@ -160,7 +161,9 @@ router.get(
 				: application.cvText;
 			res.render("pages/applicationCv.njk", {
 				application,
-				backUrl: isAdmin ? "/job-applications/admin" : "/job-applications",
+				backUrl: isAdmin
+					? getAdminApplicationListUrl(req.session.adminApplicationListState)
+					: "/job-applications",
 				heading:
 					"applicantEmail" in application
 						? application.applicantEmail
@@ -257,7 +260,10 @@ router.post(
 				await adminApplicationService.reject(applicationId, jwtToken);
 			}
 
-			res.redirect(303, "/job-applications/admin");
+			res.redirect(
+				303,
+				getAdminApplicationListUrl(req.session.adminApplicationListState),
+			);
 		} catch (error) {
 			res.status(500).render("pages/404.njk", {
 				errorMessage: getAxiosErrorMessage(error),

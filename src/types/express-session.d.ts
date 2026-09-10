@@ -5,6 +5,7 @@ import type {
 	LocationOption,
 	StatusOption,
 } from "../models/jobRole";
+import type { AdminApplicationListState } from "../utils/adminApplicationListState";
 import type { UserRole } from "./auth";
 
 declare module "express-session" {
@@ -13,6 +14,7 @@ declare module "express-session" {
 		userRole?: UserRole;
 		redirectAfterLogin?: string;
 		jobRoleListUrl?: string;
+		adminApplicationListState?: AdminApplicationListState;
 		dropdownOptions?: {
 			statuses: StatusOption[];
 			locations: LocationOption[];

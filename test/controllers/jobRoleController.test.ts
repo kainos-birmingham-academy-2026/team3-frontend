@@ -13,6 +13,13 @@ type TestRequest = {
 		jwtToken?: string;
 		userRole?: "ADMIN" | "USER";
 		jobRoleListUrl?: string;
+		adminApplicationListState?: {
+			page: number;
+			search: string;
+			status: "pending" | "approved" | "rejected" | "withdrawn" | "";
+			role: string;
+			location: string;
+		};
 		dropdownOptions?: {
 			statuses: unknown[];
 			locations: unknown[];
@@ -1561,6 +1568,13 @@ describe("JobRoleController", () => {
 			role: "Engineer",
 			location: "Belfast",
 		});
+		expect(req.session.adminApplicationListState).toEqual({
+			page: 1,
+			search: "example.com",
+			status: "approved",
+			role: "Engineer",
+			location: "Belfast",
+		});
 		expect(res.render).toHaveBeenCalledWith(
 			"pages/jobApplicationAdmin.njk",
 			expect.objectContaining({
@@ -1582,7 +1596,97 @@ describe("JobRoleController", () => {
 		);
 	});
 
-	it("should preserve global counts on an empty filtered page", async () => {
+	it("should restore application list state from the session", async () => {
+		const req = createRequest({
+			session: {
+				jwtToken: "jwt-token",
+				adminApplicationListState: {
+					page: 3,
+					search: "alex@example.com",
+					status: "pending",
+					role: "Engineer",
+					location: "Belfast",
+				},
+			},
+		});
+		const res = createResponse();
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(adminApplicationService.getPage).toHaveBeenCalledWith(
+			"jwt-token",
+			3,
+			10,
+			{
+				search: "alex@example.com",
+				status: "pending",
+				role: "Engineer",
+				location: "Belfast",
+			},
+		);
+	});
+
+	it("should redirect to the last valid filtered page", async () => {
+		const req = createRequest({
+			session: {
+				jwtToken: "jwt-token",
+				adminApplicationListState: {
+					page: 3,
+					search: "",
+					status: "pending",
+					role: "",
+					location: "",
+				},
+			},
+		});
+		const res = createResponse();
+		adminApplicationService.getPage.mockResolvedValueOnce({
+			items: [],
+			counts: {
+				total: 20,
+				pending: 20,
+				approved: 0,
+				rejected: 0,
+				withdrawn: 0,
+			},
+			page: 3,
+			pageSize: 10,
+			totalItems: 20,
+			totalPages: 2,
+		});
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(req.session.adminApplicationListState?.page).toBe(2);
+		expect(res.redirect).toHaveBeenCalledWith(
+			"/job-applications/admin?page=2&status=pending",
+		);
+		expect(res.render).not.toHaveBeenCalled();
+	});
+
+	it("should clear stored application list state", async () => {
+		const req = createRequest({
+			session: {
+				adminApplicationListState: {
+					page: 3,
+					search: "alex@example.com",
+					status: "pending",
+					role: "Engineer",
+					location: "Belfast",
+				},
+			},
+			query: { clear: "1" },
+		});
+		const res = createResponse();
+
+		await controller.getApplications(req as unknown as Request, res);
+
+		expect(req.session.adminApplicationListState).toBeUndefined();
+		expect(res.redirect).toHaveBeenCalledWith("/job-applications/admin");
+		expect(adminApplicationService.getPage).not.toHaveBeenCalled();
+	});
+
+	it("should redirect an empty filtered result to page one", async () => {
 		const counts = {
 			total: 36,
 			pending: 20,
@@ -1607,14 +1711,11 @@ describe("JobRoleController", () => {
 
 		await controller.getApplications(req as unknown as Request, res);
 
-		expect(res.render).toHaveBeenCalledWith(
-			"pages/jobApplicationAdmin.njk",
-			expect.objectContaining({
-				applications: [],
-				applicationCounts: counts,
-				pagination: expect.objectContaining({ page: 2, totalItems: 0 }),
-			}),
+		expect(req.session.adminApplicationListState?.page).toBe(1);
+		expect(res.redirect).toHaveBeenCalledWith(
+			"/job-applications/admin?search=missing%40example.com&status=approved",
 		);
+		expect(res.render).not.toHaveBeenCalled();
 	});
 
 	it("should redirect when loading applications returns 401", async () => {

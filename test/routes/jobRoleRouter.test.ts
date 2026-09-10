@@ -87,6 +87,16 @@ function createAdminApp(role: "ADMIN" | "USER" = "ADMIN"): Application {
 		res.locals.currentUserRole = role;
 		next();
 	}) as RequestHandler);
+	adminApp.get("/test-admin-list-state", (req, res) => {
+		req.session.adminApplicationListState = {
+			page: 3,
+			search: "a@example.com",
+			status: "approved",
+			role: "Software Engineer",
+			location: "Belfast",
+		};
+		res.sendStatus(204);
+	});
 
 	adminApp.use(router);
 	return adminApp;
@@ -520,6 +530,34 @@ describe("routes", () => {
 		expect(response.text).toContain("Full CV text");
 	});
 
+	it("should preserve admin application list state in the cv back link", async () => {
+		const adminAgent = request.agent(createAdminApp());
+		vi.spyOn(AdminApplicationService.prototype, "getAll").mockResolvedValueOnce(
+			[
+				{
+					applicationId: 10,
+					applicantEmail: "a@example.com",
+					roleName: "Software Engineer",
+					applicationDate: "2026-08-01",
+					status: "approved",
+					cvText: "Cached text",
+				},
+			],
+		);
+		vi.spyOn(
+			AdminApplicationService.prototype,
+			"getCvTextById",
+		).mockResolvedValueOnce("Full CV text");
+
+		await adminAgent.get("/test-admin-list-state").expect(204);
+		const response = await adminAgent.get("/job-applications/10/cv");
+
+		expect(response.status).toBe(200);
+		expect(response.text).toContain(
+			'href="/job-applications/admin?page=3&amp;search=a%40example.com&amp;status=approved&amp;role=Software+Engineer&amp;location=Belfast"',
+		);
+	});
+
 	it("should return 400 when cv page id is invalid", async () => {
 		const adminApp = createAdminApp();
 
@@ -760,18 +798,21 @@ describe("routes", () => {
 	});
 
 	it("should update an application from an HTML form and redirect", async () => {
-		const adminApp = createAdminApp();
+		const adminAgent = request.agent(createAdminApp());
 		const approve = vi
 			.spyOn(AdminApplicationService.prototype, "approve")
 			.mockResolvedValueOnce();
 
-		const response = await request(adminApp)
+		await adminAgent.get("/test-admin-list-state").expect(204);
+		const response = await adminAgent
 			.post("/job-applications/22/status")
 			.type("form")
 			.send({ action: "approve" });
 
 		expect(response.status).toBe(303);
-		expect(response.headers.location).toBe("/job-applications/admin");
+		expect(response.headers.location).toBe(
+			"/job-applications/admin?page=3&search=a%40example.com&status=approved&role=Software+Engineer&location=Belfast",
+		);
 		expect(approve).toHaveBeenCalledWith(22, "admin-token");
 	});
 

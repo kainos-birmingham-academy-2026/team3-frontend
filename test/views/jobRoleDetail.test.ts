@@ -45,11 +45,16 @@ describe("jobRoleDetail", () => {
 				status: "open",
 			};
 			const backLink = fromAdminApplications
-				? { href: "/job-applications/admin", text: "Back to Applications" }
+				? {
+						href: "/job-applications/admin?page=3&status=pending",
+						text: "Back to Applications",
+					}
 				: { href: "/job-role-list", text: "Back to Job Roles" };
 			const html = renderView(jobRole, "ADMIN", backLink);
 
-			expect(html).toContain(`href="${backLink.href}" class="back-link"`);
+			expect(html).toContain(
+				`href="${backLink.href.replace("&", "&amp;")}" class="back-link"`,
+			);
 			expect(html).toContain(backLink.text);
 			if (fromAdminApplications) {
 				expect(html).not.toContain("Back to Job Roles");

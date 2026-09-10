@@ -37,6 +37,7 @@ describe("jobApplicationAdmin", () => {
 
 		expect(html).toContain('method="get" action="/job-applications/admin"');
 		expect(html).toContain('href="/job-applications/12/cv"');
+		expect(html).toContain('href="/job-applications/admin?clear=1"');
 		expect(html).toContain('href="/job-role-list/4?from=admin-applications"');
 		expect(html).toContain(
 			'method="post" action="/job-applications/12/status"',
