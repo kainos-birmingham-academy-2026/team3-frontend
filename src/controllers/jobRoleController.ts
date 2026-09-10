@@ -245,6 +245,7 @@ export class JobRoleController {
 			req.session.dropdownOptions = dropdownOptions;
 			res.render("pages/jobRoleEdit.njk", {
 				jobRole,
+				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				capabilityOptions: dropdownOptions.capabilities,
 				bandOptions: dropdownOptions.bands,
 				locationOptions: dropdownOptions.locations,
@@ -303,6 +304,7 @@ export class JobRoleController {
 					jobSpecUrl: jobRoleData.sharepointUrl,
 					openPositions: jobRoleData.numberOfOpenPositions,
 				},
+				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				errorMessage,
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
 				bandOptions: req.session.dropdownOptions?.bands ?? [],

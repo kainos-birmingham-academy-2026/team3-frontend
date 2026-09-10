@@ -586,6 +586,7 @@ describe("JobRoleController", () => {
 			"pages/jobRoleEdit.njk",
 			expect.objectContaining({
 				jobRole,
+				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				locationOptions: [{ locationId: 1 }],
 				capabilityOptions: [{ capabilityId: 2 }],
 				bandOptions: [{ bandId: 3 }],
@@ -708,6 +709,7 @@ describe("JobRoleController", () => {
 					jobSpecUrl: "https://example.com/spec",
 					openPositions: "2",
 				}),
+				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				errorMessage: [{ field: "roleName", message: "Role name is required" }],
 				minClosingDate: "2000-01-01",
 			}),
