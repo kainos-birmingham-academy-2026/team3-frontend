@@ -342,6 +342,7 @@ describe("JobRoleController", () => {
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },
 			params: { id: "7" },
+			query: { from: "applications" },
 		});
 		const res = createResponse();
 		const jobRole = {
@@ -356,6 +357,10 @@ describe("JobRoleController", () => {
 		expect(jobRoleService.getById).toHaveBeenCalledWith("7", "jwt-token");
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
 			jobRoleId: jobRole,
+			backLink: {
+				href: "/job-applications",
+				text: "Back to My Applications",
+			},
 		});
 	});
 
@@ -374,6 +379,13 @@ describe("JobRoleController", () => {
 		await controller.getById(req as unknown as Request, res);
 
 		expect(jobRoleService.getById).toHaveBeenCalledWith("12", "jwt-token");
+		expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
+			jobRoleId: expect.objectContaining({ jobRoleId: 12 }),
+			backLink: {
+				href: "/job-role-list",
+				text: "Back to Job Roles",
+			},
+		});
 	});
 
 	it("should clear token and redirect to login when getById returns 401", async () => {

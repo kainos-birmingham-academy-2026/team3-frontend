@@ -1,7 +1,7 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
-  <a href="/job-role-list" class="back-link">← Back to Job Roles</a>
+  <a href="{{ backLink.href }}" class="back-link">← {{ backLink.text }}</a>
 
   {% if jobRoleId %}
     <article class="job-role-detail" tabindex="0">
