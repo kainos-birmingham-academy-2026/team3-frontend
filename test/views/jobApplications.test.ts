@@ -17,6 +17,14 @@ describe("jobApplications", () => {
 		cvText: "Engineering CV",
 	};
 
+	it("marks job-role links as opened from My Applications", () => {
+		const html = environment.render("pages/jobApplications.njk", {
+			applications: [{ ...application, status: "pending" }],
+		});
+
+		expect(html).toContain('href="/job-role-list/4?from=applications"');
+	});
+
 	it.each([
 		["pending", "Under review", "What happens next", 'aria-current="step"'],
 		["approved", "Under review", "Hired", "Application successful"],

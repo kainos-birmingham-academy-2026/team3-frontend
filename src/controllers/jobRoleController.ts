@@ -179,7 +179,13 @@ export class JobRoleController {
 				id,
 				this.getJwtToken(req),
 			);
-			res.render("pages/jobRoleDetail.njk", { jobRoleId });
+			const fromApplications = req.query.from === "applications";
+			res.render("pages/jobRoleDetail.njk", {
+				jobRoleId,
+				backLink: fromApplications
+					? { href: "/job-applications", text: "Back to My Applications" }
+					: { href: "/job-role-list", text: "Back to Job Roles" },
+			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
 				return;

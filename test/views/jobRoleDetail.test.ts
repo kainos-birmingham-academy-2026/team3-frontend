@@ -15,7 +15,11 @@ const environment = new nunjucks.Environment(
 	new nunjucks.FileSystemLoader(viewsPath),
 );
 
-function renderView(jobRoleId: JobRole, currentUserRole?: string): string {
+function renderView(
+	jobRoleId: JobRole,
+	currentUserRole?: string,
+	backLink = { href: "/job-role-list", text: "Back to Job Roles" },
+): string {
 	if (!template.length) {
 		throw new Error("Template should not be empty");
 	}
@@ -23,6 +27,7 @@ function renderView(jobRoleId: JobRole, currentUserRole?: string): string {
 	return environment.render("pages/jobRoleDetail.njk", {
 		jobRoleId,
 		currentUserRole,
+		backLink,
 	});
 }
 
@@ -43,6 +48,27 @@ describe("jobRoleDetail", () => {
 		expect(html).toContain("Lead Software Engineer");
 		expect(html).toContain("Open");
 		expect(html).toContain("Job Details");
+	});
+
+	it("should link back to My Applications when opened from there", () => {
+		const jobRole: JobRole = {
+			jobRoleId: 1,
+			roleName: "Lead Software Engineer",
+			location: "Birmingham",
+			capability: "Software Engineering",
+			band: "Senior Engineer",
+			closingDate: "2026-08-06",
+			status: "open",
+		};
+
+		const html = renderView(jobRole, undefined, {
+			href: "/job-applications",
+			text: "Back to My Applications",
+		});
+
+		expect(html).toContain('href="/job-applications"');
+		expect(html).toContain("Back to My Applications");
+		expect(html).not.toContain("Back to Job Roles");
 	});
 
 	it("should display job description section when available", () => {

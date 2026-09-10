@@ -30,7 +30,7 @@
       <tr>
        <td>
         {% if application.jobRoleId %}
-         <a href="/job-role-list/{{ application.jobRoleId }}">{{ application.roleName }}</a>
+                 <a href="/job-role-list/{{ application.jobRoleId }}?from=applications">{{ application.roleName }}</a>
         {% else %}
          {{ application.roleName }}
         {% endif %}
