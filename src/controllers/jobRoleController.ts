@@ -41,6 +41,7 @@ export class JobRoleController {
 		if (typeof value !== "string") return "/job-role-list";
 
 		const url = new URL(value, "http://localhost");
+		url.searchParams.delete("filterSubmission");
 		return url.pathname === "/job-role-list"
 			? `${url.pathname}${url.search}`
 			: "/job-role-list";
@@ -128,7 +129,9 @@ export class JobRoleController {
 			const savedJobRoleListUrl = this.getJobRoleListUrl(
 				req.session.jobRoleListUrl,
 			);
+			const isFilterSubmission = req.query.filterSubmission === "true";
 			if (
+				!isFilterSubmission &&
 				jobRoleListUrl === "/job-role-list" &&
 				savedJobRoleListUrl !== jobRoleListUrl
 			) {
@@ -136,7 +139,11 @@ export class JobRoleController {
 				return;
 			}
 
-			req.session.jobRoleListUrl = jobRoleListUrl;
+			if (jobRoleListUrl === "/job-role-list") {
+				delete req.session.jobRoleListUrl;
+			} else {
+				req.session.jobRoleListUrl = jobRoleListUrl;
+			}
 			const filters = this.getFilters(req);
 			const page = Number(this.getQueryString(req.query.page) ?? 1);
 			const [jobRolePage, locationOptions, capabilityOptions, bandOptions] =

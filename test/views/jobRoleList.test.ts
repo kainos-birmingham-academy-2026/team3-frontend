@@ -85,6 +85,9 @@ describe("jobRoleList", () => {
 	it("should provide an explicit filter reset link", () => {
 		const html = renderView([]);
 
+		expect(html).toContain(
+			'<input type="hidden" name="filterSubmission" value="true">',
+		);
 		expect(html).toContain('href="/job-role-list?clearFilters=true"');
 		expect(html).toContain("Clear filters");
 	});

@@ -191,8 +191,9 @@ describe("JobRoleController", () => {
 	it("should pass list filters to the API service and view", async () => {
 		const req = createRequest({
 			originalUrl:
-				"/job-role-list?roleName=Engineer&locationId=1&locationId=2&page=3",
+				"/job-role-list?filterSubmission=true&roleName=Engineer&locationId=1&locationId=2&page=3",
 			query: {
+				filterSubmission: "true",
 				roleName: " Engineer ",
 				locationId: ["1", "2"],
 				capabilityId: "3",
@@ -233,6 +234,35 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith(
 			"pages/jobRoleList.njk",
 			expect.objectContaining({ filters }),
+		);
+	});
+
+	it("should apply an empty filter form instead of restoring saved filters", async () => {
+		const req = createRequest({
+			session: {
+				jobRoleListUrl: "/job-role-list?roleName=Engineer&locationId=2&page=3",
+			},
+			originalUrl: "/job-role-list?filterSubmission=true",
+			query: { filterSubmission: "true" },
+		});
+		const res = createResponse();
+
+		await controller.getAll(req as unknown as Request, res);
+
+		expect(req.session.jobRoleListUrl).toBeUndefined();
+		expect(res.redirect).not.toHaveBeenCalled();
+		expect(jobRoleService.getPage).toHaveBeenCalledWith(
+			undefined,
+			{
+				roleName: undefined,
+				locationId: undefined,
+				capabilityId: undefined,
+				bandId: undefined,
+				closingDateFrom: undefined,
+				closingDateTo: undefined,
+			},
+			1,
+			10,
 		);
 	});
 
