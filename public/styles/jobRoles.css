@@ -12,6 +12,99 @@
 	overflow-x: auto;
 }
 
+.applications-table {
+	min-width: 900px;
+}
+
+.application-progress-cell {
+	width: 23rem;
+}
+
+.application-progress {
+	min-width: 19rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.application-progress-step {
+	position: relative;
+	display: grid;
+	grid-template-columns: 1rem minmax(0, 1fr);
+	gap: 0.65rem;
+	min-height: 3.2rem;
+	padding-bottom: 0.65rem;
+}
+
+.application-progress-step:last-child {
+	min-height: 0;
+	padding-bottom: 0;
+}
+
+.application-progress-step:not(:last-child)::before {
+	position: absolute;
+	top: 1rem;
+	bottom: 0;
+	left: 0.4rem;
+	width: 2px;
+	background: #b9bfd0;
+	content: "";
+}
+
+.application-progress-marker {
+	position: relative;
+	z-index: 1;
+	display: block;
+	width: 0.9rem;
+	height: 0.9rem;
+	margin-top: 0.18rem;
+	border: 2px solid #8a90a3;
+	border-radius: 50%;
+	background: var(--kainos-white);
+}
+
+.application-progress-step div {
+	display: grid;
+	gap: 0.1rem;
+}
+
+.application-progress-step strong {
+	font-size: 0.95rem;
+	line-height: 1.2;
+}
+
+.application-progress-step span:not(.application-progress-marker) {
+	color: var(--kainos-text-muted);
+	font-size: 0.82rem;
+	line-height: 1.35;
+}
+
+.application-progress-step-complete .application-progress-marker,
+.application-progress-step-approved .application-progress-marker {
+	border-color: var(--kainos-green);
+	background: var(--kainos-green);
+}
+
+.application-progress-step-current .application-progress-marker {
+	border-color: var(--kainos-blue);
+	box-shadow: 0 0 0 4px rgba(40, 53, 131, 0.15);
+}
+
+.application-progress-step-rejected .application-progress-marker {
+	border-color: #c62828;
+	background: #c62828;
+}
+
+.application-progress-step-withdrawn .application-progress-marker {
+	border-color: #686e80;
+	background: #686e80;
+}
+
+.application-progress-step-upcoming,
+.application-progress-step-stopped {
+	color: #686e80;
+}
+
 .job-role-filters {
 	margin-top: 1.2rem;
 	padding: 1.25rem;
