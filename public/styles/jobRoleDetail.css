@@ -85,41 +85,46 @@
 
 .detail-section dl {
 	margin: 0;
-	display: grid;
-	gap: 1.25rem 0;
 	background: #f7f9ff;
 	padding: 1.5rem;
 	border-radius: 4px;
 	border: 1px solid #e4e8f6;
-	grid-template-columns: auto 1fr;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.detail-row {
+	display: grid;
+	grid-template-columns: minmax(9rem, 0.35fr) minmax(0, 1fr);
 	align-items: start;
+	column-gap: 1rem;
 }
 
 .detail-section dt {
 	font-weight: 700;
 	color: var(--kainos-blue);
-	font-size: 0.85rem;
+	font-size: 0.95rem;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 	margin: 0;
-	padding: 0.5rem 0;
+	padding: 0.45rem 0;
 	background: transparent;
 	border: none;
-	line-height: 1.4;
+	line-height: 1.5;
 }
 
 .detail-section dt::after {
 	content: ":";
-	margin-right: 1rem;
 }
 
 .detail-section dd {
 	margin: 0;
 	color: var(--kainos-navy);
-	font-size: 1.05rem;
+	font-size: 1rem;
 	font-weight: 500;
-	padding: 0.5rem 0;
-	line-height: 1.6;
+	padding: 0.45rem 0;
+	line-height: 1.5;
 }
 
 .spec-link {
@@ -130,7 +135,7 @@
 	text-decoration-thickness: 2px;
 	text-underline-offset: 0.28em;
 	transition: all 0.2s ease;
-	padding: 0.25rem 0.5rem;
+	padding: 0;
 	border-radius: 2px;
 	display: inline-block;
 }
@@ -298,6 +303,16 @@
 
 	.job-role-detail {
 		padding: 1.5rem;
+	}
+
+	.detail-row {
+		grid-template-columns: 1fr;
+		gap: 0.15rem;
+	}
+
+	.detail-section dt,
+	.detail-section dd {
+		padding: 0;
 	}
 
 	.cta-section {
