@@ -18,6 +18,7 @@ import type {
 import type { NormalizedStatus } from "../services/adminApplicationService";
 import { AdminApplicationService } from "../services/adminApplicationService";
 import type { JobRoleService } from "../services/jobRoleService";
+import { getAdminApplicationListUrl } from "../utils/adminApplicationListState";
 
 export class JobRoleController {
 	constructor(
@@ -180,11 +181,19 @@ export class JobRoleController {
 				this.getJwtToken(req),
 			);
 			const fromApplications = req.query.from === "applications";
+			const fromAdminApplications = req.query.from === "admin-applications";
 			res.render("pages/jobRoleDetail.njk", {
 				jobRoleId,
-				backLink: fromApplications
-					? { href: "/job-applications", text: "Back to My Applications" }
-					: { href: "/job-role-list", text: "Back to Job Roles" },
+				backLink: fromAdminApplications
+					? {
+							href: getAdminApplicationListUrl(
+								req.session.adminApplicationListState,
+							),
+							text: "Back to Applications",
+						}
+					: fromApplications
+						? { href: "/job-applications", text: "Back to My Applications" }
+						: { href: "/job-role-list", text: "Back to Job Roles" },
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -543,18 +552,53 @@ export class JobRoleController {
 
 	async getApplications(req: Request, res: Response): Promise<void> {
 		try {
+			if (req.query.clear === "1") {
+				delete req.session.adminApplicationListState;
+				res.redirect("/job-applications/admin");
+				return;
+			}
+
 			const jwtToken = this.getJwtToken(req);
-			const page = Number(this.getQueryString(req.query.page) ?? 1);
-			const filters = {
-				search: this.getQueryString(req.query.search)?.toLowerCase() ?? "",
-				status: this.getApplicationStatusFilter(req.query.status),
-				role: this.getQueryString(req.query.role) ?? "",
-				location: this.getQueryString(req.query.location) ?? "",
-			};
+			const hasExplicitListState = [
+				"page",
+				"search",
+				"status",
+				"role",
+				"location",
+			].some((key) => req.query[key] !== undefined);
+			const storedState = req.session.adminApplicationListState;
+			const page = hasExplicitListState
+				? Number(this.getQueryString(req.query.page) ?? 1)
+				: (storedState?.page ?? 1);
+			const filters = hasExplicitListState
+				? {
+						search: this.getQueryString(req.query.search)?.toLowerCase() ?? "",
+						status: this.getApplicationStatusFilter(req.query.status),
+						role: this.getQueryString(req.query.role) ?? "",
+						location: this.getQueryString(req.query.location) ?? "",
+					}
+				: {
+						search: storedState?.search ?? "",
+						status: storedState?.status ?? "",
+						role: storedState?.role ?? "",
+						location: storedState?.location ?? "",
+					};
+			req.session.adminApplicationListState = { page, ...filters };
 			const [jobRoles, applicationPage] = await Promise.all([
 				this.jobRoleService.getAll(jwtToken),
 				this.adminApplicationService.getPage(jwtToken ?? "", page, 10, filters),
 			]);
+			const lastValidPage = Math.max(applicationPage.totalPages, 1);
+			if (page > lastValidPage) {
+				req.session.adminApplicationListState = {
+					page: lastValidPage,
+					...filters,
+				};
+				res.redirect(
+					getAdminApplicationListUrl(req.session.adminApplicationListState),
+				);
+				return;
+			}
 			const applications = applicationPage.items;
 			const roleLocations = new Map(
 				jobRoles.map((role) => [role.roleName.toLowerCase(), role.location]),

@@ -32,6 +32,36 @@ function renderView(
 }
 
 describe("jobRoleDetail", () => {
+	it.each([true, false])(
+		"should render the correct back link when fromAdminApplications is %s",
+		(fromAdminApplications) => {
+			const jobRole: JobRole = {
+				jobRoleId: 1,
+				roleName: "Software Engineer",
+				location: "Birmingham",
+				capability: "Software Engineering",
+				band: "Engineer",
+				closingDate: "2026-08-06",
+				status: "open",
+			};
+			const backLink = fromAdminApplications
+				? {
+						href: "/job-applications/admin?page=3&status=pending",
+						text: "Back to Applications",
+					}
+				: { href: "/job-role-list", text: "Back to Job Roles" };
+			const html = renderView(jobRole, "ADMIN", backLink);
+
+			expect(html).toContain(
+				`href="${backLink.href.replace("&", "&amp;")}" class="back-link"`,
+			);
+			expect(html).toContain(backLink.text);
+			if (fromAdminApplications) {
+				expect(html).not.toContain("Back to Job Roles");
+			}
+		},
+	);
+
 	it("should display job title and status badge", () => {
 		const jobRole: JobRole = {
 			jobRoleId: 1,
