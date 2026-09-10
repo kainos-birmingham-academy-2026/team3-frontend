@@ -59,3 +59,16 @@ test.describe("Registration password usability", () => {
 		await expect(passwordToggle.locator(".password-toggle-slash")).toBeHidden();
 	});
 });
+
+test("shows the password on the login page", async ({ page }) => {
+	await page.goto("/login");
+
+	const password = page.getByLabel("Password", { exact: true });
+	const passwordToggle = page.locator('[aria-controls="password"]');
+
+	await passwordToggle.click();
+
+	await expect(password).toHaveAttribute("type", "text");
+	await expect(passwordToggle).toHaveAccessibleName("Hide password");
+	await expect(passwordToggle).toHaveAttribute("aria-pressed", "true");
+});
