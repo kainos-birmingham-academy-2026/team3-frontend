@@ -114,7 +114,7 @@
       <td class="actions-cell">
        <div class="actions-content">
         {% if application.jobRoleId %}
-         <a class="btn-view" href="/job-role-list/{{ application.jobRoleId }}">View job role</a>
+         <a class="btn-view" href="/job-role-list/{{ application.jobRoleId }}?from=admin-applications">View job role</a>
         {% endif %}
         {% if application.status == 'pending' %}
          <div class="inline-actions">

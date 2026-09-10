@@ -364,6 +364,42 @@ describe("JobRoleController", () => {
 		});
 	});
 
+	it.each([
+		{
+			from: "admin-applications",
+			expected: {
+				href: "/job-applications/admin",
+				text: "Back to Applications",
+			},
+		},
+		{
+			from: "other",
+			expected: { href: "/job-role-list", text: "Back to Job Roles" },
+		},
+		{
+			from: ["admin-applications"],
+			expected: { href: "/job-role-list", text: "Back to Job Roles" },
+		},
+	])(
+		"should resolve the detail page origin for $from",
+		async ({ from, expected }) => {
+			const req = createRequest({
+				params: { id: "7" },
+				query: { from },
+			});
+			const res = createResponse();
+			const jobRole = { jobRoleId: 7, roleName: "QA Engineer" };
+			jobRoleService.getById.mockResolvedValueOnce(jobRole);
+
+			await controller.getById(req as unknown as Request, res);
+
+			expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
+				jobRoleId: jobRole,
+				backLink: expected,
+			});
+		},
+	);
+
 	it("should use the first id when params.id is an array", async () => {
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },

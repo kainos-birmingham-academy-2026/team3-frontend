@@ -180,11 +180,14 @@ export class JobRoleController {
 				this.getJwtToken(req),
 			);
 			const fromApplications = req.query.from === "applications";
+			const fromAdminApplications = req.query.from === "admin-applications";
 			res.render("pages/jobRoleDetail.njk", {
 				jobRoleId,
-				backLink: fromApplications
-					? { href: "/job-applications", text: "Back to My Applications" }
-					: { href: "/job-role-list", text: "Back to Job Roles" },
+				backLink: fromAdminApplications
+					? { href: "/job-applications/admin", text: "Back to Applications" }
+					: fromApplications
+						? { href: "/job-applications", text: "Back to My Applications" }
+						: { href: "/job-role-list", text: "Back to Job Roles" },
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
