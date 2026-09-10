@@ -11,6 +11,7 @@
     {% endif %}
   </section>
   <form id="job-role-filters" class="job-role-filters" method="get" action="/job-role-list">
+    <input type="hidden" name="filterSubmission" value="true">
     <h2>Filter job roles</h2>
     <div class="job-role-filter-grid">
       <div class="job-role-filter-field">
@@ -81,7 +82,7 @@
     </div>
     <div class="job-role-filter-actions">
       <button class="button button-solid" type="submit">Apply filters</button>
-      <a href="/job-role-list">Clear filters</a>
+      <a href="/job-role-list?clearFilters=true">Clear filters</a>
     </div>
   </form>
   {% set hasOpenRoles = false %}

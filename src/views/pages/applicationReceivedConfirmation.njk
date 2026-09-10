@@ -7,7 +7,10 @@
   <div class="restricted-card">
    <h1 id="application-received-title">Application received</h1>
    <p>Thank you for applying. Your application has been submitted successfully and is now in progress.</p>
-   <a href="/job-role-list/{{ jobRoleId }}" class="button button-solid">Back to job details</a>
+   <div class="confirmation-actions">
+    <a href="{{ jobRoleListUrl }}" class="button button-outline">Back to job roles</a>
+    <a href="/job-applications" class="button button-solid">View my applications</a>
+   </div>
   </div>
  </section>
 {% endblock %}
