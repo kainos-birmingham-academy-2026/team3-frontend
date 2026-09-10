@@ -37,6 +37,15 @@ export class JobRoleController {
 		return typeof value === "string" && value.trim() ? value.trim() : undefined;
 	}
 
+	private getJobRoleListUrl(value: unknown): string {
+		if (typeof value !== "string") return "/job-role-list";
+
+		const url = new URL(value, "http://localhost");
+		return url.pathname === "/job-role-list"
+			? `${url.pathname}${url.search}`
+			: "/job-role-list";
+	}
+
 	private getApplicationStatusFilter(value: unknown): NormalizedStatus | "" {
 		const status = this.getQueryString(value)?.toLowerCase();
 		if (status === "hired") return "approved";
@@ -109,6 +118,25 @@ export class JobRoleController {
 
 	async getAll(req: Request, res: Response): Promise<void> {
 		try {
+			if (req.query.clearFilters === "true") {
+				delete req.session.jobRoleListUrl;
+				res.redirect("/job-role-list");
+				return;
+			}
+
+			const jobRoleListUrl = this.getJobRoleListUrl(req.originalUrl);
+			const savedJobRoleListUrl = this.getJobRoleListUrl(
+				req.session.jobRoleListUrl,
+			);
+			if (
+				jobRoleListUrl === "/job-role-list" &&
+				savedJobRoleListUrl !== jobRoleListUrl
+			) {
+				res.redirect(savedJobRoleListUrl);
+				return;
+			}
+
+			req.session.jobRoleListUrl = jobRoleListUrl;
 			const filters = this.getFilters(req);
 			const page = Number(this.getQueryString(req.query.page) ?? 1);
 			const [jobRolePage, locationOptions, capabilityOptions, bandOptions] =
@@ -471,6 +499,7 @@ export class JobRoleController {
 		const id = this.getRoleIdParam(req);
 		res.render("pages/applicationReceivedConfirmation.njk", {
 			jobRoleId: id,
+			jobRoleListUrl: this.getJobRoleListUrl(req.session.jobRoleListUrl),
 		});
 	}
 

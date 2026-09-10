@@ -12,6 +12,7 @@ declare module "express-session" {
 		jwtToken?: string;
 		userRole?: UserRole;
 		redirectAfterLogin?: string;
+		jobRoleListUrl?: string;
 		dropdownOptions?: {
 			statuses: StatusOption[];
 			locations: LocationOption[];
