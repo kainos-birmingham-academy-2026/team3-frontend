@@ -22,11 +22,10 @@ describe("jobApplicationAdmin", () => {
 			},
 		],
 		applicationCounts: {
-			total: 36,
+			total: 33,
 			pending: 20,
 			approved: 8,
 			rejected: 5,
-			withdrawn: 3,
 		},
 		filters: { search: "", status: "", role: "", location: "" },
 		jobRoles: [{ roleName: "Engineer", location: "Belfast" }],
@@ -54,11 +53,10 @@ describe("jobApplicationAdmin", () => {
 				applications,
 			});
 
-			expect(html).toContain('id="total-count">36</span>');
+			expect(html).toContain('id="total-count">33</span>');
 			expect(html).toContain('id="pending-count">20</span>');
 			expect(html).toContain('id="hired-count">8</span>');
 			expect(html).toContain('id="rejected-count">5</span>');
-			expect(html).toContain('id="withdrawn-count">3</span>');
 		},
 	);
 
