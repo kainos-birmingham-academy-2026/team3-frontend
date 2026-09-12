@@ -5,5 +5,5 @@ export interface Application {
 	jobRoleId?: number | null;
 	roleName: string;
 	applicationDate: string;
-	status: "pending" | "approved" | "rejected" | "withdrawn";
+	status: "pending" | "approved" | "rejected";
 }

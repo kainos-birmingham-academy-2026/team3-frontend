@@ -19,7 +19,6 @@ interface ApplicationCounts {
 	pending: number;
 	approved: number;
 	rejected: number;
-	withdrawn: number;
 }
 
 interface ApiApplicationPage {
@@ -48,11 +47,7 @@ export interface AdminApplicationFilters {
 }
 
 type StatusAction = "approve" | "reject";
-export type NormalizedStatus =
-	| "pending"
-	| "approved"
-	| "rejected"
-	| "withdrawn";
+export type NormalizedStatus = "pending" | "approved" | "rejected";
 
 export class AdminApplicationService {
 	private static readonly ADMIN_APPLICATIONS_ENDPOINT =
@@ -88,10 +83,6 @@ export class AdminApplicationService {
 			return "rejected";
 		}
 
-		if (normalizedStatus === "withdrawn") {
-			return "withdrawn";
-		}
-
 		return "pending";
 	}
 
@@ -115,12 +106,11 @@ export class AdminApplicationService {
 
 	private getFilterStatus(
 		status?: NormalizedStatus | "",
-	): "IN_PROGRESS" | "HIRED" | "REJECTED" | "WITHDRAWN" | undefined {
+	): "IN_PROGRESS" | "HIRED" | "REJECTED" | undefined {
 		const statuses = {
 			pending: "IN_PROGRESS",
 			approved: "HIRED",
 			rejected: "REJECTED",
-			withdrawn: "WITHDRAWN",
 		} as const;
 		return status ? statuses[status] : undefined;
 	}
