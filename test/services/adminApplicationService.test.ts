@@ -12,7 +12,7 @@ vi.mock("../../src/config/apiClient", () => ({
 function applicationPage<T>(items: T[]) {
 	return {
 		items,
-		counts: { total: 36, pending: 20, approved: 8, rejected: 5, withdrawn: 3 },
+		counts: { total: 33, pending: 20, approved: 8, rejected: 5 },
 		page: 1,
 		pageSize: 10,
 		totalItems: items.length,
@@ -66,11 +66,10 @@ describe("AdminApplicationService", () => {
 				totalItems: 11,
 				totalPages: 2,
 				counts: {
-					total: 36,
+					total: 33,
 					pending: 20,
 					approved: 8,
 					rejected: 5,
-					withdrawn: 3,
 				},
 			},
 		});
@@ -84,11 +83,10 @@ describe("AdminApplicationService", () => {
 		expect(result.items[0]?.status).toBe("approved");
 		expect(result.totalPages).toBe(2);
 		expect(result.counts).toEqual({
-			total: 36,
+			total: 33,
 			pending: 20,
 			approved: 8,
 			rejected: 5,
-			withdrawn: 3,
 		});
 	});
 
@@ -156,13 +154,6 @@ describe("AdminApplicationService", () => {
 					applicationDate: "2026-08-12T00:00:00.000Z",
 					status: "REJECTED",
 				},
-				{
-					applicationId: 11,
-					applicantEmail: "sam@example.com",
-					roleName: "Engineer",
-					applicationDate: "2026-08-12T00:00:00.000Z",
-					status: "WITHDRAWN",
-				},
 			]),
 		});
 
@@ -170,7 +161,6 @@ describe("AdminApplicationService", () => {
 
 		expect(result[0]?.status).toBe("approved");
 		expect(result[1]?.status).toBe("rejected");
-		expect(result[2]?.status).toBe("withdrawn");
 	});
 
 	it("should return cv text for the matching application from the list", async () => {
