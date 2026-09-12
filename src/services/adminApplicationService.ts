@@ -47,10 +47,7 @@ export interface AdminApplicationFilters {
 }
 
 type StatusAction = "approve" | "reject";
-export type NormalizedStatus =
-	| "pending"
-	| "approved"
-	| "rejected";
+export type NormalizedStatus = "pending" | "approved" | "rejected";
 
 export class AdminApplicationService {
 	private static readonly ADMIN_APPLICATIONS_ENDPOINT =
