@@ -64,7 +64,7 @@ describe("jobApplicationAdmin", () => {
 		const html = environment.render("pages/jobApplicationAdmin.njk", viewData);
 
 		expect(html).toContain(
-			'<button class="button button-solid" type="submit">Apply filters</button>',
+			'<button class="button button-solid" type="submit">Search</button>',
 		);
 		expect(html).not.toContain('addEventListener("input", filterApplications)');
 		expect(html).not.toContain(
