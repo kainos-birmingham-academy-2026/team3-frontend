@@ -69,6 +69,7 @@ export class JobRoleService {
 			capabilityId: toOptionalNumber(jobRoleData.capabilityId),
 			bandId: toOptionalNumber(jobRoleData.bandId),
 			locationId: toOptionalNumber(jobRoleData.locationId),
+			openingDate: jobRoleData.openingDate || undefined,
 			closingDate: jobRoleData.closingDate || undefined,
 		};
 	}

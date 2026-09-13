@@ -41,6 +41,7 @@ describe("jobRoleCreate", () => {
 		expect(html).toContain('name="responsibilities"');
 		expect(html).toContain('name="sharepointUrl"');
 		expect(html).toContain('name="numberOfOpenPositions"');
+		expect(html).toContain('name="openingDate"');
 		expect(html).toContain('name="closingDate"');
 		expect(html).toContain('name="capabilityId"');
 		expect(html).toContain('value="1">Engineering</option>');
@@ -48,11 +49,14 @@ describe("jobRoleCreate", () => {
 		expect(html).toContain('value="3">Birmingham</option>');
 	});
 
-	it("should keep status fixed to OPEN and allow an optional closing date", () => {
+	it("should keep status fixed to OPEN and allow optional opening and closing dates", () => {
 		const html = renderView();
 
 		expect(html).toContain('name="statusName"');
 		expect(html).toContain('value="OPEN" readonly');
+		expect(html).toContain(
+			"If no opening date is set, the role will open immediately.",
+		);
 		expect(html).toContain(
 			"If no closing date is set, the role will remain open until manually closed.",
 		);
@@ -80,6 +84,7 @@ describe("jobRoleCreate", () => {
 				`<label for="${fieldId}">${label} <span aria-hidden="true">*</span></label>`,
 			);
 		}
+		expect(html).toContain('<label for="openingDate">Opening date</label>');
 		expect(html).toContain('<label for="closingDate">Closing date</label>');
 		expect(html).toContain('<label for="statusName">Status</label>');
 	});
@@ -126,6 +131,7 @@ describe("jobRoleCreate", () => {
 			responsibilities: "Design and test systems",
 			sharepointUrl: "https://example.com/jobs/software-engineer",
 			numberOfOpenPositions: "2",
+			openingDate: "2026-10-01",
 			closingDate: "2026-12-31",
 			capabilityId: "1",
 			bandId: "2",
@@ -139,6 +145,7 @@ describe("jobRoleCreate", () => {
 			'value="https://example.com/jobs/software-engineer"',
 		);
 		expect(html).toContain('value="2" min="1"');
+		expect(html).toContain('value="2026-10-01"');
 		expect(html).toContain('value="2026-12-31"');
 		expect(html).toContain('value="1" selected>Engineering</option>');
 		expect(html).toContain('value="2" selected>Engineer</option>');

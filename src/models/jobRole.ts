@@ -30,6 +30,7 @@ export interface CreateJobRoleInput {
 	responsibilities?: string;
 	sharepointUrl?: string;
 	numberOfOpenPositions?: string | number;
+	openingDate?: string;
 	closingDate?: string;
 	capabilityId?: string | number;
 	bandId?: string | number;

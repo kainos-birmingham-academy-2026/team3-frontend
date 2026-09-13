@@ -39,6 +39,11 @@
             <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" value="{{ jobRole.numberOfOpenPositions | default('', true) }}" min="1" required/>
          </div>
          <div class="form-field">
+            <label for="openingDate">Opening date</label>
+            <input id="openingDate" name="openingDate" type="date" value="{{ jobRole.openingDate | default('', true) }}"/>
+            <p class="form-hint">If no opening date is set, the role will open immediately.</p>
+         </div>
+         <div class="form-field">
             <label for="closingDate">Closing date</label>
             <input id="closingDate" name="closingDate" type="date" value="{{ jobRole.closingDate | default('', true) }}"/>
             <p class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
