@@ -20,7 +20,7 @@ interface ApiJobRole {
 	capabilityId?: number;
 	bandName?: string;
 	bandId?: number;
-	openingDate?: string | null;
+	openingDate?: string;
 	closingDate?: string | null;
 	status?: string;
 	statusName?: string;

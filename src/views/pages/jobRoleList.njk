@@ -117,7 +117,7 @@
                 <td>{{ jobRole.location }}</td>
                 <td>{{ jobRole.capability }}</td>
                 <td>{{ jobRole.band }}</td>
-                {% if currentUserRole == 'ADMIN' %}<td>{{ jobRole.openingDate or 'Immediate' }}</td>{% endif %}
+                {% if currentUserRole == 'ADMIN' %}<td>{{ jobRole.openingDate }}</td>{% endif %}
                 <td>{{ jobRole.closingDate }}</td>
               </tr>
             {% endif %}
