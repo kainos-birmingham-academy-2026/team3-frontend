@@ -74,6 +74,13 @@
               <dd>{{ jobRoleId.capability }}</dd>
             </div>
 
+            {% if currentUserRole == 'ADMIN' %}
+              <div class="detail-row">
+                <dt>Opening Date</dt>
+                <dd>{{ jobRoleId.openingDate or 'Immediate' }}</dd>
+              </div>
+            {% endif %}
+
             <div class="detail-row">
               <dt>Closing Date</dt>
               <dd>{{ jobRoleId.closingDate }}</dd>

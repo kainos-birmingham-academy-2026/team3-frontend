@@ -20,6 +20,7 @@ interface ApiJobRole {
 	capabilityId?: number;
 	bandName?: string;
 	bandId?: number;
+	openingDate?: string | null;
 	closingDate?: string | null;
 	status?: string;
 	statusName?: string;
@@ -100,6 +101,7 @@ export class JobRoleService {
 			band:
 				jobRole.bandName ??
 				(jobRole.bandId !== undefined ? String(jobRole.bandId) : "Unknown"),
+			openingDate: this.mapClosingDate(jobRole.openingDate),
 			closingDate: this.mapClosingDate(jobRole.closingDate),
 			status: this.mapStatus(jobRole),
 			description: jobRole.description,

@@ -4,6 +4,7 @@ export interface JobRole {
 	location: string;
 	capability: string;
 	band: string;
+	openingDate?: string;
 	closingDate: string;
 	status: string;
 	description?: string;
