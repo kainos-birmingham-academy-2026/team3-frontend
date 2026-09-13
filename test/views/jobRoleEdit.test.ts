@@ -29,14 +29,17 @@ function renderView(): string {
 			responsibilities: "Coach engineers",
 			jobSpecUrl: "https://example.com/spec",
 			openPositions: 3,
+			openingDate: "2026-09-20",
 			closingDate: "2099-12-31",
 			capability: "Engineering",
 			band: "Lead",
 			location: "Birmingham",
 		},
+		canEditOpeningDate: true,
 		capabilityOptions: [{ capabilityId: 1, capabilityName: "Engineering" }],
 		bandOptions: [{ bandId: 2, bandName: "Lead" }],
 		locationOptions: [{ locationId: 3, locationName: "Birmingham" }],
+		minOpeningDate: "2026-09-13",
 		minClosingDate: "2026-08-18",
 	});
 }
@@ -62,6 +65,9 @@ describe("jobRoleEdit", () => {
 		expect(html).toContain("novalidate");
 		expect(html).toContain('type="url" maxlength="255"');
 		expect(html).toContain('type="number" min="1" step="1"');
+		expect(html).toContain(
+			'id="openingDate" name="openingDate" type="date" min="2026-09-13" value="2026-09-20"',
+		);
 		expect(html).toContain('type="date" min="2026-08-18"');
 		expect(html).toContain('maxlength="100"');
 	});
@@ -88,6 +94,16 @@ describe("jobRoleEdit", () => {
 			);
 		}
 		expect(html).toContain('<label for="closingDate">Closing date</label>');
+	});
+
+	it("should hide opening date editing for a role that has already opened", () => {
+		const html = environment.render("pages/jobRoleEdit.njk", {
+			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+			jobRole: { jobRoleId: 7, openingDate: "2026-09-01" },
+			canEditOpeningDate: false,
+		});
+
+		expect(html).not.toContain('name="openingDate"');
 	});
 
 	it("should configure live character limits", () => {

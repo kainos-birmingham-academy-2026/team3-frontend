@@ -40,6 +40,12 @@
         <label for="numberOfOpenPositions">Number of open positions <span aria-hidden="true">*</span></label>
         <input id="numberOfOpenPositions" name="numberOfOpenPositions" type="number" min="1" step="1" value="{{ jobRole.openPositions }}" required/>
       </div>
+      {% if canEditOpeningDate %}
+        <div class="form-field">
+          <label for="openingDate">Opening date</label>
+          <input id="openingDate" name="openingDate" type="date" min="{{ minOpeningDate }}" value="{{ jobRole.openingDate }}"/>
+        </div>
+      {% endif %}
       <div class="form-field">
         <label for="closingDate">Closing date</label>
         <input id="closingDate" name="closingDate" type="date" min="{{ minClosingDate }}" value="{{ jobRole.closingDate }}"/>

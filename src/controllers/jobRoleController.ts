@@ -93,6 +93,10 @@ export class JobRoleController {
 		return new Date().toISOString().split("T")[0];
 	}
 
+	private isFutureDate(date?: string): boolean {
+		return Boolean(date && date.split("T")[0] > this.getToday());
+	}
+
 	private getEditMinClosingDate(closingDate?: string): string {
 		const today = this.getToday();
 		const currentClosingDate = closingDate?.split("T")[0];
@@ -305,9 +309,11 @@ export class JobRoleController {
 			res.render("pages/jobRoleEdit.njk", {
 				jobRole,
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+				canEditOpeningDate: this.isFutureDate(jobRole.openingDate),
 				capabilityOptions: dropdownOptions.capabilities,
 				bandOptions: dropdownOptions.bands,
 				locationOptions: dropdownOptions.locations,
+				minOpeningDate: this.getToday(),
 				minClosingDate: this.getEditMinClosingDate(jobRole.closingDate),
 			});
 		} catch (error) {
@@ -365,9 +371,11 @@ export class JobRoleController {
 				},
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				errorMessage,
+				canEditOpeningDate: Boolean(jobRoleData.openingDate),
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
 				bandOptions: req.session.dropdownOptions?.bands ?? [],
 				locationOptions: req.session.dropdownOptions?.locations ?? [],
+				minOpeningDate: this.getToday(),
 				minClosingDate: this.getEditMinClosingDate(jobRoleData.closingDate),
 			});
 		}

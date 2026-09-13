@@ -701,6 +701,7 @@ describe("JobRoleController", () => {
 		const jobRole = {
 			jobRoleId: 7,
 			roleName: "Lead Engineer",
+			openingDate: "2099-01-01",
 			closingDate: "2000-01-01",
 		};
 		jobRoleService.getById.mockResolvedValueOnce(jobRole);
@@ -719,9 +720,11 @@ describe("JobRoleController", () => {
 			expect.objectContaining({
 				jobRole,
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+					canEditOpeningDate: true,
 				locationOptions: [{ locationId: 1 }],
 				capabilityOptions: [{ capabilityId: 2 }],
 				bandOptions: [{ bandId: 3 }],
+					minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 				minClosingDate: "2000-01-01",
 			}),
 		);
@@ -812,6 +815,7 @@ describe("JobRoleController", () => {
 			roleName: "",
 			sharepointUrl: "https://example.com/spec",
 			numberOfOpenPositions: "2",
+			openingDate: "2099-01-01",
 			closingDate: "2000-01-01",
 		};
 		const req = createRequest({
@@ -843,6 +847,8 @@ describe("JobRoleController", () => {
 				}),
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				errorMessage: [{ field: "roleName", message: "Role name is required" }],
+				canEditOpeningDate: true,
+				minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 				minClosingDate: "2000-01-01",
 			}),
 		);
