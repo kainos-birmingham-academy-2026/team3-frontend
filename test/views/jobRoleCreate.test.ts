@@ -23,6 +23,7 @@ function renderView(jobRole = {}): string {
 	return environment.render("pages/jobRoleCreate.njk", {
 		canCreate: true,
 		characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+		minOpeningDate: "2026-09-13",
 		jobRole,
 		capabilityOptions: [{ capabilityId: 1, capabilityName: "Engineering" }],
 		bandOptions: [{ bandId: 2, bandName: "Engineer" }],
@@ -61,6 +62,14 @@ describe("jobRoleCreate", () => {
 			"If no closing date is set, the role will remain open until manually closed.",
 		);
 		expect(html).not.toContain('name="statusId"');
+	});
+
+	it("should prevent selecting an opening date before today", () => {
+		const html = renderView();
+
+		expect(html).toContain(
+			'id="openingDate" name="openingDate" type="date" min="2026-09-13"',
+		);
 	});
 
 	it("should mark required fields with an explained asterisk", () => {

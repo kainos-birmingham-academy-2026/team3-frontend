@@ -487,6 +487,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
 			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+			minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 			capabilityOptions: capabilities,
 			bandOptions: bands,
 			locationOptions: locations,
@@ -541,6 +542,7 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleCreate.njk", {
 			canCreate: true,
 			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+			minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 			errorMessage: [{ field: "roleName", message: "Role name is required" }],
 			jobRole: { roleName: "Software Engineer", capabilityId: "3" },
 			capabilityOptions: [],

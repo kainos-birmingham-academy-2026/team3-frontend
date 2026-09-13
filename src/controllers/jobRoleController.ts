@@ -89,8 +89,12 @@ export class JobRoleController {
 		return jobRole.status === "open" && (jobRole.openPositions ?? 0) > 0;
 	}
 
+	private getToday(): string {
+		return new Date().toISOString().split("T")[0];
+	}
+
 	private getEditMinClosingDate(closingDate?: string): string {
-		const today = new Date().toISOString().split("T")[0];
+		const today = this.getToday();
 		const currentClosingDate = closingDate?.split("T")[0];
 
 		return currentClosingDate && currentClosingDate < today
@@ -210,6 +214,7 @@ export class JobRoleController {
 			res.render("pages/jobRoleCreate.njk", {
 				canCreate: true,
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+				minOpeningDate: this.getToday(),
 				capabilityOptions: dropdownOptions.capabilities,
 				bandOptions: dropdownOptions.bands,
 				locationOptions: dropdownOptions.locations,
@@ -276,6 +281,7 @@ export class JobRoleController {
 			res.status(statusCode).render("pages/jobRoleCreate.njk", {
 				canCreate: statusCode !== 403,
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+				minOpeningDate: this.getToday(),
 				errorMessage,
 				jobRole: req.body as CreateJobRoleInput,
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
