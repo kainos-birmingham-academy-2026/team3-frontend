@@ -131,7 +131,6 @@ export class AuthController {
 
 		try {
 			await authApiService.register(email, password);
-			res.redirect("/register/confirmation");
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Unable to register";
@@ -139,6 +138,25 @@ export class AuthController {
 				errorMessage: message,
 				formValues: { email },
 			});
+			return;
+		}
+
+		try {
+			const jwtToken = await authApiService.login(email, password);
+			const userRole = getUserRoleFromToken(jwtToken);
+
+			if (!userRole) {
+				throw new Error("Sign-in could not be completed. Please try again.");
+			}
+
+			req.session.jwtToken = jwtToken;
+			req.session.userRole = userRole;
+
+			const redirectAfterLogin = req.session.redirectAfterLogin ?? "/";
+			delete req.session.redirectAfterLogin;
+			res.redirect(redirectAfterLogin);
+		} catch {
+			res.redirect("/login?registered=1");
 		}
 	}
 
