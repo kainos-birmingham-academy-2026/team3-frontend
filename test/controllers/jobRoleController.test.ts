@@ -501,6 +501,35 @@ describe("JobRoleController", () => {
 		});
 	});
 
+	it("should use the UK calendar date for opening date controls", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-06-01T23:30:00.000Z"));
+		const req = createRequest({
+			session: { jwtToken: "admin-token", userRole: "ADMIN" },
+			params: { id: "7" },
+		});
+		const res = createResponse();
+
+		await controller.showCreateForm(req as unknown as Request, res);
+
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobRoleCreate.njk",
+			expect.objectContaining({ minOpeningDate: "2026-06-02" }),
+		);
+
+		jobRoleService.getById.mockResolvedValueOnce({
+			jobRoleId: 7,
+			openingDate: "2026-06-02",
+		});
+		await controller.showEditForm(req as unknown as Request, res);
+
+		expect(res.render).toHaveBeenCalledWith(
+			"pages/jobRoleEdit.njk",
+			expect.objectContaining({ canEditOpeningDate: false }),
+		);
+		vi.useRealTimers();
+	});
+
 	it("should create a job role and redirect to the job role list", async () => {
 		const req = createRequest({
 			session: { jwtToken: "admin-token", userRole: "ADMIN" },
