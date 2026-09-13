@@ -106,6 +106,20 @@ describe("jobRoleEdit", () => {
 		expect(html).not.toContain('name="openingDate"');
 	});
 
+	it("should keep a cleared opening date editable after a validation error", () => {
+		const html = environment.render("pages/jobRoleEdit.njk", {
+			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+			jobRole: { jobRoleId: 7, openingDate: "" },
+			canEditOpeningDate: true,
+			minOpeningDate: "2026-09-13",
+			errorMessage: [{ field: "roleName", message: "Role name is required" }],
+		});
+
+		expect(html).toContain(
+			'id="openingDate" name="openingDate" type="date" min="2026-09-13" value=""',
+		);
+	});
+
 	it("should configure live character limits", () => {
 		const html = renderView();
 

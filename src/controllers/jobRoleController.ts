@@ -373,6 +373,21 @@ export class JobRoleController {
 				errorMessage = error.message;
 			}
 
+			let canEditOpeningDate: boolean;
+			try {
+				const jobRole = await this.jobRoleService.getById(
+					String(jobRoleData.jobRoleId),
+					this.getJwtToken(req),
+				);
+				canEditOpeningDate = this.isFutureDate(jobRole.openingDate);
+			} catch (lookupError) {
+				if (this.handleUnauthorized(req, res, lookupError)) {
+					return;
+				}
+				this.renderApiError(res, lookupError);
+				return;
+			}
+
 			res.status(statusCode).render("pages/jobRoleEdit.njk", {
 				jobRole: {
 					...jobRoleData,
@@ -381,7 +396,7 @@ export class JobRoleController {
 				},
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 				errorMessage,
-				canEditOpeningDate: Boolean(jobRoleData.openingDate),
+				canEditOpeningDate,
 				capabilityOptions: req.session.dropdownOptions?.capabilities ?? [],
 				bandOptions: req.session.dropdownOptions?.bands ?? [],
 				locationOptions: req.session.dropdownOptions?.locations ?? [],

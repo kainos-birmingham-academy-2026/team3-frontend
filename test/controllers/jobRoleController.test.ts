@@ -838,50 +838,122 @@ describe("JobRoleController", () => {
 		});
 	});
 
-	it("should preserve submitted values and API validation errors", async () => {
-		const body = {
-			jobRoleId: "7",
-			roleName: "",
-			sharepointUrl: "https://example.com/spec",
-			numberOfOpenPositions: "2",
-			openingDate: "2099-01-01",
-			closingDate: "2000-01-01",
-		};
-		const req = createRequest({
-			session: { jwtToken: "admin-token", userRole: "ADMIN" },
-			body,
-		});
-		const res = createResponse();
-		jobRoleService.updateJobRole.mockRejectedValueOnce({
-			isAxiosError: true,
-			response: {
-				status: 400,
-				data: {
-					errors: [{ field: "roleName", message: "Role name is required" }],
+	it.each(["2099-01-01", ""])(
+		"should preserve submitted opening date '%s' and keep it editable after validation errors",
+		async (openingDate) => {
+			const body = {
+				jobRoleId: "7",
+				roleName: "",
+				sharepointUrl: "https://example.com/spec",
+				numberOfOpenPositions: "2",
+				openingDate,
+				closingDate: "2000-01-01",
+			};
+			const req = createRequest({
+				session: { jwtToken: "admin-token", userRole: "ADMIN" },
+				body,
+			});
+			const res = createResponse();
+			jobRoleService.getById.mockResolvedValueOnce({
+				jobRoleId: 7,
+				openingDate: "2099-01-01",
+			});
+			jobRoleService.updateJobRole.mockRejectedValueOnce({
+				isAxiosError: true,
+				response: {
+					status: 400,
+					data: {
+						errors: [{ field: "roleName", message: "Role name is required" }],
+					},
 				},
-			},
-		});
+			});
 
-		await controller.updateJobRole(req as unknown as Request, res);
+			await controller.updateJobRole(req as unknown as Request, res);
 
-		expect(res.status).toHaveBeenCalledWith(400);
-		expect(res.render).toHaveBeenCalledWith(
-			"pages/jobRoleEdit.njk",
-			expect.objectContaining({
-				jobRole: expect.objectContaining({
-					jobRoleId: "7",
-					roleName: "",
-					jobSpecUrl: "https://example.com/spec",
-					openPositions: "2",
+			expect(res.status).toHaveBeenCalledWith(400);
+			expect(res.render).toHaveBeenCalledWith(
+				"pages/jobRoleEdit.njk",
+				expect.objectContaining({
+					jobRole: expect.objectContaining({
+						jobRoleId: "7",
+						roleName: "",
+						jobSpecUrl: "https://example.com/spec",
+						openPositions: "2",
+						openingDate,
+					}),
+					characterLimits: JOB_ROLE_CHARACTER_LIMITS,
+					errorMessage: [
+						{ field: "roleName", message: "Role name is required" },
+					],
+					canEditOpeningDate: true,
+					minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+					minClosingDate: "2000-01-01",
 				}),
-				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
-				errorMessage: [{ field: "roleName", message: "Role name is required" }],
-				canEditOpeningDate: true,
-				minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-				minClosingDate: "2000-01-01",
-			}),
-		);
-	});
+			);
+		},
+	);
+
+	it.each(["2000-01-01", undefined])(
+		"should keep opening date editing disabled after validation errors when stored date is %s",
+		async (openingDate) => {
+			const req = createRequest({
+				session: { jwtToken: "admin-token", userRole: "ADMIN" },
+				body: { jobRoleId: "7", openingDate: "2099-01-01" },
+			});
+			const res = createResponse();
+			jobRoleService.getById.mockResolvedValueOnce({
+				jobRoleId: 7,
+				openingDate,
+			});
+			jobRoleService.updateJobRole.mockRejectedValueOnce({
+				isAxiosError: true,
+				response: { status: 400, data: { message: "Invalid role data" } },
+			});
+
+			await controller.updateJobRole(req as unknown as Request, res);
+
+			expect(jobRoleService.getById).toHaveBeenCalledWith("7", "admin-token");
+			expect(res.render).toHaveBeenCalledWith(
+				"pages/jobRoleEdit.njk",
+				expect.objectContaining({ canEditOpeningDate: false }),
+			);
+		},
+	);
+
+	it.each([401, 500])(
+		"should handle a %s lookup failure after an invalid update",
+		async (statusCode) => {
+			const req = createRequest({
+				session: { jwtToken: "admin-token", userRole: "ADMIN" },
+				body: { jobRoleId: "7", openingDate: "" },
+			});
+			const res = createResponse();
+			jobRoleService.updateJobRole.mockRejectedValueOnce({
+				isAxiosError: true,
+				response: { status: 400, data: { message: "Invalid role data" } },
+			});
+			jobRoleService.getById.mockRejectedValueOnce({
+				isAxiosError: true,
+				response: { status: statusCode },
+			});
+
+			await controller.updateJobRole(req as unknown as Request, res);
+
+			if (statusCode === 401) {
+				expect(req.session.jwtToken).toBeUndefined();
+				expect(req.session.userRole).toBeUndefined();
+				expect(res.redirect).toHaveBeenCalledWith("/login");
+				expect(res.render).not.toHaveBeenCalled();
+			} else {
+				expect(res.status).toHaveBeenCalledWith(500);
+				expect(res.render).toHaveBeenCalled();
+				expect(res.render).not.toHaveBeenCalledWith(
+					"pages/jobRoleEdit.njk",
+					expect.anything(),
+				);
+			}
+		},
+	);
 
 	it("should render apply form when role is open with available positions", async () => {
 		const req = createRequest({
