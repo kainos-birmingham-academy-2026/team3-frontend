@@ -321,7 +321,7 @@ describe("routes", () => {
 		expect(response.text).toContain('name="capabilityId"');
 		expect(response.text).toContain('name="bandId"');
 		expect(response.text).toContain('name="locationId"');
-		expect(response.text).toContain('value="OPEN"');
+		expect(response.text).not.toContain('name="statusName"');
 	});
 
 	it("should create a job role and redirect ADMIN to the job role list", async () => {
