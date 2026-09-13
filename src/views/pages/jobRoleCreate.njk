@@ -45,7 +45,7 @@
          </div>
          <div class="form-field">
             <label for="closingDate">Closing date</label>
-            <input id="closingDate" name="closingDate" type="date" value="{{ jobRole.closingDate | default('', true) }}"/>
+            <input id="closingDate" name="closingDate" type="date" min="{{ minClosingDate }}" value="{{ jobRole.closingDate | default('', true) }}"/>
             <p class="form-hint">If no closing date is set, the role will remain open until manually closed.</p>
          </div>
          <div class="form-field">

@@ -488,6 +488,7 @@ describe("JobRoleController", () => {
 			canCreate: true,
 			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 			minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+			minClosingDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 			capabilityOptions: capabilities,
 			bandOptions: bands,
 			locationOptions: locations,
@@ -501,7 +502,7 @@ describe("JobRoleController", () => {
 		});
 	});
 
-	it("should use the UK calendar date for opening date controls", async () => {
+	it("should use the UK calendar date for date controls", async () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2026-06-01T23:30:00.000Z"));
 		const req = createRequest({
@@ -514,7 +515,10 @@ describe("JobRoleController", () => {
 
 		expect(res.render).toHaveBeenCalledWith(
 			"pages/jobRoleCreate.njk",
-			expect.objectContaining({ minOpeningDate: "2026-06-02" }),
+			expect.objectContaining({
+				minOpeningDate: "2026-06-02",
+				minClosingDate: "2026-06-02",
+			}),
 		);
 
 		jobRoleService.getById.mockResolvedValueOnce({
@@ -529,6 +533,62 @@ describe("JobRoleController", () => {
 		);
 		vi.useRealTimers();
 	});
+
+	it.each([
+		["2026-03-28T23:30:00.000Z", "2026-03-28"],
+		["2026-03-29T00:59:59.000Z", "2026-03-29"],
+		["2026-03-29T01:00:00.000Z", "2026-03-29"],
+		["2026-03-29T23:30:00.000Z", "2026-03-30"],
+		["2026-10-24T23:30:00.000Z", "2026-10-25"],
+		["2026-10-25T00:59:59.000Z", "2026-10-25"],
+		["2026-10-25T01:00:00.000Z", "2026-10-25"],
+		["2026-10-25T23:30:00.000Z", "2026-10-25"],
+	])(
+		"should use UK date %s for create date minimums across BST changes",
+		async (instant, expectedDate) => {
+			vi.useFakeTimers();
+			try {
+				vi.setSystemTime(new Date(instant));
+				const req = createRequest({
+					session: { jwtToken: "admin-token", userRole: "ADMIN" },
+					body: { roleName: "Software Engineer" },
+				});
+				const res = createResponse();
+
+				await controller.showCreateForm(req as unknown as Request, res);
+
+				expect(res.render).toHaveBeenLastCalledWith(
+					"pages/jobRoleCreate.njk",
+					expect.objectContaining({
+						minOpeningDate: expectedDate,
+						minClosingDate: expectedDate,
+					}),
+				);
+
+				jobRoleService.createJobRole.mockRejectedValueOnce({
+					isAxiosError: true,
+					response: {
+						status: 400,
+						data: { message: "Closing date is invalid" },
+					},
+				});
+
+				await controller.createJobRole(req as unknown as Request, res);
+
+				expect(res.status).toHaveBeenCalledWith(400);
+				expect(res.render).toHaveBeenCalledTimes(2);
+				expect(res.render).toHaveBeenLastCalledWith(
+					"pages/jobRoleCreate.njk",
+					expect.objectContaining({
+						minOpeningDate: expectedDate,
+						minClosingDate: expectedDate,
+					}),
+				);
+			} finally {
+				vi.useRealTimers();
+			}
+		},
+	);
 
 	it("should create a job role and redirect to the job role list", async () => {
 		const req = createRequest({
@@ -572,6 +632,7 @@ describe("JobRoleController", () => {
 			canCreate: true,
 			characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 			minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+			minClosingDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 			errorMessage: [{ field: "roleName", message: "Role name is required" }],
 			jobRole: { roleName: "Software Engineer", capabilityId: "3" },
 			capabilityOptions: [],
