@@ -220,6 +220,22 @@ describe("AuthController", () => {
 		expect(res.redirect).toHaveBeenCalledWith("/");
 	});
 
+	it("should redirect admins to the application review page on successful login", async () => {
+		vi.mocked(authApiService.login).mockResolvedValueOnce(
+			createTokenWithRole("ADMIN"),
+		);
+
+		const req = createReq({
+			body: { email: "admin@example.com", password: "password123" },
+		});
+		const res = createRes();
+
+		await controller.login(req, res);
+
+		expect(req.session.userRole).toBe("ADMIN");
+		expect(res.redirect).toHaveBeenCalledWith("/job-applications/admin");
+	});
+
 	it("should redirect to and clear the saved destination after login", async () => {
 		vi.mocked(authApiService.login).mockResolvedValueOnce(
 			createTokenWithRole("USER"),
