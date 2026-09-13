@@ -720,11 +720,11 @@ describe("JobRoleController", () => {
 			expect.objectContaining({
 				jobRole,
 				characterLimits: JOB_ROLE_CHARACTER_LIMITS,
-					canEditOpeningDate: true,
+				canEditOpeningDate: true,
 				locationOptions: [{ locationId: 1 }],
 				capabilityOptions: [{ capabilityId: 2 }],
 				bandOptions: [{ bandId: 3 }],
-					minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+				minOpeningDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
 				minClosingDate: "2000-01-01",
 			}),
 		);
