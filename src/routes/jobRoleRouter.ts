@@ -92,6 +92,7 @@ router.get("/job-applications", requireAuth, async (req, res) => {
 	}
 });
 
+
 router.post(
 	"/job-applications/:applicationId/withdraw",
 	requireAuth,
@@ -331,6 +332,11 @@ router.get("/job-role-list/:id/apply", (req, res) => {
 	if (!req.session.jwtToken) {
 		req.session.redirectAfterLogin = `/job-role-list/${req.params.id}/apply`;
 		res.redirect("/unauthorised");
+		return;
+	}
+
+	if(req.session.userRole == USER_ROLES.ADMIN) {
+		res.status(404).render("pages/accessRestricted.njk");
 		return;
 	}
 
