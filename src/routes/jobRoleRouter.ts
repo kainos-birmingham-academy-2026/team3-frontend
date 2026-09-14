@@ -334,6 +334,11 @@ router.get("/job-role-list/:id/apply", (req, res) => {
 		return;
 	}
 
+	if (req.session.userRole === USER_ROLES.ADMIN) {
+		res.status(404).render("pages/accessRestricted.njk");
+		return;
+	}
+
 	controller.showApplyForm(req, res);
 });
 router.post("/job-role-list/:id/apply", requireAuth, (req, res) =>
