@@ -4,6 +4,7 @@ export interface JobRole {
 	location: string;
 	capability: string;
 	band: string;
+	openingDate?: string;
 	closingDate: string;
 	status: string;
 	description?: string;
@@ -30,6 +31,7 @@ export interface CreateJobRoleInput {
 	responsibilities?: string;
 	sharepointUrl?: string;
 	numberOfOpenPositions?: string | number;
+	openingDate?: string;
 	closingDate?: string;
 	capabilityId?: string | number;
 	bandId?: string | number;

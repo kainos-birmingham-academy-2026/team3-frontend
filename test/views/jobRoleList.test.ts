@@ -101,6 +101,7 @@ describe("jobRoleList", () => {
 					location: "Birmingham",
 					capability: "Engineering",
 					band: "Engineer",
+					openingDate: "2099-01-01",
 					closingDate: "2099-12-31",
 					status: "open",
 				},
@@ -110,16 +111,34 @@ describe("jobRoleList", () => {
 
 		expect(html).toContain('href="/job-role-create"');
 		expect(html).toContain("Create new role");
+		expect(html).toContain("Opening Date");
+		expect(html).toContain("2099-01-01");
 		expect(html).not.toContain("<th>Actions</th>");
 		expect(html).not.toContain('href="/job-role-edit/1"');
 		expect(html).not.toContain("delete-role-trigger");
 	});
 
 	it("should hide create action for non-admin users", () => {
-		const html = renderView([], "USER");
+		const html = renderView(
+			[
+				{
+					jobRoleId: 1,
+					roleName: "Software Engineer",
+					location: "Birmingham",
+					capability: "Engineering",
+					band: "Engineer",
+					openingDate: "2026-09-01",
+					closingDate: "2099-12-31",
+					status: "open",
+				},
+			],
+			"USER",
+		);
 
 		expect(html).not.toContain('href="/job-role-create"');
 		expect(html).not.toContain("Create new role");
+		expect(html).not.toContain("Opening Date");
+		expect(html).not.toContain("2026-09-01");
 	});
 
 	it("should support mouse and keyboard row navigation", () => {

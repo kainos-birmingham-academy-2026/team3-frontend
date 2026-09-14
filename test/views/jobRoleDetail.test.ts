@@ -80,6 +80,27 @@ describe("jobRoleDetail", () => {
 		expect(html).toContain("Job Details");
 	});
 
+	it("should show the opening date only to admins", () => {
+		const jobRole: JobRole = {
+			jobRoleId: 1,
+			roleName: "Lead Software Engineer",
+			location: "Birmingham",
+			capability: "Software Engineering",
+			band: "Senior Engineer",
+			openingDate: "2099-01-01",
+			closingDate: "2099-12-31",
+			status: "open",
+		};
+
+		const adminHtml = renderView(jobRole, "ADMIN");
+		const applicantHtml = renderView(jobRole, "USER");
+
+		expect(adminHtml).toContain("Opening Date");
+		expect(adminHtml).toContain("2099-01-01");
+		expect(applicantHtml).not.toContain("Opening Date");
+		expect(applicantHtml).not.toContain("2099-01-01");
+	});
+
 	it("should link back to My Applications when opened from there", () => {
 		const jobRole: JobRole = {
 			jobRoleId: 1,

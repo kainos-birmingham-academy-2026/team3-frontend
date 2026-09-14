@@ -614,6 +614,7 @@ describe("JobRoleService", () => {
 				responsibilities: "Collaborate with the delivery team",
 				sharepointUrl: "https://example.com/spec",
 				numberOfOpenPositions: "2",
+				openingDate: "2026-10-01",
 				closingDate: "2026-12-31",
 				capabilityId: "4",
 				bandId: 5,
@@ -630,6 +631,7 @@ describe("JobRoleService", () => {
 				responsibilities: "Collaborate with the delivery team",
 				sharepointUrl: "https://example.com/spec",
 				numberOfOpenPositions: 2,
+				openingDate: "2026-10-01",
 				closingDate: "2026-12-31",
 				capabilityId: 4,
 				bandId: 5,
@@ -644,7 +646,7 @@ describe("JobRoleService", () => {
 		);
 	});
 
-	it("should omit empty optional numeric fields and closing date when creating a role", async () => {
+	it("should omit empty optional numeric fields and dates when creating a role", async () => {
 		vi.mocked(apiClient.post).mockResolvedValueOnce({ data: {} });
 
 		await service.createJobRole(
@@ -654,6 +656,7 @@ describe("JobRoleService", () => {
 				capabilityId: "",
 				bandId: undefined,
 				locationId: "",
+				openingDate: "",
 				closingDate: "",
 			},
 			jwtToken,
@@ -667,6 +670,7 @@ describe("JobRoleService", () => {
 				capabilityId: undefined,
 				bandId: undefined,
 				locationId: undefined,
+				openingDate: undefined,
 				closingDate: undefined,
 			},
 			expect.anything(),
@@ -691,6 +695,7 @@ describe("JobRoleService", () => {
 				responsibilities: "Coach engineers",
 				sharepointUrl: "https://example.com/lead-role",
 				numberOfOpenPositions: "3",
+				openingDate: "2099-01-01",
 				closingDate: "2099-12-31",
 				capabilityId: "4",
 				bandId: "5",
@@ -707,6 +712,7 @@ describe("JobRoleService", () => {
 				responsibilities: "Coach engineers",
 				sharepointUrl: "https://example.com/lead-role",
 				numberOfOpenPositions: 3,
+				openingDate: "2099-01-01",
 				closingDate: "2099-12-31",
 				capabilityId: 4,
 				bandId: 5,
