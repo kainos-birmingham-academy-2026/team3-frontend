@@ -51,18 +51,16 @@ describe("jobRoleCreate", () => {
 		expect(html).toContain('value="3">Birmingham</option>');
 	});
 
-	it("should keep status fixed to OPEN and allow optional opening and closing dates", () => {
+	it("should allow optional opening and closing dates", () => {
 		const html = renderView();
 
-		expect(html).toContain('name="statusName"');
-		expect(html).toContain('value="OPEN" readonly');
+		expect(html).not.toContain('name="statusName"');
 		expect(html).toContain(
 			"If no opening date is set, the role will open immediately.",
 		);
 		expect(html).toContain(
 			"If no closing date is set, the role will remain open until manually closed.",
 		);
-		expect(html).not.toContain('name="statusId"');
 	});
 
 	it("should prevent selecting opening and closing dates before today", () => {
@@ -99,7 +97,6 @@ describe("jobRoleCreate", () => {
 		}
 		expect(html).toContain('<label for="openingDate">Opening date</label>');
 		expect(html).toContain('<label for="closingDate">Closing date</label>');
-		expect(html).toContain('<label for="statusName">Status</label>');
 	});
 
 	it("should show character limits without requiring JavaScript", () => {

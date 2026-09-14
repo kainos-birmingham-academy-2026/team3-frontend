@@ -46,7 +46,8 @@ function createTestApp(): Application {
 		}),
 	);
 	testApp.get("/test-session-redirect", (req, res) => {
-		res.json({ redirectAfterLogin: req.session.redirectAfterLogin });
+		const sessionData = req.session as { redirectAfterLogin?: string };
+		res.json({ redirectAfterLogin: sessionData.redirectAfterLogin });
 	});
 
 	testApp.use(authRouter);
@@ -88,7 +89,17 @@ function createAdminApp(role: "ADMIN" | "USER" = "ADMIN"): Application {
 		next();
 	}) as RequestHandler);
 	adminApp.get("/test-admin-list-state", (req, res) => {
-		req.session.adminApplicationListState = {
+		(
+			req.session as {
+				adminApplicationListState?: {
+					page: number;
+					search: string;
+					status: string;
+					role: string;
+					location: string;
+				};
+			}
+		).adminApplicationListState = {
 			page: 3,
 			search: "a@example.com",
 			status: "approved",
@@ -321,7 +332,7 @@ describe("routes", () => {
 		expect(response.text).toContain('name="capabilityId"');
 		expect(response.text).toContain('name="bandId"');
 		expect(response.text).toContain('name="locationId"');
-		expect(response.text).toContain('value="OPEN"');
+		expect(response.text).not.toContain('name="statusName"');
 	});
 
 	it("should create a job role and redirect ADMIN to the job role list", async () => {
@@ -782,6 +793,13 @@ describe("routes", () => {
 						status: "pending",
 					},
 				],
+				counts: {
+					total: 11,
+					pending: 1,
+					approved: 0,
+					rejected: 0,
+					withdrawn: 0,
+				},
 				page: 2,
 				pageSize: 10,
 				totalItems: 11,
