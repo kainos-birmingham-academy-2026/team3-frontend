@@ -54,8 +54,7 @@ export class JobRoleController {
 		if (
 			status === "pending" ||
 			status === "approved" ||
-			status === "rejected" ||
-			status === "withdrawn"
+			status === "rejected"
 		) {
 			return status;
 		}

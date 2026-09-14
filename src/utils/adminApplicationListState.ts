@@ -1,7 +1,7 @@
 export interface AdminApplicationListState {
 	page: number;
 	search: string;
-	status: "pending" | "approved" | "rejected" | "withdrawn" | "";
+	status: "pending" | "approved" | "rejected" | "";
 	role: string;
 	location: string;
 }

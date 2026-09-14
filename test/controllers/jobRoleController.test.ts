@@ -16,7 +16,7 @@ type TestRequest = {
 		adminApplicationListState?: {
 			page: number;
 			search: string;
-			status: "pending" | "approved" | "rejected" | "withdrawn" | "";
+			status: "pending" | "approved" | "rejected" | "";
 			role: string;
 			location: string;
 		};
@@ -97,7 +97,7 @@ describe("JobRoleController", () => {
 		adminApplicationService.getAll.mockResolvedValue([]);
 		adminApplicationService.getPage.mockResolvedValue({
 			items: [],
-			counts: { total: 0, pending: 0, approved: 0, rejected: 0, withdrawn: 0 },
+			counts: { total: 0, pending: 0, approved: 0, rejected: 0 },
 			page: 1,
 			pageSize: 10,
 			totalItems: 0,
@@ -1650,11 +1650,10 @@ describe("JobRoleController", () => {
 
 		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
 		const counts = {
-			total: 36,
+			total: 33,
 			pending: 20,
 			approved: 8,
 			rejected: 5,
-			withdrawn: 3,
 		};
 		adminApplicationService.getPage.mockResolvedValueOnce({
 			items: applications,
@@ -1718,11 +1717,10 @@ describe("JobRoleController", () => {
 		adminApplicationService.getPage.mockResolvedValueOnce({
 			items: [matchingApplication],
 			counts: {
-				total: 36,
+				total: 33,
 				pending: 20,
 				approved: 8,
 				rejected: 5,
-				withdrawn: 3,
 			},
 			page: 1,
 			pageSize: 10,
@@ -1750,11 +1748,10 @@ describe("JobRoleController", () => {
 			expect.objectContaining({
 				applications: [{ ...matchingApplication, location: "Belfast" }],
 				applicationCounts: {
-					total: 36,
+					total: 33,
 					pending: 20,
 					approved: 8,
 					rejected: 5,
-					withdrawn: 3,
 				},
 				filters: {
 					search: "example.com",
@@ -1817,7 +1814,6 @@ describe("JobRoleController", () => {
 				pending: 20,
 				approved: 0,
 				rejected: 0,
-				withdrawn: 0,
 			},
 			page: 3,
 			pageSize: 10,
@@ -1858,11 +1854,10 @@ describe("JobRoleController", () => {
 
 	it("should redirect an empty filtered result to page one", async () => {
 		const counts = {
-			total: 36,
+			total: 33,
 			pending: 20,
 			approved: 8,
 			rejected: 5,
-			withdrawn: 3,
 		};
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },
