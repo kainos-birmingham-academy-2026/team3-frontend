@@ -19,8 +19,8 @@
       {% if currentUserRole == 'ADMIN' and featureAdminHiringEnabled %}
        <a class="nav-link {% if currentPath == '/job-role-create' %}nav-link-active{% endif %}" href="/job-role-create">Create role</a>
       {% endif %}
-      {% if isAuthenticated %}
-       <a class="nav-link {% if currentPath == '/job-applications/admin' or currentPath == '/job-applications' %}nav-link-active{% endif %}" href="{% if currentUserRole == 'ADMIN' %}/job-applications/admin{% else %}/job-applications{% endif %}">Applications</a>
+      {% if currentUserRole == 'ADMIN' and featureAdminHiringEnabled %}
+       <a class="nav-link {% if currentPath == '/job-applications/admin' %}nav-link-active{% endif %}" href="/job-applications/admin">Applications</a>
       {% endif %}
      </nav>
 

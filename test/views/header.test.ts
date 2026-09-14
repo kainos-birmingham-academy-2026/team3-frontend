@@ -46,4 +46,16 @@ describe("header", () => {
 		expect(html).toContain('href="/job-applications/admin">Applications</a>');
 		expect(html).toContain('href="/logout/confirmation"');
 	});
+
+	it("does not show application navigation to users", () => {
+		const html = renderHeader({
+			currentPath: "/job-role-list",
+			isAuthenticated: true,
+			currentUserRole: "USER",
+			featureAdminHiringEnabled: true,
+		});
+
+		expect(html).not.toContain('href="/job-applications"');
+		expect(html).not.toContain(">Applications</a>");
+	});
 });

@@ -101,27 +101,6 @@ describe("jobRoleDetail", () => {
 		expect(applicantHtml).not.toContain("2099-01-01");
 	});
 
-	it("should link back to My Applications when opened from there", () => {
-		const jobRole: JobRole = {
-			jobRoleId: 1,
-			roleName: "Lead Software Engineer",
-			location: "Birmingham",
-			capability: "Software Engineering",
-			band: "Senior Engineer",
-			closingDate: "2026-08-06",
-			status: "open",
-		};
-
-		const html = renderView(jobRole, undefined, {
-			href: "/job-applications",
-			text: "Back to My Applications",
-		});
-
-		expect(html).toContain('href="/job-applications"');
-		expect(html).toContain("Back to My Applications");
-		expect(html).not.toContain("Back to Job Roles");
-	});
-
 	it("should display job description section when available", () => {
 		const jobRole: JobRole = {
 			jobRoleId: 1,
