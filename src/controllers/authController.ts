@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import * as authApiService from "../services/authApiService";
 import { getUserRoleFromToken } from "../services/tokenPayloadService";
+import { USER_ROLES } from "../types/auth";
 
 function isStrongPassword(password: string): boolean {
 	return (
@@ -86,7 +87,10 @@ export class AuthController {
 			req.session.jwtToken = jwtToken;
 			req.session.userRole = userRole;
 
-			const redirectAfterLogin = req.session.redirectAfterLogin ?? "/";
+			const defaultRedirect =
+				userRole === USER_ROLES.ADMIN ? "/job-applications/admin" : "/";
+			const redirectAfterLogin =
+				req.session.redirectAfterLogin ?? defaultRedirect;
 			delete req.session.redirectAfterLogin;
 			res.redirect(redirectAfterLogin);
 		} catch (error) {
