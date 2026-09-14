@@ -456,8 +456,11 @@ describe("AuthController", () => {
 		});
 	});
 
-	it("should redirect to login after successful registration", async () => {
+	it("should sign in and redirect to home after successful registration", async () => {
 		vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
+		vi.mocked(authApiService.login).mockResolvedValueOnce(
+			createTokenWithRole("USER"),
+		);
 
 		const req = createReq({
 			body: {
@@ -474,7 +477,33 @@ describe("AuthController", () => {
 			"new.user",
 			"Password123!",
 		);
-		expect(res.redirect).toHaveBeenCalledWith("/register/confirmation");
+		expect(authApiService.login).toHaveBeenCalledWith(
+			"new.user",
+			"Password123!",
+		);
+		expect(req.session.jwtToken).toBe(createTokenWithRole("USER"));
+		expect(req.session.userRole).toBe("USER");
+		expect(res.redirect).toHaveBeenCalledWith("/");
+	});
+
+	it("should redirect to login when automatic sign-in fails", async () => {
+		vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
+		vi.mocked(authApiService.login).mockRejectedValueOnce(
+			new Error("Unable to sign in"),
+		);
+
+		const req = createReq({
+			body: {
+				email: "new.user",
+				password: "Password123!",
+				confirmPassword: "Password123!",
+			},
+		});
+		const res = createRes();
+
+		await controller.register(req, res);
+
+		expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
 	});
 
 	it("should render register page with error when registration fails", async () => {
