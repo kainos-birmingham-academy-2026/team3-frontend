@@ -92,7 +92,6 @@ router.get("/job-applications", requireAuth, async (req, res) => {
 	}
 });
 
-
 router.post(
 	"/job-applications/:applicationId/withdraw",
 	requireAuth,
@@ -335,7 +334,7 @@ router.get("/job-role-list/:id/apply", (req, res) => {
 		return;
 	}
 
-	if(req.session.userRole == USER_ROLES.ADMIN) {
+	if (req.session.userRole === USER_ROLES.ADMIN) {
 		res.status(404).render("pages/accessRestricted.njk");
 		return;
 	}
