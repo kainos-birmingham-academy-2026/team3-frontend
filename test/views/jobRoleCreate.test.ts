@@ -24,6 +24,7 @@ function renderView(jobRole = {}): string {
 		canCreate: true,
 		characterLimits: JOB_ROLE_CHARACTER_LIMITS,
 		minOpeningDate: "2026-09-13",
+		minClosingDate: "2026-09-13",
 		jobRole,
 		capabilityOptions: [{ capabilityId: 1, capabilityName: "Engineering" }],
 		bandOptions: [{ bandId: 2, bandName: "Engineer" }],
@@ -64,11 +65,14 @@ describe("jobRoleCreate", () => {
 		expect(html).not.toContain('name="statusId"');
 	});
 
-	it("should prevent selecting an opening date before today", () => {
+	it("should prevent selecting opening and closing dates before today", () => {
 		const html = renderView();
 
 		expect(html).toContain(
 			'id="openingDate" name="openingDate" type="date" min="2026-09-13"',
+		);
+		expect(html).toContain(
+			'id="closingDate" name="closingDate" type="date" min="2026-09-13"',
 		);
 	});
 
