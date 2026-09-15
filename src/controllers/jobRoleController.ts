@@ -197,7 +197,6 @@ export class JobRoleController {
 				id,
 				this.getJwtToken(req),
 			);
-			const fromApplications = req.query.from === "applications";
 			const fromAdminApplications = req.query.from === "admin-applications";
 			res.render("pages/jobRoleDetail.njk", {
 				jobRoleId,
@@ -208,9 +207,7 @@ export class JobRoleController {
 							),
 							text: "Back to Applications",
 						}
-					: fromApplications
-						? { href: "/job-applications", text: "Back to My Applications" }
-						: { href: "/job-role-list", text: "Back to Job Roles" },
+					: { href: "/job-role-list", text: "Back to Job Roles" },
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {

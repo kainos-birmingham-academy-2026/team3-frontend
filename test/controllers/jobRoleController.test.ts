@@ -349,7 +349,6 @@ describe("JobRoleController", () => {
 		const req = createRequest({
 			session: { jwtToken: "jwt-token" },
 			params: { id: "7" },
-			query: { from: "applications" },
 		});
 		const res = createResponse();
 		const jobRole = {
@@ -365,8 +364,8 @@ describe("JobRoleController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
 			jobRoleId: jobRole,
 			backLink: {
-				href: "/job-applications",
-				text: "Back to My Applications",
+				href: "/job-role-list",
+				text: "Back to Job Roles",
 			},
 		});
 	});
