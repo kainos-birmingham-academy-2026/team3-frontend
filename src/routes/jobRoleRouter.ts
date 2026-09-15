@@ -8,6 +8,7 @@ import { AdminApplicationService } from "../services/adminApplicationService";
 import { JobRoleService } from "../services/jobRoleService";
 import { USER_ROLES } from "../types/auth";
 import { getAdminApplicationListUrl } from "../utils/adminApplicationListState";
+import { downloadJobsCsv } from "../download";
 
 const router = Router();
 const service = new JobRoleService();
@@ -313,5 +314,7 @@ router.get("/teapot", async (_req, res) => {
 
 	res.render("pages/teapot.njk");
 });
+
+router.get("/users/download", requireAuth, requireAdmin, downloadJobsCsv);
 
 export default router;

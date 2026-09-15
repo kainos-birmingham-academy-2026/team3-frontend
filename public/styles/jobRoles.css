@@ -7,6 +7,32 @@
 	border: 1px solid #d9def0;
 }
 
+.job-role-admin-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.job-role-admin-actions .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 2.75rem;
+}
+
+.job-report-download {
+	gap: 0.5rem;
+	background: var(--kainos-white);
+}
+
+.job-report-download-icon {
+	font-size: 1.2rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
 .job-role-table-scroll {
 	max-width: 100%;
 	overflow-x: auto;
@@ -271,6 +297,15 @@
 }
 
 @media (max-width: 560px) {
+	.job-role-admin-actions {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.job-role-admin-actions .button {
+		width: 100%;
+	}
+
 	.job-role-filter-grid {
 		grid-template-columns: 1fr;
 	}

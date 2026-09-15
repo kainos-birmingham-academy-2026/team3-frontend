@@ -5,9 +5,13 @@
     <h1>Open job roles</h1>
     <p>Explore current opportunities and apply before the closing date.</p>
     {% if currentUserRole == 'ADMIN' %}
-      <p>
+      <div class="job-role-admin-actions">
         <a class="button button-solid" href="/job-role-create">Create new role</a>
-      </p>
+        <a class="button button-outline job-report-download" download href="/users/download">
+          <span class="job-report-download-icon" aria-hidden="true">&#8595;</span>
+          Download jobs report
+        </a>
+      </div>
     {% endif %}
   </section>
   <form id="job-role-filters" class="job-role-filters" method="get" action="/job-role-list">
