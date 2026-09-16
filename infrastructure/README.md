@@ -39,6 +39,31 @@ contains migration declarations that preserve existing frontend resource
 addresses and release the shared resource group from frontend state without
 destroying it.
 
+## Test3 Azure Front Door pilot
+
+The test root accepts `enable_front_door`, defaulting to `false`, and rejects
+enabling it for any slot except `test3`. When enabled, the frontend module
+creates an Azure Front Door Standard profile, its default-domain endpoint, a
+frontend origin group and an HTTPS-only route to
+`ca-team3-frontend-test3`. Terraform exposes the resulting `azurefd.net` URL
+as `front_door_endpoint_url`.
+
+Set the `TEST3_FRONT_DOOR_ENABLED` repository variable to `true` before the
+next test3 frontend deployment. The workflow passes the Terraform flag only
+when the selected slot is `test3` and that variable is exactly `true`. Other
+test slots do not create Front Door resources.
+
+This initial pilot does not add a custom domain, WAF policy or origin-bypass
+restriction. Azure Container Apps ingress currently accepts CIDR restrictions
+but cannot validate the Front Door instance header or use a Front Door service
+tag. Keep the direct Container Apps URL available until a stable restriction
+design is agreed and verified; claiming that Front Door alone makes the origin
+private would be incorrect.
+
+Validate the rollout by deploying test3, retrieving `front_door_endpoint_url`,
+and checking that it serves the frontend over HTTPS. Confirm the direct
+Container Apps URL still works as an expected limitation of this pilot.
+
 ## Images
 
 Dev deploys `dev-<commit-sha>` and test deploys `test-<commit-sha>`. CI also

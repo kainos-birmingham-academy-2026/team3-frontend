@@ -353,6 +353,7 @@ jobs:
       TF_VAR_environment: ${{ needs.resolve-source.outputs.test_environment }}
       TF_VAR_image_tag: test-${{ needs.resolve-source.outputs.sha }}
       TF_VAR_container_revision_suffix: run-${{ github.run_id }}-${{ github.run_attempt }}
+      TF_VAR_enable_front_door: ${{ needs.resolve-source.outputs.test_environment == 'test3' && vars.TEST3_FRONT_DOOR_ENABLED == 'true' && 'true' || 'false' }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
