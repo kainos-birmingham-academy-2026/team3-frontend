@@ -1649,6 +1649,10 @@ describe("JobRoleController", () => {
 		];
 
 		jobRoleService.getAll.mockResolvedValueOnce(jobRoles);
+		jobRoleService.getAllBands.mockResolvedValueOnce([
+			{ bandId: 1, bandName: "Principal", bandLevel: 1 },
+			{ bandId: 2, bandName: "Associate", bandLevel: 5 },
+		]);
 		const counts = {
 			total: 33,
 			pending: 20,
@@ -1683,6 +1687,7 @@ describe("JobRoleController", () => {
 			filters: { search: "", status: "", role: "", location: "" },
 			jobRoles,
 			locationOptions: ["Belfast", "London"],
+			bandOrder: ["Associate", "Principal"],
 			pagination: {
 				items: applications,
 				counts,

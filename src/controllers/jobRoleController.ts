@@ -621,10 +621,16 @@ export class JobRoleController {
 						location: storedState?.location ?? "",
 					};
 			req.session.adminApplicationListState = { page, ...filters };
-			const [jobRoles, applicationPage] = await Promise.all([
+			const [jobRoles, bands, applicationPage] = await Promise.all([
 				this.jobRoleService.getAll(jwtToken),
+				this.jobRoleService.getAllBands(),
 				this.adminApplicationService.getPage(jwtToken ?? "", page, 10, filters),
 			]);
+			// Band seniority is defined by the backend (Band.bandLevel: 1 = most senior),
+			// so sort descending to list the most junior bands first.
+			const bandOrder = [...bands]
+				.sort((first, second) => second.bandLevel - first.bandLevel)
+				.map((band) => band.bandName);
 			const lastValidPage = Math.max(applicationPage.totalPages, 1);
 			if (page > lastValidPage) {
 				req.session.adminApplicationListState = {
@@ -654,6 +660,7 @@ export class JobRoleController {
 				filters,
 				jobRoles,
 				locationOptions,
+				bandOrder,
 				pagination: applicationPage,
 			});
 		} catch (error) {

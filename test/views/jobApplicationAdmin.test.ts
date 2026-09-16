@@ -30,6 +30,7 @@ describe("jobApplicationAdmin", () => {
 		filters: { search: "", status: "", role: "", location: "" },
 		jobRoles: [{ roleName: "Engineer", location: "Belfast" }],
 		locationOptions: ["Belfast"],
+		bandOrder: [],
 	};
 
 	it("renders application workflows as links and forms", () => {
@@ -89,5 +90,52 @@ describe("jobApplicationAdmin", () => {
 		expect(html.match(/<option value="Belfast"/g)).toHaveLength(1);
 		expect(html.match(/<option value="Engineer"/g)).toHaveLength(1);
 		expect(html.match(/<option value="Designer"/g)).toHaveLength(1);
+	it("groups the role filter options by band, ordered by the seniority list from the controller", () => {
+		const html = environment.render("pages/jobApplicationAdmin.njk", {
+			...viewData,
+			jobRoles: [
+				{
+					roleName: "Zebra Engineer",
+					location: "Belfast",
+					band: "Senior Associate",
+				},
+				{ roleName: "Backend Dev", location: "London", band: "Associate" },
+				{ roleName: "Apple Dev", location: "London", band: "Principal" },
+				{ roleName: "Alpha Dev", location: "London", band: "Associate" },
+			],
+			bandOrder: ["Associate", "Senior Associate", "Principal"],
+		});
+
+		const associateIndex = html.indexOf('<optgroup label="Associate">');
+		const seniorAssociateIndex = html.indexOf(
+			'<optgroup label="Senior Associate">',
+		);
+		const principalIndex = html.indexOf('<optgroup label="Principal">');
+		const alphaDevIndex = html.indexOf('value="Alpha Dev"');
+		const backendDevIndex = html.indexOf('value="Backend Dev"');
+
+		expect(associateIndex).toBeGreaterThan(-1);
+		expect(seniorAssociateIndex).toBeGreaterThan(associateIndex);
+		expect(principalIndex).toBeGreaterThan(seniorAssociateIndex);
+		expect(alphaDevIndex).toBeGreaterThan(associateIndex);
+		expect(alphaDevIndex).toBeLessThan(backendDevIndex);
+		expect(backendDevIndex).toBeLessThan(seniorAssociateIndex);
+	});
+
+	it("appends bands missing from bandOrder alphabetically afterwards", () => {
+		const html = environment.render("pages/jobApplicationAdmin.njk", {
+			...viewData,
+			jobRoles: [
+				{ roleName: "Apple Dev", location: "London", band: "Principal" },
+				{ roleName: "Mystery Dev", location: "London", band: "Custom Band" },
+			],
+			bandOrder: ["Principal"],
+		});
+
+		const principalIndex = html.indexOf('<optgroup label="Principal">');
+		const customBandIndex = html.indexOf('<optgroup label="Custom Band">');
+
+		expect(principalIndex).toBeGreaterThan(-1);
+		expect(customBandIndex).toBeGreaterThan(principalIndex);
 	});
 });
