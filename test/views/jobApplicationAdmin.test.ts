@@ -90,6 +90,8 @@ describe("jobApplicationAdmin", () => {
 		expect(html.match(/<option value="Belfast"/g)).toHaveLength(1);
 		expect(html.match(/<option value="Engineer"/g)).toHaveLength(1);
 		expect(html.match(/<option value="Designer"/g)).toHaveLength(1);
+	});
+
 	it("groups the role filter options by band, ordered by the seniority list from the controller", () => {
 		const html = environment.render("pages/jobApplicationAdmin.njk", {
 			...viewData,
