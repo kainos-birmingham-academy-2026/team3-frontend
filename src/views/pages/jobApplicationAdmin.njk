@@ -27,8 +27,8 @@
     <select id="status-filter" name="status" class="status-filter">
      <option value="">All Statuses</option>
      <option value="pending" {% if filters.status == 'pending' %}selected{% endif %}>Pending Review</option>
-     <option value="hired" {% if filters.status == 'approved' %}selected{% endif %}>Hired</option>
-     <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
+     <option value="hired" {% if filters.status == 'approved' %}selected{% endif %}>Accepted</option>
+     <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Declined</option>
     </select>
    </div>
 
@@ -88,11 +88,11 @@
   <span class="summary-value" id="pending-count">{{ applicationCounts.pending }}</span>
   </div>
   <div class="summary-card hired">
-   <span class="summary-label">Hired</span>
+   <span class="summary-label">Accepted</span>
   <span class="summary-value" id="hired-count">{{ applicationCounts.approved }}</span>
   </div>
   <div class="summary-card rejected">
-   <span class="summary-label">Rejected</span>
+   <span class="summary-label">Declined</span>
   <span class="summary-value" id="rejected-count">{{ applicationCounts.rejected }}</span>
   </div>
  </div>
@@ -119,8 +119,8 @@
       <td class="role-cell">{{ application.roleName }}</td>
       <td class="date-cell">{{ application.applicationDate }}</td>
       <td class="status-cell">
-       <span class="status-badge status-{% if application.status == 'approved' %}hired{% else %}{{ application.status }}{% endif %}">
-        {% if application.status == 'approved' %}Hired{% else %}{{ application.status | capitalize }}{% endif %}
+       <span class="status-badge status-{{ application.status }}">
+        {% if application.status == 'approved' %}Accepted{% elif application.status == 'rejected' %}Declined{% else %}{{ application.status | capitalize }}{% endif %}
        </span>
       </td>
       <td class="actions-cell">
@@ -131,10 +131,10 @@
         {% if application.status == 'pending' %}
          <div class="inline-actions">
           <form method="post" action="/job-applications/{{ application.applicationId }}/status">
-           <button class="btn-hire" type="submit" name="action" value="approve">Hire</button>
+            <button class="btn-hire" type="submit" name="action" value="approve" data-application-id="{{ application.applicationId }}">Accept</button>
           </form>
           <form method="post" action="/job-applications/{{ application.applicationId }}/status">
-           <button class="btn-reject" type="submit" name="action" value="reject">Reject</button>
+            <button class="btn-reject" type="submit" name="action" value="reject" data-application-id="{{ application.applicationId }}">Decline</button>
           </form>
          </div>
         {% endif %}
@@ -726,9 +726,9 @@
 
   async function hireApplication(applicationId) {
    const shouldHire = await showPopup({
-    title: "Confirm Hire",
-    message: "Are you sure you want to hire this applicant?",
-    confirmText: "Hire",
+    title: "Confirm Accept",
+    message: "Are you sure you want to accept this applicant?",
+    confirmText: "Accept",
     cancelText: "Cancel",
     confirmStyle: "success",
    });
@@ -747,7 +747,7 @@
     if (response.ok) {
      await showPopup({
       title: "Success",
-      message: "Applicant hired!",
+      message: "Applicant accepted!",
       confirmText: "OK",
       confirmStyle: "default",
      });
@@ -758,7 +758,7 @@
     if (response.status === 409) {
      await showPopup({
       title: "Already Updated",
-      message: "Applicant is already hired.",
+      message: "Applicant has already been accepted.",
       confirmText: "OK",
       confirmStyle: "default",
      });
@@ -768,22 +768,22 @@
 
     const errorBody = await response
      .json()
-     .catch(() => ({ message: "Failed to hire applicant" }));
+     .catch(() => ({ message: "Failed to accept applicant" }));
     const message =
      errorBody && typeof errorBody.message === "string"
       ? errorBody.message
-      : "Failed to hire applicant";
+      : "Failed to accept applicant";
     await showPopup({
-     title: "Hire Failed",
-     message: `Failed to hire applicant: ${message}`,
+     title: "Accept Failed",
+     message: `Failed to accept applicant: ${message}`,
      confirmText: "OK",
       confirmStyle: "default",
     });
    } catch (error) {
-    console.error("Error hiring applicant:", error);
+    console.error("Error accepting applicant:", error);
     await showPopup({
      title: "Error",
-     message: "Error hiring applicant",
+     message: "Error accepting applicant",
      confirmText: "OK",
       confirmStyle: "default",
     });
@@ -792,9 +792,9 @@
 
   async function rejectApplication(applicationId) {
    const shouldReject = await showPopup({
-    title: "Confirm Rejection",
-    message: "Are you sure you want to reject this application?",
-    confirmText: "Reject",
+    title: "Confirm Decline",
+    message: "Are you sure you want to decline this application?",
+    confirmText: "Decline",
     cancelText: "Cancel",
     confirmStyle: "danger",
    });
@@ -813,7 +813,7 @@
     if (response.ok) {
      await showPopup({
       title: "Success",
-      message: "Application rejected!",
+      message: "Application declined",
       confirmText: "OK",
       confirmStyle: "default",
      });
@@ -824,7 +824,7 @@
     if (response.status === 409) {
      await showPopup({
       title: "Already Updated",
-      message: "Application is already rejected.",
+      message: "Application is already declined.",
       confirmText: "OK",
       confirmStyle: "default",
      });
@@ -834,22 +834,22 @@
 
     const errorBody = await response
      .json()
-     .catch(() => ({ message: "Failed to reject application" }));
+     .catch(() => ({ message: "Failed to decline application" }));
     const message =
      errorBody && typeof errorBody.message === "string"
       ? errorBody.message
-      : "Failed to reject application";
+      : "Failed to decline application";
     await showPopup({
-     title: "Rejection Failed",
-     message: `Failed to reject application: ${message}`,
+     title: "Declining Failed",
+     message: `Failed to decline application: ${message}`,
      confirmText: "OK",
       confirmStyle: "default",
     });
    } catch (error) {
-    console.error("Error rejecting application:", error);
+    console.error("Error declining application:", error);
     await showPopup({
      title: "Error",
-     message: "Error rejecting application",
+     message: "Error declining application",
      confirmText: "OK",
       confirmStyle: "default",
     });
