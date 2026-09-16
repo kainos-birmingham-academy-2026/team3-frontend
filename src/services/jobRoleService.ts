@@ -122,6 +122,7 @@ export class JobRoleService {
 	): URLSearchParams {
 		const params = new URLSearchParams();
 		if (filters.roleName) params.set("roleName", filters.roleName);
+		if (filters.status) params.set("status", filters.status.toUpperCase());
 		if (filters.closingDateFrom) {
 			params.set("closingDateFrom", filters.closingDateFrom);
 		}

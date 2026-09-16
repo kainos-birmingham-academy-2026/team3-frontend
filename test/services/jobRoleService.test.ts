@@ -129,6 +129,17 @@ describe("JobRoleService", () => {
 		expect(result.totalPages).toBe(2);
 	});
 
+	it("should serialize the role status filter", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: jobRolePage([]),
+		});
+
+		await service.getPage(undefined, { status: "closed" }, 1, 10);
+
+		const config = vi.mocked(apiClient.get).mock.calls[0]?.[1];
+		expect(config?.params.toString()).toBe("status=CLOSED&page=1&pageSize=10");
+	});
+
 	it("should keeps role status values from backend for view filtering", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: jobRolePage([

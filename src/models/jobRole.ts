@@ -23,6 +23,7 @@ export interface JobRoleFilters {
 	bandId?: string[];
 	closingDateFrom?: string;
 	closingDateTo?: string;
+	status?: "open" | "closed";
 }
 
 export interface CreateJobRoleInput {

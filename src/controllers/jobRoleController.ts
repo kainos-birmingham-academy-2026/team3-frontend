@@ -71,6 +71,7 @@ export class JobRoleController {
 	}
 
 	private getFilters(req: Request): JobRoleFilters {
+		const status = this.getQueryString(req.query.status)?.toLowerCase();
 		return {
 			roleName: this.getQueryString(req.query.roleName),
 			locationId: this.getQueryList(req.query.locationId),
@@ -78,6 +79,7 @@ export class JobRoleController {
 			bandId: this.getQueryList(req.query.bandId),
 			closingDateFrom: this.getQueryString(req.query.closingDateFrom),
 			closingDateTo: this.getQueryString(req.query.closingDateTo),
+			...(status === "open" || status === "closed" ? { status } : {}),
 		};
 	}
 

@@ -2,8 +2,8 @@
 {% block content %}
   <section class="page-hero">
     <p class="eyebrow">Careers</p>
-    <h1>Open job roles</h1>
-    <p>Explore current opportunities and apply before the closing date.</p>
+    <h1>{% if currentUserRole == 'ADMIN' %}Job roles{% else %}Open job roles{% endif %}</h1>
+    <p>{% if currentUserRole == 'ADMIN' %}View and manage all job roles.{% else %}Explore current opportunities and apply before the closing date.{% endif %}</p>
     {% if currentUserRole == 'ADMIN' %}
       <p>
         <a class="button button-solid" href="/job-role-create">Create new role</a>
@@ -14,11 +14,11 @@
     <input type="hidden" name="filterSubmission" value="true">
     <h2>Filter job roles</h2>
     <div class="job-role-filter-grid">
-      <div class="job-role-filter-field">
+      <div class="job-role-filter-field role-name-filter-field">
         <label for="roleName">Role name</label>
         <input id="roleName" name="roleName" type="text" value="{{ filters.roleName or '' }}">
       </div>
-      <fieldset class="job-role-filter-field">
+      <fieldset class="job-role-filter-field location-filter-field">
         <legend>Location</legend>
         <div class="job-role-checkbox-list">
           {% for location in locationOptions %}
@@ -34,7 +34,7 @@
           {% endfor %}
         </div>
       </fieldset>
-      <fieldset class="job-role-filter-field">
+      <fieldset class="job-role-filter-field capability-filter-field">
         <legend>Capability</legend>
         <div class="job-role-checkbox-list">
           {% for capability in capabilityOptions %}
@@ -50,7 +50,7 @@
           {% endfor %}
         </div>
       </fieldset>
-      <fieldset class="job-role-filter-field">
+      <fieldset class="job-role-filter-field band-filter-field">
         <legend>Band</legend>
         <div class="job-role-checkbox-list">
           {% for band in bandOptions %}
@@ -66,7 +66,7 @@
           {% endfor %}
         </div>
       </fieldset>
-      <fieldset class="job-role-filter-field">
+      <fieldset class="job-role-filter-field closing-date-filter-field">
         <legend>Closing date</legend>
         <div class="job-role-date-range">
           <label for="closingDateFrom">
@@ -79,19 +79,29 @@
           </label>
         </div>
       </fieldset>
+      {% if currentUserRole == 'ADMIN' %}
+        <fieldset class="job-role-filter-field status-filter-field">
+          <legend>Status</legend>
+          <select id="status" name="status">
+            <option value="">All roles</option>
+            <option value="open" {% if filters.status == 'open' %}selected{% endif %}>Open</option>
+            <option value="closed" {% if filters.status == 'closed' %}selected{% endif %}>Closed</option>
+          </select>
+        </fieldset>
+      {% endif %}
     </div>
     <div class="job-role-filter-actions">
       <button class="button button-solid" type="submit">Apply filters</button>
       <a href="/job-role-list?clearFilters=true">Clear filters</a>
     </div>
   </form>
-  {% set hasOpenRoles = false %}
+  {% set hasVisibleRoles = false %}
   {% for jobRole in jobRoles %}
-    {% if jobRole.status == "open" %}
-      {% set hasOpenRoles = true %}
+    {% if currentUserRole == 'ADMIN' or jobRole.status == "open" %}
+      {% set hasVisibleRoles = true %}
     {% endif %}
   {% endfor %}
-  {% if hasOpenRoles %}
+  {% if hasVisibleRoles %}
     <div class="job-role-table-scroll" tabindex="0" aria-label="Job roles table">
       <table class="job-role-table">
         <thead>
@@ -100,13 +110,14 @@
             <th scope="col">Location</th>
             <th scope="col">Capability</th>
             <th scope="col">Band</th>
+            {% if currentUserRole == 'ADMIN' %}<th scope="col">Status</th>{% endif %}
             {% if currentUserRole == 'ADMIN' %}<th scope="col">Opening Date</th>{% endif %}
             <th scope="col">Closing Date</th>
           </tr>
         </thead>
         <tbody>
           {% for jobRole in jobRoles %}
-            {% if jobRole.status == "open" %}
+            {% if currentUserRole == 'ADMIN' or jobRole.status == "open" %}
               <tr
                 class="job-role-row-link"
                 data-href="/job-role-list/{{ jobRole.jobRoleId }}"
@@ -117,6 +128,7 @@
                 <td>{{ jobRole.location }}</td>
                 <td>{{ jobRole.capability }}</td>
                 <td>{{ jobRole.band }}</td>
+                {% if currentUserRole == 'ADMIN' %}<td><span class="status-badge status-{{ jobRole.status | lower }}">{{ jobRole.status | capitalize }}</span></td>{% endif %}
                 {% if currentUserRole == 'ADMIN' %}<td>{{ jobRole.openingDate }}</td>{% endif %}
                 <td>{{ jobRole.closingDate }}</td>
               </tr>
@@ -126,7 +138,7 @@
       </table>
     </div>
   {% else %}
-    <p class="empty-state">No open job roles found</p>
+    <p class="empty-state">{% if currentUserRole == 'ADMIN' %}No job roles found{% else %}No open job roles found{% endif %}</p>
   {% endif %}
   {% if pagination.totalPages > 1 %}
     <nav class="application-pagination" aria-label="Job role pages">
