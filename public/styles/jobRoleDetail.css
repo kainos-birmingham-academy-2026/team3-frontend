@@ -181,9 +181,9 @@
 }
 
 .status-badge.status-applied {
-	background: rgba(65, 103, 159, 0.15);
-	color: var(--kainos-navy);
-	border: 1px solid var(--kainos-blue);
+	background: rgba(97, 168, 63, 0.15);
+	color: #2d5c1f;
+	border: 1px solid var(--kainos-green);
 }
 
 .application-status-pending {
