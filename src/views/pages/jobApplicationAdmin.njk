@@ -36,8 +36,25 @@
     <label for="role-filter">Job Role:</label>
     <select id="role-filter" name="role" class="role-filter">
      <option value="">All Roles</option>
-     {% for jobRole in jobRoles %}
+     {% set bandSeniorityOrder = ["Apprentice", "Trainee", "Associate", "Senior Associate", "Consultant", "Manager", "Principal"] %}
+     {% set rolesByBand = jobRoles | sort(attribute="roleName") | groupby("band") %}
+     {% for band in bandSeniorityOrder %}
+      {% if rolesByBand[band] %}
+    <optgroup label="{{ band }}">
+     {% for jobRole in rolesByBand[band] %}
     <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}" {% if filters.role == jobRole.roleName %}selected{% endif %}>{{ jobRole.roleName }}</option>
+     {% endfor %}
+    </optgroup>
+      {% endif %}
+     {% endfor %}
+     {% for band, rolesInBand in rolesByBand | dictsort %}
+      {% if band not in bandSeniorityOrder %}
+    <optgroup label="{{ band }}">
+     {% for jobRole in rolesInBand %}
+    <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}" {% if filters.role == jobRole.roleName %}selected{% endif %}>{{ jobRole.roleName }}</option>
+     {% endfor %}
+    </optgroup>
+      {% endif %}
        {% endfor %}
       </select>
      </div>

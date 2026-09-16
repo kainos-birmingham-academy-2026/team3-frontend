@@ -74,4 +74,51 @@ describe("jobApplicationAdmin", () => {
 		expect(html).not.toContain("function loadApplications");
 		expect(html).not.toContain("/api/job-applications/admin?page=");
 	});
+
+	it("groups the role filter options by band, ordered by seniority", () => {
+		const html = environment.render("pages/jobApplicationAdmin.njk", {
+			...viewData,
+			jobRoles: [
+				{
+					roleName: "Zebra Engineer",
+					location: "Belfast",
+					band: "Senior Associate",
+				},
+				{ roleName: "Backend Dev", location: "London", band: "Associate" },
+				{ roleName: "Apple Dev", location: "London", band: "Principal" },
+				{ roleName: "Alpha Dev", location: "London", band: "Associate" },
+			],
+		});
+
+		const associateIndex = html.indexOf('<optgroup label="Associate">');
+		const seniorAssociateIndex = html.indexOf(
+			'<optgroup label="Senior Associate">',
+		);
+		const principalIndex = html.indexOf('<optgroup label="Principal">');
+		const alphaDevIndex = html.indexOf('value="Alpha Dev"');
+		const backendDevIndex = html.indexOf('value="Backend Dev"');
+
+		expect(associateIndex).toBeGreaterThan(-1);
+		expect(seniorAssociateIndex).toBeGreaterThan(associateIndex);
+		expect(principalIndex).toBeGreaterThan(seniorAssociateIndex);
+		expect(alphaDevIndex).toBeGreaterThan(associateIndex);
+		expect(alphaDevIndex).toBeLessThan(backendDevIndex);
+		expect(backendDevIndex).toBeLessThan(seniorAssociateIndex);
+	});
+
+	it("appends unrecognised bands alphabetically after the known seniority order", () => {
+		const html = environment.render("pages/jobApplicationAdmin.njk", {
+			...viewData,
+			jobRoles: [
+				{ roleName: "Apple Dev", location: "London", band: "Principal" },
+				{ roleName: "Mystery Dev", location: "London", band: "Custom Band" },
+			],
+		});
+
+		const principalIndex = html.indexOf('<optgroup label="Principal">');
+		const customBandIndex = html.indexOf('<optgroup label="Custom Band">');
+
+		expect(principalIndex).toBeGreaterThan(-1);
+		expect(customBandIndex).toBeGreaterThan(principalIndex);
+	});
 });
