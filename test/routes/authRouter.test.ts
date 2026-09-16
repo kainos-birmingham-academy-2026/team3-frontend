@@ -120,6 +120,21 @@ describe("authRouter", () => {
 		expect(showRegisterConfirmation).toHaveBeenCalledTimes(1);
 	});
 
+	it("should call confirmRegistration for POST /register/confirmation", async () => {
+		const confirmRegistration = vi
+			.spyOn(AuthController.prototype, "confirmRegistration")
+			.mockImplementation((_req, res) => {
+				res.status(200).send("code accepted");
+			});
+
+		const response = await request(app)
+			.post("/register/confirmation")
+			.send({ verificationCode: "12345" });
+
+		expect(response.status).toBe(200);
+		expect(confirmRegistration).toHaveBeenCalledTimes(1);
+	});
+
 	it("should call register for POST /register", async () => {
 		const register = vi
 			.spyOn(AuthController.prototype, "register")

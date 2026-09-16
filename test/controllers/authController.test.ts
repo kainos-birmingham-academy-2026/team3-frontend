@@ -129,7 +129,9 @@ describe("AuthController", () => {
 
 		controller.showRegisterConfirmation(req, res);
 
-		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk");
+		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk", {
+			formValues: { verificationCode: "" },
+		});
 	});
 
 	it("should render logout confirmation page for unauthenticated user", () => {
@@ -472,11 +474,8 @@ describe("AuthController", () => {
 		});
 	});
 
-	it("should sign in and redirect to home after successful registration", async () => {
+	it("should redirect to code confirmation after successful registration", async () => {
 		vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
-		vi.mocked(authApiService.login).mockResolvedValueOnce(
-			createTokenWithRole("USER"),
-		);
 
 		const req = createReq({
 			body: {
@@ -493,31 +492,30 @@ describe("AuthController", () => {
 			"new.user",
 			"Password123!",
 		);
-		expect(authApiService.login).toHaveBeenCalledWith(
-			"new.user",
-			"Password123!",
-		);
-		expect(req.session.jwtToken).toBe(createTokenWithRole("USER"));
-		expect(req.session.userRole).toBe("USER");
-		expect(res.redirect).toHaveBeenCalledWith("/");
+		expect(authApiService.login).not.toHaveBeenCalled();
+		expect(res.redirect).toHaveBeenCalledWith(303, "/register/confirmation");
 	});
 
-	it("should redirect to login when automatic sign-in fails", async () => {
-		vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
-		vi.mocked(authApiService.login).mockRejectedValueOnce(
-			new Error("Unable to sign in"),
-		);
-
+	it("should reject an invalid registration confirmation code", () => {
 		const req = createReq({
-			body: {
-				email: "new.user",
-				password: "Password123!",
-				confirmPassword: "Password123!",
-			},
+			body: { verificationCode: "1234" },
 		});
 		const res = createRes();
 
-		await controller.register(req, res);
+		controller.confirmRegistration(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk", {
+			errorMessage: "Enter a 5-digit code",
+			formValues: { verificationCode: "1234" },
+		});
+	});
+
+	it("should continue to sign in with a five-digit confirmation code", () => {
+		const req = createReq({ body: { verificationCode: "12345" } });
+		const res = createRes();
+
+		controller.confirmRegistration(req, res);
 
 		expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
 	});
