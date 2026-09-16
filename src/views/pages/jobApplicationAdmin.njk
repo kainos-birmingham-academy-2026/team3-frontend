@@ -41,10 +41,9 @@
     <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}" {% if filters.role == jobRole.roleName %}selected{% endif %}>{{ jobRole.roleName }}</option>
       {% endfor %}
      {% endmacro %}
-     {# Seniority order matches backend Band.bandName values; unrecognised bands fall back below. #}
-     {% set bandSeniorityOrder = ["Apprentice", "Trainee", "Associate", "Senior Associate", "Consultant", "Manager", "Principal"] %}
      {% set rolesByBand = jobRoles | sort(attribute="roleName") | groupby("band") %}
-     {% for band in bandSeniorityOrder %}
+     {# bandOrder comes from the backend Band.bandLevel column; unrecognised bands fall back below. #}
+     {% for band in bandOrder %}
       {% if rolesByBand[band] %}
     <optgroup label="{{ band }}">
      {{ roleOptions(rolesByBand[band], filters) }}
@@ -52,7 +51,7 @@
       {% endif %}
      {% endfor %}
      {% for band, rolesInBand in rolesByBand | dictsort %}
-      {% if band not in bandSeniorityOrder %}
+      {% if band not in bandOrder %}
     <optgroup label="{{ band }}">
      {{ roleOptions(rolesInBand, filters) }}
     </optgroup>

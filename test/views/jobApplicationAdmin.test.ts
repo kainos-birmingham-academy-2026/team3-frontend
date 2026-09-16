@@ -29,6 +29,7 @@ describe("jobApplicationAdmin", () => {
 		},
 		filters: { search: "", status: "", role: "", location: "" },
 		jobRoles: [{ roleName: "Engineer", location: "Belfast" }],
+		bandOrder: [],
 	};
 
 	it("renders application workflows as links and forms", () => {
@@ -75,7 +76,7 @@ describe("jobApplicationAdmin", () => {
 		expect(html).not.toContain("/api/job-applications/admin?page=");
 	});
 
-	it("groups the role filter options by band, ordered by seniority", () => {
+	it("groups the role filter options by band, ordered by the seniority list from the controller", () => {
 		const html = environment.render("pages/jobApplicationAdmin.njk", {
 			...viewData,
 			jobRoles: [
@@ -88,6 +89,7 @@ describe("jobApplicationAdmin", () => {
 				{ roleName: "Apple Dev", location: "London", band: "Principal" },
 				{ roleName: "Alpha Dev", location: "London", band: "Associate" },
 			],
+			bandOrder: ["Associate", "Senior Associate", "Principal"],
 		});
 
 		const associateIndex = html.indexOf('<optgroup label="Associate">');
@@ -106,13 +108,14 @@ describe("jobApplicationAdmin", () => {
 		expect(backendDevIndex).toBeLessThan(seniorAssociateIndex);
 	});
 
-	it("appends unrecognised bands alphabetically after the known seniority order", () => {
+	it("appends bands missing from bandOrder alphabetically afterwards", () => {
 		const html = environment.render("pages/jobApplicationAdmin.njk", {
 			...viewData,
 			jobRoles: [
 				{ roleName: "Apple Dev", location: "London", band: "Principal" },
 				{ roleName: "Mystery Dev", location: "London", band: "Custom Band" },
 			],
+			bandOrder: ["Principal"],
 		});
 
 		const principalIndex = html.indexOf('<optgroup label="Principal">');
