@@ -102,6 +102,7 @@
     {% endif %}
   {% endfor %}
   {% if hasVisibleRoles %}
+    {% set showApplicationStatus = currentUserRole and currentUserRole != 'ADMIN' %}
     <div class="job-role-table-scroll" tabindex="0" aria-label="Job roles table">
       <table class="job-role-table">
         <thead>
@@ -113,13 +114,13 @@
             {% if currentUserRole == 'ADMIN' %}<th scope="col">Status</th>{% endif %}
             {% if currentUserRole == 'ADMIN' %}<th scope="col">Opening Date</th>{% endif %}
             <th scope="col">Closing Date</th>
-            {% if currentUserRole and currentUserRole != 'ADMIN' %}<th scope="col"><span class="visually-hidden">Application status</span></th>{% endif %}
+            {% if showApplicationStatus %}<th scope="col"><span class="visually-hidden">Application status</span></th>{% endif %}
           </tr>
         </thead>
         <tbody>
           {% for jobRole in jobRoles %}
             {% if currentUserRole == 'ADMIN' or jobRole.status == "open" %}
-              {% set hasApplied = currentUserRole and currentUserRole != 'ADMIN' and appliedJobRoleIds[jobRole.jobRoleId] %}
+              {% set hasApplied = showApplicationStatus and appliedJobRoleIds[jobRole.jobRoleId] %}
               <tr
                 class="job-role-row-link"
                 data-href="/job-role-list/{{ jobRole.jobRoleId }}"
@@ -135,7 +136,7 @@
                 {% if currentUserRole == 'ADMIN' %}<td><span class="status-badge status-{{ jobRole.status | lower }}">{{ jobRole.status | capitalize }}</span></td>{% endif %}
                 {% if currentUserRole == 'ADMIN' %}<td>{{ jobRole.openingDate }}</td>{% endif %}
                 <td>{{ jobRole.closingDate }}</td>
-                {% if currentUserRole and currentUserRole != 'ADMIN' %}
+                {% if showApplicationStatus %}
                   <td class="job-role-status-cell">
                     {% if hasApplied %}<span class="status-badge status-applied">Applied</span>{% endif %}
                   </td>

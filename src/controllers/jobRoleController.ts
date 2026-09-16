@@ -206,14 +206,12 @@ export class JobRoleController {
 	async getById(req: Request, res: Response): Promise<void> {
 		try {
 			const id = this.getRoleIdParam(req);
-			const jobRoleId = await this.jobRoleService.getById(
-				id,
-				this.getJwtToken(req),
-			);
+			const jwtToken = this.getJwtToken(req);
+			const [jobRoleId, appliedJobRoleIds] = await Promise.all([
+				this.jobRoleService.getById(id, jwtToken),
+				this.jobRoleService.getAppliedJobRoleIds(jwtToken),
+			]);
 			const fromAdminApplications = req.query.from === "admin-applications";
-			const appliedJobRoleIds = await this.jobRoleService.getAppliedJobRoleIds(
-				this.getJwtToken(req),
-			);
 			res.render("pages/jobRoleDetail.njk", {
 				jobRoleId,
 				alreadyApplied: appliedJobRoleIds.includes(jobRoleId.jobRoleId),
