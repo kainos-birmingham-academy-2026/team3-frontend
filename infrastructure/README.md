@@ -39,19 +39,20 @@ contains migration declarations that preserve existing frontend resource
 addresses and release the shared resource group from frontend state without
 destroying it.
 
-## Test3 Azure Front Door pilot
+## Azure Front Door
 
-The test root accepts `enable_front_door`, defaulting to `false`, and rejects
-enabling it for any slot except `test3`. When enabled, the frontend module
-creates an Azure Front Door Standard profile, its default-domain endpoint, a
-frontend origin group and an HTTPS-only route to
-`ca-team3-frontend-test3`. Terraform exposes the resulting `azurefd.net` URL
-as `front_door_endpoint_url`.
+The dev and reusable test roots accept `enable_front_door`, defaulting to
+`false`. When enabled, the frontend module creates an Azure Front Door Standard
+profile, default-domain endpoint, frontend origin group, enabled frontend
+origin, and HTTPS-only route for the selected environment. Terraform exposes
+the resulting `azurefd.net` URL as `front_door_endpoint_url`.
 
-Set the `TEST3_FRONT_DOOR_ENABLED` repository variable to `true` before the
-next test3 frontend deployment. The workflow passes the Terraform flag only
-when the selected slot is `test3` and that variable is exactly `true`. Other
-test slots do not create Front Door resources.
+For test environments, select **Create or update Azure Front Door** when
+running the backend's `deploy_test` workflow. The backend forwards that explicit
+choice to the frontend deployment. For dev, set the frontend repository Actions
+variable `DEV_FRONT_DOOR_ENABLED` to `true` before a deployment. Do not enable
+Front Door in an environment unless its frontend image contains the Front Door
+middleware.
 
 Origin protection combines Container Apps ingress Allow rules for the current
 `AzureFrontDoor.Backend` IPv4 CIDRs with frontend middleware that validates
@@ -60,7 +61,7 @@ is sufficient alone. The CIDRs are read from Azure at plan time; an empty list
 fails the plan. Public IPv6 origin connectivity is not enabled by this policy.
 The public hostname still exists, but direct clients should be denied.
 
-CIDRs are not a live service-tag binding. Review and reapply test3 regularly
+CIDRs are not a live service-tag binding. Review and reapply each enabled environment regularly
 (at least weekly) to incorporate Azure range changes; agree an owner for this
 before relying on the pilot. No scheduled refresh is installed by this change.
 Subnet NSGs are not a substitute: public ingress on external workload-profile
@@ -68,9 +69,7 @@ environments bypasses the subnet. See Microsoft's
 [origin security guidance](https://learn.microsoft.com/en-us/azure/frontdoor/origin-security)
 and [Container Apps networking restrictions](https://learn.microsoft.com/en-us/azure/container-apps/firewall-integration).
 
-Deploy an image containing the Front Door middleware when enabling the flag;
-do not select an older frontend ref. Infrastructure is taken from the default
-branch, independently of the selected image ref. Initial enablement can cause
+Initial enablement can cause
 a short interruption while origin restrictions and Front Door propagate.
 Disabling the flag removes the restrictions, profile guard configuration and
 Front Door resources on the next apply, restoring direct public access.
