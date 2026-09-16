@@ -47,3 +47,8 @@ output "frontend_container_app_url" {
   description = "Public URL of the test frontend Container App."
   value       = module.frontend.frontend_container_app_url
 }
+
+output "front_door_endpoint_url" {
+  description = "Azure Front Door default-domain URL when the test3 pilot is enabled."
+  value       = module.frontend.front_door_endpoint_url
+}

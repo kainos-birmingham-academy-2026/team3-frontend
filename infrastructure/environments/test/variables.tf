@@ -50,6 +50,17 @@ variable "enable_admin_hiring" {
   default     = true
 }
 
+variable "enable_front_door" {
+  description = "Opt in to Azure Front Door Standard for test3 only."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = !var.enable_front_door || var.environment == "test3"
+    error_message = "Azure Front Door is currently supported only for the test3 pilot."
+  }
+}
+
 variable "tags" {
   description = "Tags to apply to frontend-owned resources."
   type        = map(string)

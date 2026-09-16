@@ -39,6 +39,59 @@ contains migration declarations that preserve existing frontend resource
 addresses and release the shared resource group from frontend state without
 destroying it.
 
+## Test3 Azure Front Door pilot
+
+The test root accepts `enable_front_door`, defaulting to `false`, and rejects
+enabling it for any slot except `test3`. When enabled, the frontend module
+creates an Azure Front Door Standard profile, its default-domain endpoint, a
+frontend origin group and an HTTPS-only route to
+`ca-team3-frontend-test3`. Terraform exposes the resulting `azurefd.net` URL
+as `front_door_endpoint_url`.
+
+Set the `TEST3_FRONT_DOOR_ENABLED` repository variable to `true` before the
+next test3 frontend deployment. The workflow passes the Terraform flag only
+when the selected slot is `test3` and that variable is exactly `true`. Other
+test slots do not create Front Door resources.
+
+Origin protection combines Container Apps ingress Allow rules for the current
+`AzureFrontDoor.Backend` IPv4 CIDRs with frontend middleware that validates
+`X-Azure-FDID` against the profile ID supplied by Terraform. Neither control
+is sufficient alone. The CIDRs are read from Azure at plan time; an empty list
+fails the plan. Public IPv6 origin connectivity is not enabled by this policy.
+The public hostname still exists, but direct clients should be denied.
+
+CIDRs are not a live service-tag binding. Review and reapply test3 regularly
+(at least weekly) to incorporate Azure range changes; agree an owner for this
+before relying on the pilot. No scheduled refresh is installed by this change.
+Subnet NSGs are not a substitute: public ingress on external workload-profile
+environments bypasses the subnet. See Microsoft's
+[origin security guidance](https://learn.microsoft.com/en-us/azure/frontdoor/origin-security)
+and [Container Apps networking restrictions](https://learn.microsoft.com/en-us/azure/container-apps/firewall-integration).
+
+Deploy an image containing the Front Door middleware when enabling the flag;
+do not select an older frontend ref. Infrastructure is taken from the default
+branch, independently of the selected image ref. Initial enablement can cause
+a short interruption while origin restrictions and Front Door propagate.
+Disabling the flag removes the restrictions, profile guard configuration and
+Front Door resources on the next apply, restoring direct public access.
+
+The HTTPS HEAD probe uses `/healthz` behind the same profile guard. It checks
+frontend process readiness, not backend/database health. No route cache block
+is configured, so personalised responses are not cached by Front Door. Custom
+domains and WAF policies remain out of scope. Front Door Standard has ongoing
+profile and usage charges while provisioned.
+
+Before completing the rollout, check HTTPS and HTTP-to-HTTPS redirection at
+`front_door_endpoint_url`, login/session persistence, and dynamic pages. From
+outside Azure Front Door, both direct-origin requests and direct requests with
+a forged correct `X-Azure-FDID` must be denied. Verify another Front Door
+profile cannot use this origin, and check the `/healthz` probe is healthy.
+These are required live checks; mocked tests do not establish network isolation.
+
+Offline checks: `terraform -chdir=infrastructure/environments/test test
+-filter=tests/front-door.tftest.hcl` and
+`npx vitest run test/middleware/frontDoor.test.ts`.
+
 ## Images
 
 Dev deploys `dev-<commit-sha>` and test deploys `test-<commit-sha>`. CI also

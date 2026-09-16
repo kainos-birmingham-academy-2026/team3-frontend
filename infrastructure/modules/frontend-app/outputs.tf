@@ -33,6 +33,11 @@ output "frontend_container_app_url" {
   value       = "https://${azurerm_container_app.frontend.ingress[0].fqdn}"
 }
 
+output "front_door_endpoint_url" {
+  description = "Azure Front Door default-domain URL when enabled."
+  value       = var.enable_front_door ? "https://${azurerm_cdn_frontdoor_endpoint.frontend[0].host_name}" : null
+}
+
 output "managed_identity_id" {
   description = "Resource ID of the frontend managed identity."
   value       = module.managed_identity.id
