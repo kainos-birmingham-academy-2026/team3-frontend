@@ -52,6 +52,13 @@ override_module {
   }
 }
 
+override_resource {
+  target = time_sleep.front_door_origin_ready[0]
+  values = {
+    create_duration = "0s"
+  }
+}
+
 variables {
   environment = "test3"
   image_tag   = "test-offline"

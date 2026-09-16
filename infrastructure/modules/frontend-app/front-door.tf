@@ -55,6 +55,14 @@ resource "azurerm_cdn_frontdoor_origin" "frontend" {
   certificate_name_check_enabled = true
 }
 
+resource "time_sleep" "front_door_origin_ready" {
+  count = var.enable_front_door ? 1 : 0
+
+  create_duration = "60s"
+
+  depends_on = [azurerm_cdn_frontdoor_origin.frontend]
+}
+
 resource "azurerm_cdn_frontdoor_route" "frontend" {
   count = var.enable_front_door ? 1 : 0
 
@@ -67,4 +75,6 @@ resource "azurerm_cdn_frontdoor_route" "frontend" {
   forwarding_protocol           = "HttpsOnly"
   https_redirect_enabled        = true
   link_to_default_domain        = true
+
+  depends_on = [time_sleep.front_door_origin_ready]
 }
