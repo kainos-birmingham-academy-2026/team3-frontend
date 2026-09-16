@@ -81,7 +81,7 @@ export class AuthController {
 		try {
 			await authApiService.verifyEmail(email, verificationCode);
 			delete req.session.pendingRegistrationEmail;
-			res.redirect("/login?registered=1");
+			res.redirect("/register/success");
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Unable to verify your email";
@@ -90,6 +90,10 @@ export class AuthController {
 				formValues: { verificationCode },
 			});
 		}
+	}
+
+	showAccountCreated(_req: Request, res: Response): void {
+		res.render("pages/accountCreated.njk");
 	}
 
 	showLogoutConfirmation(req: Request, res: Response): void {

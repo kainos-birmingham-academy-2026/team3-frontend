@@ -13,6 +13,9 @@ router.get("/register/confirmation", (req, res) =>
 router.post("/register/confirmation", (req, res) =>
 	authController.confirmRegistration(req, res),
 );
+router.get("/register/success", (req, res) =>
+	authController.showAccountCreated(req, res),
+);
 router.post("/register", (req, res) => authController.register(req, res));
 router.get("/unauthorised", (_req, res) => {
 	res.status(401).render("pages/401.njk");

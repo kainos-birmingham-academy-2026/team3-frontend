@@ -524,7 +524,7 @@ describe("AuthController", () => {
 		});
 	});
 
-	it("should continue to sign in with a verified code", async () => {
+	it("should show account creation success with a verified code", async () => {
 		vi.mocked(authApiService.verifyEmail).mockResolvedValueOnce(undefined);
 		const req = createReq({
 			body: { verificationCode: "12345" },
@@ -542,7 +542,16 @@ describe("AuthController", () => {
 			"12345",
 		);
 		expect(req.session.pendingRegistrationEmail).toBeUndefined();
-		expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
+		expect(res.redirect).toHaveBeenCalledWith("/register/success");
+	});
+
+	it("should render the account created page", () => {
+		const req = createReq();
+		const res = createRes();
+
+		controller.showAccountCreated(req, res);
+
+		expect(res.render).toHaveBeenCalledWith("pages/accountCreated.njk");
 	});
 
 	it("should show backend verification errors", async () => {

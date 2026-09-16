@@ -135,6 +135,19 @@ describe("authRouter", () => {
 		expect(confirmRegistration).toHaveBeenCalledTimes(1);
 	});
 
+	it("should call showAccountCreated for GET /register/success", async () => {
+		const showAccountCreated = vi
+			.spyOn(AuthController.prototype, "showAccountCreated")
+			.mockImplementation((_req, res) => {
+				res.status(200).send("account created");
+			});
+
+		const response = await request(app).get("/register/success");
+
+		expect(response.status).toBe(200);
+		expect(showAccountCreated).toHaveBeenCalledTimes(1);
+	});
+
 	it("should call register for POST /register", async () => {
 		const register = vi
 			.spyOn(AuthController.prototype, "register")
