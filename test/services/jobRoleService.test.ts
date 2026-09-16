@@ -462,23 +462,6 @@ describe("JobRoleService", () => {
 		expect(apiClient.post).not.toHaveBeenCalled();
 	});
 
-	it("should delete a job role with an authorization header", async () => {
-		vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: {} });
-
-		await service.deleteJobRole("3", jwtToken);
-
-		expect(apiClient.delete).toHaveBeenCalledWith("/api/job-roles/3", {
-			headers: { Authorization: `Bearer ${jwtToken}` },
-		});
-	});
-
-	it("should throw when deleting a job role without a token", async () => {
-		await expect(service.deleteJobRole("3")).rejects.toThrow(
-			"Not authenticated",
-		);
-		expect(apiClient.delete).not.toHaveBeenCalled();
-	});
-
 	it("should handle getById without jwtToken and retrieve public job role", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: {

@@ -266,16 +266,6 @@ export class JobRoleService {
 		);
 	}
 
-	async deleteJobRole(jobRoleId: string, jwtToken?: string): Promise<void> {
-		if (!jwtToken) {
-			throw new Error("Not authenticated");
-		}
-
-		await apiClient.delete(`/api/job-roles/${jobRoleId}`, {
-			headers: { Authorization: `Bearer ${jwtToken}` },
-		});
-	}
-
 	async updateJobRoleStatus(
 		jobRoleId: string,
 		status: JobRoleStatus,
