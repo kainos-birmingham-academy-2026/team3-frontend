@@ -296,10 +296,10 @@ router.post("/job-role-edit", requireAuth, requireAdmin, (req, res) =>
 	controller.updateJobRole(req, res),
 );
 router.post(
-	"/job-role-list/:id/delete",
+	"/job-role-list/:id/status",
 	requireAuth,
 	requireAdmin,
-	(req, res) => controller.deleteJobRole(req, res),
+	(req, res) => controller.updateJobRoleStatus(req, res),
 );
 
 router.get("/teapot", async (_req, res) => {

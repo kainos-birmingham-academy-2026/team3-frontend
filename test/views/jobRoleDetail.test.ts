@@ -348,7 +348,7 @@ describe("jobRoleDetail", () => {
 		expect(html.match(/class="detail-row"/g)).toHaveLength(5);
 	});
 
-	it("should show admin actions with a keyboard-contained delete dialog", () => {
+	it("should show admin actions with a keyboard-contained close dialog", () => {
 		const jobRole: JobRole = {
 			jobRoleId: 1,
 			roleName: "Lead Software Engineer",
@@ -364,11 +364,31 @@ describe("jobRoleDetail", () => {
 
 		expect(adminHtml).toContain('class="job-role-actions"');
 		expect(adminHtml).toContain('href="/job-role-edit/1"');
+		expect(adminHtml).toContain("Close role");
+		expect(adminHtml).toContain('name="status"');
 		expect(adminHtml).toContain('event.key === "Tab"');
 		expect(adminHtml).toContain("lastFocusableElement.focus()");
 		expect(adminHtml).toContain("firstFocusableElement.focus()");
 		expect(renderView(jobRole, "USER")).not.toContain(
 			'href="/job-role-edit/1"',
 		);
+	});
+
+	it("should show reopen for a closed role while keeping edit available", () => {
+		const jobRole: JobRole = {
+			jobRoleId: 2,
+			roleName: "Delivery Manager",
+			location: "Leeds",
+			capability: "Delivery Management",
+			band: "Manager",
+			closingDate: "2099-12-31",
+			status: "closed",
+		};
+
+		const html = renderView(jobRole, "ADMIN");
+
+		expect(html).toContain("Reopen role");
+		expect(html).toContain('href="/job-role-edit/2"');
+		expect(html).toContain('value="OPEN"');
 	});
 });

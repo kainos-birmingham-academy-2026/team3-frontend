@@ -119,8 +119,32 @@
 
 .job-role-filter-grid {
 	display: grid;
-	grid-template-columns: repeat(5, minmax(0, 1fr));
+	grid-template-columns: repeat(6, minmax(0, 1fr));
 	gap: 1rem;
+}
+
+.role-name-filter-field {
+	grid-area: role-name;
+}
+
+.status-filter-field {
+	grid-area: status;
+}
+
+.location-filter-field {
+	grid-area: location;
+}
+
+.capability-filter-field {
+	grid-area: capability;
+}
+
+.band-filter-field {
+	grid-area: band;
+}
+
+.closing-date-filter-field {
+	grid-area: closing-date;
 }
 
 .job-role-filter-field {
@@ -267,6 +291,12 @@
 @media (max-width: 900px) {
 	.job-role-filter-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (min-width: 901px) {
+	.job-role-filter-grid {
+		grid-template-areas: "role-name location capability band closing-date status";
 	}
 }
 

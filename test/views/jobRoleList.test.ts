@@ -118,6 +118,29 @@ describe("jobRoleList", () => {
 		expect(html).not.toContain("delete-role-trigger");
 	});
 
+	it("should show status filtering and closed roles to admins", () => {
+		const html = renderView(
+			[
+				{
+					jobRoleId: 2,
+					roleName: "Delivery Manager",
+					location: "Leeds",
+					capability: "Delivery",
+					band: "Manager",
+					closingDate: "2099-12-31",
+					status: "closed",
+				},
+			],
+			"ADMIN",
+			{ filters: { status: "closed" } },
+		);
+
+		expect(html).toContain('name="status"');
+		expect(html).toContain('<option value="closed" selected>Closed</option>');
+		expect(html).toContain("Delivery Manager");
+		expect(html).toContain("Closed");
+	});
+
 	it("should hide create action for non-admin users", () => {
 		const html = renderView(
 			[

@@ -10,6 +10,7 @@ import type {
 	CreateJobRoleInput,
 	JobRole,
 	JobRoleFilters,
+	JobRoleStatus,
 	LocationOption,
 	SchemaError,
 	StatusOption,
@@ -70,6 +71,7 @@ export class JobRoleController {
 	}
 
 	private getFilters(req: Request): JobRoleFilters {
+		const status = this.getQueryString(req.query.status)?.toLowerCase();
 		return {
 			roleName: this.getQueryString(req.query.roleName),
 			locationId: this.getQueryList(req.query.locationId),
@@ -77,6 +79,7 @@ export class JobRoleController {
 			bandId: this.getQueryList(req.query.bandId),
 			closingDateFrom: this.getQueryString(req.query.closingDateFrom),
 			closingDateTo: this.getQueryString(req.query.closingDateTo),
+			...(status === "open" || status === "closed" ? { status } : {}),
 		};
 	}
 
@@ -404,25 +407,28 @@ export class JobRoleController {
 		}
 	}
 
-	async deleteJobRole(req: Request, res: Response): Promise<void> {
+	async updateJobRoleStatus(req: Request, res: Response): Promise<void> {
+		const status = req.body.status as JobRoleStatus;
 		try {
-			await this.jobRoleService.deleteJobRole(
+			await this.jobRoleService.updateJobRoleStatus(
 				this.getRoleIdParam(req),
+				status,
 				this.getJwtToken(req),
 			);
-			res.redirect(303, "/job-role-list");
+			res.redirect(303, `/job-role-list/${this.getRoleIdParam(req)}`);
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
 				return;
 			}
 
-			let errorMessage = "The job role could not be deleted. Please try again.";
+			let errorMessage =
+				"The job role status could not be updated. Please try again.";
 			let statusCode = 500;
-
 			if (axios.isAxiosError(error)) {
 				statusCode = error.response?.status ?? 500;
 				if (statusCode === 403) {
-					errorMessage = "You do not have permission to delete this job role.";
+					errorMessage =
+						"You do not have permission to change this job role status.";
 				} else if (statusCode === 404) {
 					errorMessage = "Job role not found.";
 				}

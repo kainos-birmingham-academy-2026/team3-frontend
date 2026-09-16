@@ -6,6 +6,7 @@ import type {
 	CreateJobRoleInput,
 	JobRole,
 	JobRoleFilters,
+	JobRoleStatus,
 	LocationOption,
 	StatusOption,
 	UpdateJobRoleInput,
@@ -121,6 +122,7 @@ export class JobRoleService {
 	): URLSearchParams {
 		const params = new URLSearchParams();
 		if (filters.roleName) params.set("roleName", filters.roleName);
+		if (filters.status) params.set("status", filters.status.toUpperCase());
 		if (filters.closingDateFrom) {
 			params.set("closingDateFrom", filters.closingDateFrom);
 		}
@@ -264,14 +266,20 @@ export class JobRoleService {
 		);
 	}
 
-	async deleteJobRole(jobRoleId: string, jwtToken?: string): Promise<void> {
+	async updateJobRoleStatus(
+		jobRoleId: string,
+		status: JobRoleStatus,
+		jwtToken?: string,
+	): Promise<void> {
 		if (!jwtToken) {
 			throw new Error("Not authenticated");
 		}
 
-		await apiClient.delete(`/api/job-roles/${jobRoleId}`, {
-			headers: { Authorization: `Bearer ${jwtToken}` },
-		});
+		await apiClient.patch(
+			`/api/job-roles/${jobRoleId}/status`,
+			{ status },
+			{ headers: { Authorization: `Bearer ${jwtToken}` } },
+		);
 	}
 
 	async applyForRole(

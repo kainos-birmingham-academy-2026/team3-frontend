@@ -484,7 +484,7 @@ describe("routes", () => {
 		);
 	});
 
-	it("should show delete controls only on the admin role detail page", async () => {
+	it("should show close controls only on the admin role detail page", async () => {
 		const adminApp = createAdminApp();
 
 		const [listResponse, detailResponse] = await Promise.all([
@@ -496,21 +496,27 @@ describe("routes", () => {
 		expect(listResponse.text).not.toContain("delete-role-trigger");
 		expect(listResponse.text).not.toContain('id="delete-role-modal-backdrop"');
 		expect(detailResponse.status).toBe(200);
-		expect(detailResponse.text).toContain("Delete role");
+		expect(detailResponse.text).toContain("Close role");
 		expect(detailResponse.text).toContain('id="delete-role-form"');
 	});
 
-	it("should delete a job role and redirect an admin to the job role list", async () => {
+	it("should update a job role status and redirect an admin to its detail page", async () => {
 		const adminApp = createAdminApp();
-		vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: {} });
+		vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} });
 
-		const response = await request(adminApp).post("/job-role-list/1/delete");
+		const response = await request(adminApp)
+			.post("/job-role-list/1/status")
+			.send({ status: "CLOSED" });
 
 		expect(response.status).toBe(303);
-		expect(response.headers.location).toBe("/job-role-list");
-		expect(apiClient.delete).toHaveBeenCalledWith("/api/job-roles/1", {
-			headers: { Authorization: "Bearer admin-token" },
-		});
+		expect(response.headers.location).toBe("/job-role-list/1");
+		expect(apiClient.patch).toHaveBeenCalledWith(
+			"/api/job-roles/1/status",
+			{ status: "CLOSED" },
+			expect.objectContaining({
+				headers: { Authorization: "Bearer admin-token" },
+			}),
+		);
 	});
 
 	it("should render cv page for an existing application", async () => {
