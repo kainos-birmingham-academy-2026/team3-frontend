@@ -6,14 +6,16 @@ const environment = new nunjucks.Environment(
 );
 
 describe("register confirmation", () => {
-	it("should render confirmation content and sign in link", () => {
+	it("should render the verification code form", () => {
 		const html = environment.render("pages/registerConfirmation.njk", {
+			formValues: { verificationCode: "" },
 			currentPath: "/register/confirmation",
 		});
 
-		expect(html).toContain("Registration successful");
-		expect(html).toContain('href="/login"');
-		expect(html).toContain("Go to sign in");
+		expect(html).toContain("Check your email");
+		expect(html).toContain('action="/register/confirmation"');
+		expect(html).toContain('name="verificationCode"');
+		expect(html).toContain("Continue to sign in");
 		expect(html).not.toContain(">Home<");
 		expect(html).not.toContain(">Job roles<");
 	});

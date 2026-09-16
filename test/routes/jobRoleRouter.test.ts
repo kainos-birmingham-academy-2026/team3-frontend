@@ -913,11 +913,11 @@ describe("routes", () => {
 		expect(response.text).toContain("Sign in");
 	});
 
-	it("should return 200 for register confirmation page", async () => {
+	it("should redirect to register when confirmation session is missing", async () => {
 		const response = await request(app).get("/register/confirmation");
 
-		expect(response.status).toBe(200);
-		expect(response.text).toContain("Registration successful");
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/register");
 	});
 
 	it("should redirect authenticated users from login page to home", async () => {
