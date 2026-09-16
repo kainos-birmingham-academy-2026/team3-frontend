@@ -25,7 +25,8 @@ When(
 Then(
 	"my account should have been created and I should be signed in",
 	async ({ homePage, page }) => {
-	await homePage.expectLoaded();
-	await homePage.expectSignedIn();
-	await expect(page).toHaveURL(/\/$/);
-});
+		await homePage.expectLoaded();
+		await homePage.expectSignedIn();
+		await expect(page).toHaveURL(/\/$/);
+	},
+);
