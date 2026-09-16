@@ -23,22 +23,8 @@ When(
 );
 
 Then(
-	"my account should have been created successfully",
-	async ({ registerConfirmationPage }) => {
-		await registerConfirmationPage.expectLoaded();
-	},
-);
-
-When(
-	"I sign in with my new account",
-	async ({ loginPage, registerConfirmationPage, user }) => {
-		await registerConfirmationPage.clickGoToSignIn();
-		await loginPage.expectLoaded();
-		await loginPage.signIn(user.email, user.password);
-	},
-);
-
-Then("I should be signed in successfully", async ({ homePage, page }) => {
+	"my account should have been created and I should be signed in",
+	async ({ homePage, page }) => {
 	await homePage.expectLoaded();
 	await homePage.expectSignedIn();
 	await expect(page).toHaveURL(/\/$/);
