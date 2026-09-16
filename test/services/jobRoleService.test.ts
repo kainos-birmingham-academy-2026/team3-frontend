@@ -462,6 +462,51 @@ describe("JobRoleService", () => {
 		expect(apiClient.post).not.toHaveBeenCalled();
 	});
 
+	it("should fetch the applied job role ids for the current user", async () => {
+		vi.mocked(apiClient.get).mockResolvedValueOnce({
+			data: { jobRoleIds: [1, 2] },
+		});
+
+		const result = await service.getAppliedJobRoleIds(jwtToken);
+
+		expect(apiClient.get).toHaveBeenCalledWith("/api/job-applications/me", {
+			headers: { Authorization: `Bearer ${jwtToken}` },
+		});
+		expect(result).toEqual([1, 2]);
+	});
+
+	it("should return an empty array when fetching applied job role ids without a jwt token", async () => {
+		const result = await service.getAppliedJobRoleIds();
+
+		expect(apiClient.get).not.toHaveBeenCalled();
+		expect(result).toEqual([]);
+	});
+
+	it("should return an empty array when fetching applied job role ids fails", async () => {
+		vi.mocked(apiClient.get).mockRejectedValueOnce(new Error("network error"));
+
+		const result = await service.getAppliedJobRoleIds(jwtToken);
+
+		expect(result).toEqual([]);
+	});
+
+	it("should delete a job role with an authorization header", async () => {
+		vi.mocked(apiClient.delete).mockResolvedValueOnce({ data: {} });
+
+		await service.deleteJobRole("3", jwtToken);
+
+		expect(apiClient.delete).toHaveBeenCalledWith("/api/job-roles/3", {
+			headers: { Authorization: `Bearer ${jwtToken}` },
+		});
+	});
+
+	it("should throw when deleting a job role without a token", async () => {
+		await expect(service.deleteJobRole("3")).rejects.toThrow(
+			"Not authenticated",
+		);
+		expect(apiClient.delete).not.toHaveBeenCalled();
+	});
+
 	it("should handle getById without jwtToken and retrieve public job role", async () => {
 		vi.mocked(apiClient.get).mockResolvedValueOnce({
 			data: {

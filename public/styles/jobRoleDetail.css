@@ -180,6 +180,12 @@
 	border: 1px solid var(--kainos-orange);
 }
 
+.status-badge.status-applied {
+	background: rgba(65, 103, 159, 0.15);
+	color: var(--kainos-navy);
+	border: 1px solid var(--kainos-blue);
+}
+
 .application-status-pending {
 	background: rgba(236, 102, 8, 0.1);
 	color: #654400;
@@ -252,6 +258,15 @@
 .button-primary:focus-visible {
 	outline: 3px solid #2e7d32;
 	outline-offset: 2px;
+}
+
+.button-primary.button-disabled,
+.button-primary.button-disabled:hover {
+	background: #9e9e9e;
+	border-color: #9e9e9e;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
 }
 
 .info-message {
