@@ -349,6 +349,8 @@ jobs:
     steps:
       - name: Check out infrastructure source
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
       - name: Scan Terraform
         uses: aquasecurity/trivy-action@v0.36.0
         with:
