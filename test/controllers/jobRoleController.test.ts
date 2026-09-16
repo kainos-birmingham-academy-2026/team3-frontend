@@ -69,6 +69,7 @@ describe("JobRoleController", () => {
 		getAllLocations: vi.fn(),
 		getAllCapabilities: vi.fn(),
 		getAllBands: vi.fn(),
+		getAppliedJobRoleIds: vi.fn(),
 	};
 	const adminApplicationService = {
 		getAll: vi.fn(),
@@ -86,6 +87,7 @@ describe("JobRoleController", () => {
 		jobRoleService.getAllLocations.mockResolvedValue([]);
 		jobRoleService.getAllCapabilities.mockResolvedValue([]);
 		jobRoleService.getAllBands.mockResolvedValue([]);
+		jobRoleService.getAppliedJobRoleIds.mockResolvedValue([]);
 		jobRoleService.getPage.mockResolvedValue({
 			items: [],
 			page: 1,
@@ -147,6 +149,7 @@ describe("JobRoleController", () => {
 			selectedCapabilityIds: {},
 			selectedBandIds: {},
 			pagination: expect.objectContaining({ page: 1, totalPages: 1 }),
+			appliedJobRoleIds: {},
 		});
 	});
 
@@ -191,6 +194,7 @@ describe("JobRoleController", () => {
 			selectedCapabilityIds: {},
 			selectedBandIds: {},
 			pagination: expect.objectContaining({ page: 1, totalPages: 1 }),
+			appliedJobRoleIds: {},
 		});
 	});
 
@@ -362,6 +366,7 @@ describe("JobRoleController", () => {
 		expect(jobRoleService.getById).toHaveBeenCalledWith("7", "jwt-token");
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
 			jobRoleId: jobRole,
+			alreadyApplied: false,
 			backLink: {
 				href: "/job-role-list",
 				text: "Back to Job Roles",
@@ -400,6 +405,7 @@ describe("JobRoleController", () => {
 
 			expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
 				jobRoleId: jobRole,
+				alreadyApplied: false,
 				backLink: expected,
 			});
 		},
@@ -422,6 +428,7 @@ describe("JobRoleController", () => {
 		expect(jobRoleService.getById).toHaveBeenCalledWith("12", "jwt-token");
 		expect(res.render).toHaveBeenCalledWith("pages/jobRoleDetail.njk", {
 			jobRoleId: expect.objectContaining({ jobRoleId: 12 }),
+			alreadyApplied: false,
 			backLink: {
 				href: "/job-role-list",
 				text: "Back to Job Roles",

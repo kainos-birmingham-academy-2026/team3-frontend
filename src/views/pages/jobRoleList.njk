@@ -102,6 +102,7 @@
     {% endif %}
   {% endfor %}
   {% if hasVisibleRoles %}
+    {% set showApplicationStatus = currentUserRole and currentUserRole != 'ADMIN' %}
     <div class="job-role-table-scroll" tabindex="0" aria-label="Job roles table">
       <table class="job-role-table">
         <thead>
@@ -113,24 +114,33 @@
             {% if currentUserRole == 'ADMIN' %}<th scope="col">Status</th>{% endif %}
             {% if currentUserRole == 'ADMIN' %}<th scope="col">Opening Date</th>{% endif %}
             <th scope="col">Closing Date</th>
+            {% if showApplicationStatus %}<th scope="col"><span class="visually-hidden">Application status</span></th>{% endif %}
           </tr>
         </thead>
         <tbody>
           {% for jobRole in jobRoles %}
             {% if currentUserRole == 'ADMIN' or jobRole.status == "open" %}
+              {% set hasApplied = showApplicationStatus and appliedJobRoleIds[jobRole.jobRoleId] %}
               <tr
-                class="job-role-row-link"
+                class="job-role-row-link{% if hasApplied %} job-role-row-applied{% endif %}"
                 data-href="/job-role-list/{{ jobRole.jobRoleId }}"
                 role="link"
                 tabindex="0"
-                aria-label="View details for {{ jobRole.roleName }}">
-                <td><a href="/job-role-list/{{ jobRole.jobRoleId }}">{{ jobRole.roleName }}</a></td>
+                aria-label="View details for {{ jobRole.roleName }}{% if hasApplied %} (already applied){% endif %}">
+                <td>
+                  <a href="/job-role-list/{{ jobRole.jobRoleId }}">{{ jobRole.roleName }}</a>
+                </td>
                 <td>{{ jobRole.location }}</td>
                 <td>{{ jobRole.capability }}</td>
                 <td>{{ jobRole.band }}</td>
                 {% if currentUserRole == 'ADMIN' %}<td><span class="status-badge status-{{ jobRole.status | lower }}">{{ jobRole.status | capitalize }}</span></td>{% endif %}
                 {% if currentUserRole == 'ADMIN' %}<td>{{ jobRole.openingDate }}</td>{% endif %}
                 <td>{{ jobRole.closingDate }}</td>
+                {% if showApplicationStatus %}
+                  <td class="job-role-status-cell">
+                    {% if hasApplied %}<span class="status-badge status-applied">Applied</span>{% endif %}
+                  </td>
+                {% endif %}
               </tr>
             {% endif %}
           {% endfor %}

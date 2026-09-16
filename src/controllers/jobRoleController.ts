@@ -167,13 +167,20 @@ export class JobRoleController {
 			}
 			const filters = this.getFilters(req);
 			const page = Number(this.getQueryString(req.query.page) ?? 1);
-			const [jobRolePage, locationOptions, capabilityOptions, bandOptions] =
-				await Promise.all([
-					this.jobRoleService.getPage(this.getJwtToken(req), filters, page, 10),
-					this.jobRoleService.getAllLocations(),
-					this.jobRoleService.getAllCapabilities(),
-					this.jobRoleService.getAllBands(),
-				]);
+			const jwtToken = this.getJwtToken(req);
+			const [
+				jobRolePage,
+				locationOptions,
+				capabilityOptions,
+				bandOptions,
+				appliedJobRoleIds,
+			] = await Promise.all([
+				this.jobRoleService.getPage(jwtToken, filters, page, 10),
+				this.jobRoleService.getAllLocations(),
+				this.jobRoleService.getAllCapabilities(),
+				this.jobRoleService.getAllBands(),
+				this.jobRoleService.getAppliedJobRoleIds(jwtToken),
+			]);
 			res.render("pages/jobRoleList.njk", {
 				jobRoles: jobRolePage.items,
 				filters,
@@ -184,6 +191,9 @@ export class JobRoleController {
 				selectedCapabilityIds: this.getSelectedIds(filters.capabilityId),
 				selectedBandIds: this.getSelectedIds(filters.bandId),
 				pagination: jobRolePage,
+				appliedJobRoleIds: this.getSelectedIds(
+					appliedJobRoleIds.map((jobRoleId) => String(jobRoleId)),
+				),
 			});
 		} catch (error) {
 			if (this.handleUnauthorized(req, res, error)) {
@@ -196,13 +206,15 @@ export class JobRoleController {
 	async getById(req: Request, res: Response): Promise<void> {
 		try {
 			const id = this.getRoleIdParam(req);
-			const jobRoleId = await this.jobRoleService.getById(
-				id,
-				this.getJwtToken(req),
-			);
+			const jwtToken = this.getJwtToken(req);
+			const [jobRoleId, appliedJobRoleIds] = await Promise.all([
+				this.jobRoleService.getById(id, jwtToken),
+				this.jobRoleService.getAppliedJobRoleIds(jwtToken),
+			]);
 			const fromAdminApplications = req.query.from === "admin-applications";
 			res.render("pages/jobRoleDetail.njk", {
 				jobRoleId,
+				alreadyApplied: appliedJobRoleIds.includes(jobRoleId.jobRoleId),
 				backLink: fromAdminApplications
 					? {
 							href: getAdminApplicationListUrl(

@@ -300,6 +300,22 @@ export class JobRoleService {
 		);
 	}
 
+	async getAppliedJobRoleIds(jwtToken?: string): Promise<number[]> {
+		if (!jwtToken) {
+			return [];
+		}
+
+		try {
+			const response = await apiClient.get<{ jobRoleIds: number[] }>(
+				"/api/job-applications/me",
+				{ headers: { Authorization: `Bearer ${jwtToken}` } },
+			);
+			return response.data.jobRoleIds;
+		} catch {
+			return [];
+		}
+	}
+
 	//fetch status, band, capability, location options from the backend to populate the dropdown in the create job role form
 	async getAllStatuses(): Promise<StatusOption[]> {
 		try {
