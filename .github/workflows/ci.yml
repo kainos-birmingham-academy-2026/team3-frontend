@@ -208,6 +208,41 @@ jobs:
             --name "$IMAGE_NAME:test-latest" \
             --query digest --output tsv
 
+  push-private-e2e-image:
+    name: Push private E2E image to ACR
+    if: github.event.action == 'backend-test-deployed'
+    needs: [resolve-source, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+      IMAGE_NAME: team3-frontend
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve-source.outputs.sha }}
+      - name: Sign in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Sign in to ACR
+        run: az acr login --name "${REGISTRY%%.*}"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push private E2E image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.e2e
+          push: true
+          provenance: false
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-e2e-${{ needs.resolve-source.outputs.sha }}
+
   terraform-plan:
     name: Plan dev infrastructure
     if: github.event_name == 'pull_request'
@@ -350,7 +385,7 @@ jobs:
   terraform-deploy-test:
     name: Deploy test infrastructure
     if: github.event.action == 'backend-test-deployed'
-    needs: [resolve-source, push-test-image, terraform-test]
+    needs: [resolve-source, push-test-image, push-private-e2e-image, terraform-test]
     runs-on: ubuntu-latest
     concurrency:
       group: frontend-infrastructure-${{ needs.resolve-source.outputs.test_environment }}
@@ -365,6 +400,8 @@ jobs:
       TF_VAR_image_tag: test-${{ needs.resolve-source.outputs.sha }}
       TF_VAR_container_revision_suffix: run-${{ github.run_id }}-${{ github.run_attempt }}
       TF_VAR_enable_front_door: ${{ needs.resolve-source.outputs.test_environment == 'test3' && vars.TEST3_FRONT_DOOR_ENABLED == 'true' && 'true' || 'false' }}
+      TF_VAR_enable_private_e2e: ${{ needs.resolve-source.outputs.test_environment == 'test3' && vars.TEST3_PRIVATE_E2E_ENABLED == 'true' && 'true' || 'false' }}
+      TF_VAR_e2e_image_tag: test-e2e-${{ needs.resolve-source.outputs.sha }}
       ARM_USE_OIDC: "true"
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -409,3 +446,35 @@ jobs:
         run: terraform plan -input=false -no-color -out=tfplan
       - name: Apply Terraform
         run: terraform apply -input=false -auto-approve tfplan
+      - name: Run private test3 Playwright journey
+        if: needs.resolve-source.outputs.test_environment == 'test3' && vars.TEST3_PRIVATE_E2E_ENABLED == 'true'
+        timeout-minutes: 12
+        run: |
+          job_name="caj-team3-private-e2e-${TF_VAR_environment}"
+          execution_name=$(az containerapp job start \
+            --name "$job_name" --resource-group "rg-team3-${TF_VAR_environment}" \
+            --query name --output tsv --only-show-errors)
+          if [[ -z "$execution_name" ]]; then
+            echo "::error::Azure did not return a private E2E execution name."
+            exit 1
+          fi
+          echo "Private E2E execution: $execution_name"
+          for attempt in {1..60}; do
+            execution_status=$(az containerapp job execution show \
+              --name "$job_name" --resource-group "rg-team3-${TF_VAR_environment}" \
+              --job-execution-name "$execution_name" \
+              --query properties.status --output tsv --only-show-errors)
+            case "$execution_status" in
+              Succeeded)
+                echo "Private registration and sign-in journey passed."
+                exit 0
+                ;;
+              Failed|Stopped|Degraded)
+                echo "::error::Private E2E execution $execution_name ended with $execution_status. Check its Container Apps logs."
+                exit 1
+                ;;
+            esac
+            sleep 10
+          done
+          echo "::error::Timed out waiting for private E2E execution $execution_name."
+          exit 1

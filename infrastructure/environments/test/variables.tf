@@ -61,6 +61,23 @@ variable "enable_front_door" {
   }
 }
 
+variable "enable_private_e2e" {
+  description = "Opt in to the private Playwright job for test3 only."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = !var.enable_private_e2e || var.environment == "test3"
+    error_message = "The private Playwright job is currently supported only for test3."
+  }
+}
+
+variable "e2e_image_tag" {
+  description = "Immutable ACR image tag for the private Playwright job."
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags to apply to frontend-owned resources."
   type        = map(string)

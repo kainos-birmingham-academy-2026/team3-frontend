@@ -52,3 +52,8 @@ output "front_door_endpoint_url" {
   description = "Azure Front Door default-domain URL when the test3 pilot is enabled."
   value       = module.frontend.front_door_endpoint_url
 }
+
+output "private_e2e_job_name" {
+  description = "Private Playwright Container Apps Job name when enabled."
+  value       = module.frontend.private_e2e_job_name
+}

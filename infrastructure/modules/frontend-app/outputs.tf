@@ -38,6 +38,11 @@ output "front_door_endpoint_url" {
   value       = var.enable_front_door ? "https://${azurerm_cdn_frontdoor_endpoint.frontend[0].host_name}" : null
 }
 
+output "private_e2e_job_name" {
+  description = "Private Playwright Container Apps Job name when enabled."
+  value       = var.enable_private_e2e ? azurerm_container_app_job.private_e2e[0].name : null
+}
+
 output "managed_identity_id" {
   description = "Resource ID of the frontend managed identity."
   value       = module.managed_identity.id

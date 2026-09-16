@@ -11,6 +11,7 @@
 		"test:ui": "vitest run --ui",
 		"test:coverage": "vitest run --coverage",
 		"e2e": "bddgen && playwright test",
+		"e2e:private": "playwright test e2e/specs/register-and-login.spec.ts --project=chromium",
 		"e2e:bdd": "bddgen && playwright test e2e/specs/e2e/bdd",
 		"e2e:smoke": "playwright test --grep @smoke",
 		"e2e:headed": "E2E_SKIP_BACKEND=true playwright test --headed",
