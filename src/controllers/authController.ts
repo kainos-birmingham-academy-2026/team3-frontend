@@ -51,14 +51,24 @@ export class AuthController {
 			res.redirect("/");
 			return;
 		}
+		if (!req.session.pendingRegistrationEmail) {
+			res.redirect("/register");
+			return;
+		}
 
 		res.render("pages/registerConfirmation.njk", {
 			formValues: { verificationCode: "" },
 		});
 	}
 
-	confirmRegistration(req: Request, res: Response): void {
+	async confirmRegistration(req: Request, res: Response): Promise<void> {
 		const verificationCode = String(req.body.verificationCode ?? "").trim();
+		const email = req.session.pendingRegistrationEmail;
+
+		if (!email) {
+			res.redirect("/register");
+			return;
+		}
 
 		if (!/^\d{5}$/.test(verificationCode)) {
 			res.status(400).render("pages/registerConfirmation.njk", {
@@ -68,7 +78,18 @@ export class AuthController {
 			return;
 		}
 
-		res.redirect("/login?registered=1");
+		try {
+			await authApiService.verifyEmail(email, verificationCode);
+			delete req.session.pendingRegistrationEmail;
+			res.redirect("/login?registered=1");
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Unable to verify your email";
+			res.status(400).render("pages/registerConfirmation.njk", {
+				errorMessage: message,
+				formValues: { verificationCode },
+			});
+		}
 	}
 
 	showLogoutConfirmation(req: Request, res: Response): void {
@@ -161,6 +182,7 @@ export class AuthController {
 			return;
 		}
 
+		req.session.pendingRegistrationEmail = email;
 		res.redirect(303, "/register/confirmation");
 	}
 

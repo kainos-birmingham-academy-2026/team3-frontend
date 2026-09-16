@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import apiClient from "../../src/config/apiClient.js";
-import { login, register } from "../../src/services/authApiService";
+import {
+	login,
+	register,
+	verifyEmail,
+} from "../../src/services/authApiService";
 
 vi.mock("../../src/config/apiClient.js", () => ({
 	default: {
@@ -334,5 +338,43 @@ describe("authApiService", () => {
 		});
 
 		await expect(register("new@example.com", "password123")).rejects.toThrow();
+	});
+
+	it("should send the email verification payload", async () => {
+		vi.mocked(apiClient.post).mockResolvedValueOnce({
+			data: { message: "Email verified" },
+		});
+
+		await expect(
+			verifyEmail("new.user@example.com", "12345"),
+		).resolves.toBeUndefined();
+
+		expect(apiClient.post).toHaveBeenCalledWith("/api/auth/verify-email", {
+			email: "new.user@example.com",
+			verificationCode: "12345",
+		});
+	});
+
+	it("should map an invalid or expired verification code", async () => {
+		vi.mocked(apiClient.post).mockRejectedValueOnce({
+			isAxiosError: true,
+			response: { status: 400 },
+		});
+
+		await expect(verifyEmail("new.user@example.com", "12345")).rejects.toThrow(
+			"Invalid or expired verification code",
+		);
+	});
+
+	it("should map verification service failures", async () => {
+		vi.mocked(apiClient.post).mockRejectedValueOnce({
+			isAxiosError: true,
+			code: "ECONNREFUSED",
+			response: undefined,
+		});
+
+		await expect(verifyEmail("new.user@example.com", "12345")).rejects.toThrow(
+			"We cannot verify your email right now. Please try again in a moment.",
+		);
 	});
 });

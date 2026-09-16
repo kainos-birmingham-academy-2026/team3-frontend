@@ -12,6 +12,7 @@ declare module "express-session" {
 	interface SessionData {
 		jwtToken?: string;
 		userRole?: UserRole;
+		pendingRegistrationEmail?: string;
 		redirectAfterLogin?: string;
 		jobRoleListUrl?: string;
 		adminApplicationListState?: AdminApplicationListState;

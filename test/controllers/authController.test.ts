@@ -6,16 +6,18 @@ import * as authApiService from "../../src/services/authApiService";
 vi.mock("../../src/services/authApiService", () => ({
 	login: vi.fn(),
 	register: vi.fn(),
+	verifyEmail: vi.fn(),
 }));
 
 type TestSession = {
 	jwtToken?: string;
 	userRole?: "ADMIN" | "USER";
+	pendingRegistrationEmail?: string;
 	redirectAfterLogin?: string;
 	destroy: (callback: () => void) => void;
 };
 
-type MockRequest = Request & {
+type MockRequest = Omit<Request, "body" | "session"> & {
 	body: Record<string, unknown>;
 	session: TestSession;
 };
@@ -124,7 +126,12 @@ describe("AuthController", () => {
 	});
 
 	it("should render register confirmation page for unauthenticated user", () => {
-		const req = createReq();
+		const req = createReq({
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
 		const res = createRes();
 
 		controller.showRegisterConfirmation(req, res);
@@ -493,17 +500,23 @@ describe("AuthController", () => {
 			"Password123!",
 		);
 		expect(authApiService.login).not.toHaveBeenCalled();
+		expect(req.session.pendingRegistrationEmail).toBe("new.user");
 		expect(res.redirect).toHaveBeenCalledWith(303, "/register/confirmation");
 	});
 
-	it("should reject an invalid registration confirmation code", () => {
+	it("should reject an invalid registration confirmation code", async () => {
 		const req = createReq({
 			body: { verificationCode: "1234" },
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
 		});
 		const res = createRes();
 
-		controller.confirmRegistration(req, res);
+		await controller.confirmRegistration(req, res);
 
+		expect(authApiService.verifyEmail).not.toHaveBeenCalled();
 		expect(res.status).toHaveBeenCalledWith(400);
 		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk", {
 			errorMessage: "Enter a 5-digit code",
@@ -511,13 +524,48 @@ describe("AuthController", () => {
 		});
 	});
 
-	it("should continue to sign in with a five-digit confirmation code", () => {
-		const req = createReq({ body: { verificationCode: "12345" } });
+	it("should continue to sign in with a verified code", async () => {
+		vi.mocked(authApiService.verifyEmail).mockResolvedValueOnce(undefined);
+		const req = createReq({
+			body: { verificationCode: "12345" },
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
 		const res = createRes();
 
-		controller.confirmRegistration(req, res);
+		await controller.confirmRegistration(req, res);
 
+		expect(authApiService.verifyEmail).toHaveBeenCalledWith(
+			"new.user@example.com",
+			"12345",
+		);
+		expect(req.session.pendingRegistrationEmail).toBeUndefined();
 		expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
+	});
+
+	it("should show backend verification errors", async () => {
+		vi.mocked(authApiService.verifyEmail).mockRejectedValueOnce(
+			new Error("Invalid or expired verification code"),
+		);
+		const req = createReq({
+			body: { verificationCode: "12345" },
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
+		const res = createRes();
+
+		await controller.confirmRegistration(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk", {
+			errorMessage: "Invalid or expired verification code",
+			formValues: { verificationCode: "12345" },
+		});
+		expect(req.session.pendingRegistrationEmail).toBe("new.user@example.com");
 	});
 
 	it("should render register page with error when registration fails", async () => {

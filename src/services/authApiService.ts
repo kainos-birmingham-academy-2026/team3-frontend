@@ -113,3 +113,41 @@ export async function register(email: string, password: string): Promise<void> {
 		throw error;
 	}
 }
+
+export async function verifyEmail(
+	email: string,
+	verificationCode: string,
+): Promise<void> {
+	const verifyEmailPath =
+		process.env.AUTH_VERIFY_EMAIL_PATH ?? "/api/auth/verify-email";
+
+	try {
+		await apiClient.post(verifyEmailPath, { email, verificationCode });
+	} catch (error) {
+		if (axios.isAxiosError(error)) {
+			const status = error.response?.status;
+			const networkErrorCodes = new Set([
+				"ECONNREFUSED",
+				"ENOTFOUND",
+				"ECONNABORTED",
+				"ETIMEDOUT",
+			]);
+
+			if (status === 400) {
+				throw new Error("Invalid or expired verification code");
+			}
+
+			if (
+				status === 404 ||
+				status === 500 ||
+				(!status && error.code && networkErrorCodes.has(error.code))
+			) {
+				throw new Error(
+					"We cannot verify your email right now. Please try again in a moment.",
+				);
+			}
+		}
+
+		throw error;
+	}
+}
