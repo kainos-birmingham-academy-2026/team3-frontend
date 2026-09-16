@@ -16,7 +16,6 @@ test.describe("Register and sign-in journey", { tag: "@smoke" }, () => {
 		homePage,
 		loginPage,
 		registerPage,
-		registerConfirmationPage,
 	}) => {
 		const user = createTestUser();
 		const apiUser = createTestUser();
@@ -42,7 +41,8 @@ test.describe("Register and sign-in journey", { tag: "@smoke" }, () => {
 		await registerPage.fillForm(user.email, user.password);
 		await registerPage.submit();
 
-		await registerConfirmationPage.expectLoaded();
+		await homePage.expectLoaded();
+		await homePage.expectSignedIn();
 
 		const storedUser = await findUserByEmail(user.email);
 		expect(storedUser).not.toBeNull();
@@ -51,16 +51,11 @@ test.describe("Register and sign-in journey", { tag: "@smoke" }, () => {
 		expect(storedUser?.passwordHash).toMatch(/^\$argon2id\$/);
 		expect(storedUser?.passwordHash).not.toBe(user.password);
 
-		await registerConfirmationPage.clickGoToSignIn();
-		await loginPage.expectLoaded();
-
 		// The token is held in the server-side session, so it is asserted against the API directly.
 		const loginResponse = await authApi.login(user);
 		expect(loginResponse.status()).toBe(200);
 		const { token } = await loginResponse.json();
 		expect(token).toMatch(/^[\w-]+\.[\w-]+\.[\w-]+$/);
-
-		await loginPage.signIn(user.email, user.password);
 
 		await homePage.expectLoaded();
 		await homePage.expectSignedIn();

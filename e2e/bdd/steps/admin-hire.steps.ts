@@ -40,6 +40,8 @@ When("I hire the applicant", async ({ adminApplicationsPage, page }) => {
 	await expect(page.locator("#popup-confirm")).toBeVisible();
 	await adminApplicationsPage.confirmHiring();
 	await adminApplicationsPage.expectSuccessMessage();
+	await adminApplicationsPage.confirmHiring();
+	await page.waitForLoadState("domcontentloaded");
 });
 
 Then(
@@ -50,7 +52,7 @@ Then(
 			expect(pendingAfterHire).toBeLessThan(adminHireWorld.pendingBeforeHire);
 		}
 
-		const hiredCount = await page.locator(".status-hired").count();
+		const hiredCount = await page.locator(".status-approved").count();
 		expect(hiredCount).toBeGreaterThan(0);
 	},
 );

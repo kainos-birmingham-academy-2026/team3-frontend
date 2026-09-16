@@ -7,14 +7,12 @@ Feature: Account registration
   Scenario: An applicant registers successfully with valid account details
     Given I am a signed-out visitor
     When I create an account with valid credentials
-    Then my account should have been created successfully
+    Then my account should have been created and I should be signed in
 
   Scenario: An applicant signs in after registering successfully
     Given I am a signed-out visitor
     When I create an account with valid credentials
-    Then my account should have been created successfully
-    When I sign in with my new account
-    Then I should be signed in successfully
+    Then my account should have been created and I should be signed in
 
   Scenario: An applicant submits incomplete registration details
     Given I am on the registration page

@@ -14,7 +14,7 @@ export class AdminApplicationsPage {
 		this.firstHireButton = page.locator(".btn-hire").first();
 		this.pendingApplications = page.locator(".status-pending");
 		this.confirmButton = page.locator("#popup-confirm");
-		this.successMessage = page.getByText("Applicant hired!");
+		this.successMessage = page.getByText("Applicant accepted!");
 	}
 
 	// Methods
