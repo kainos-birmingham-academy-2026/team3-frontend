@@ -92,7 +92,12 @@ export class AuthController {
 		}
 	}
 
-	showRegisterConfirmation(_req: Request, res: Response): void {
+	showRegisterConfirmation(req: Request, res: Response): void {
+		if (req.session.jwtToken) {
+			res.redirect("/");
+			return;
+		}
+
 		res.render("pages/registerConfirmation.njk");
 	}
 

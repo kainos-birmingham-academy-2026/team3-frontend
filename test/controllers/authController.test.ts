@@ -567,6 +567,21 @@ describe("AuthController", () => {
 		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk");
 	});
 
+	it("should redirect authenticated users away from registration confirmation", () => {
+		const req = createReq({
+			session: {
+				jwtToken: "existing-token",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
+		const res = createRes();
+
+		controller.showRegisterConfirmation(req, res);
+
+		expect(res.redirect).toHaveBeenCalledWith("/");
+		expect(res.render).not.toHaveBeenCalled();
+	});
+
 	it("should not verify a code when no registration is pending", async () => {
 		const req = createReq({ body: { verificationCode: "12345" } });
 		const res = createRes();
