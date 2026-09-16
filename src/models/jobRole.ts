@@ -60,6 +60,7 @@ export interface CapabilityOption {
 export interface BandOption {
 	bandId: number;
 	bandName: string;
+	bandLevel: number;
 }
 
 export interface SchemaError {

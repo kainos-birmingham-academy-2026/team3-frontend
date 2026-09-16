@@ -36,8 +36,26 @@
     <label for="role-filter">Job Role:</label>
     <select id="role-filter" name="role" class="role-filter">
      <option value="">All Roles</option>
-     {% for jobRole in jobRoles %}
+     {% macro roleOptions(rolesInBand, filters) %}
+      {% for jobRole in rolesInBand %}
     <option value="{{ jobRole.roleName }}" data-location="{{ jobRole.location }}" {% if filters.role == jobRole.roleName %}selected{% endif %}>{{ jobRole.roleName }}</option>
+      {% endfor %}
+     {% endmacro %}
+     {% set rolesByBand = jobRoles | sort(attribute="roleName") | groupby("band") %}
+     {# bandOrder comes from the backend Band.bandLevel column; unrecognised bands fall back below. #}
+     {% for band in bandOrder %}
+      {% if rolesByBand[band] %}
+    <optgroup label="{{ band }}">
+     {{ roleOptions(rolesByBand[band], filters) }}
+    </optgroup>
+      {% endif %}
+     {% endfor %}
+     {% for band, rolesInBand in rolesByBand | dictsort %}
+      {% if band not in bandOrder %}
+    <optgroup label="{{ band }}">
+     {{ roleOptions(rolesInBand, filters) }}
+    </optgroup>
+      {% endif %}
        {% endfor %}
       </select>
      </div>
