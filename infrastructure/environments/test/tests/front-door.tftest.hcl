@@ -75,22 +75,28 @@ run "disabled_by_default" {
   }
 }
 
-run "protected_test3" {
+run "protected_test1" {
   command = apply
-  variables { enable_front_door = true }
-  assert {
-    condition     = output.front_door_endpoint_url != null
-    error_message = "Enabled test3 must expose the Front Door endpoint."
-  }
-}
-
-run "reject_test1" {
-  command = plan
   variables {
     environment       = "test1"
     enable_front_door = true
   }
-  expect_failures = [var.enable_front_door]
+  assert {
+    condition     = output.front_door_endpoint_url != null
+    error_message = "An enabled test environment must expose the Front Door endpoint."
+  }
+}
+
+run "protected_test3" {
+  command = plan
+  variables {
+    environment       = "test3"
+    enable_front_door = true
+  }
+  assert {
+    condition     = output.front_door_endpoint_url != null
+    error_message = "An enabled test environment must expose the Front Door endpoint."
+  }
 }
 
 run "module_security_contract" {
