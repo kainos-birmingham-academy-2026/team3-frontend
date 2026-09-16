@@ -262,6 +262,14 @@
 	outline-offset: -2px;
 }
 
+.job-role-row-applied {
+	background: #ececec;
+}
+
+.job-role-row-applied:hover {
+	background: #e0e0e0;
+}
+
 .job-role-status-cell {
 	white-space: nowrap;
 	text-align: right;
