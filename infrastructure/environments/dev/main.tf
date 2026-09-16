@@ -9,6 +9,7 @@ module "frontend" {
   image_tag               = var.image_tag
   revision_suffix         = var.container_revision_suffix
   enable_admin_hiring     = var.enable_admin_hiring
+  enable_front_door       = var.enable_front_door
   tags = merge(var.tags, {
     environment = var.environment
   })

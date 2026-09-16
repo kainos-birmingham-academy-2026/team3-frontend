@@ -51,6 +51,12 @@ variable "enable_admin_hiring" {
   default     = true
 }
 
+variable "enable_front_door" {
+  description = "Whether to create Azure Front Door Standard for the dev frontend."
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags to apply to frontend-owned resources."
   type        = map(string)
