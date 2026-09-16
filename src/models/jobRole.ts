@@ -42,6 +42,8 @@ export interface UpdateJobRoleInput extends CreateJobRoleInput {
 	jobRoleId: string | number;
 }
 
+export type JobRoleStatus = "OPEN" | "CLOSED";
+
 export interface StatusOption {
 	statusId: number;
 	statusName: string;

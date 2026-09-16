@@ -6,6 +6,7 @@ import type {
 	CreateJobRoleInput,
 	JobRole,
 	JobRoleFilters,
+	JobRoleStatus,
 	LocationOption,
 	StatusOption,
 	UpdateJobRoleInput,
@@ -272,6 +273,22 @@ export class JobRoleService {
 		await apiClient.delete(`/api/job-roles/${jobRoleId}`, {
 			headers: { Authorization: `Bearer ${jwtToken}` },
 		});
+	}
+
+	async updateJobRoleStatus(
+		jobRoleId: string,
+		status: JobRoleStatus,
+		jwtToken?: string,
+	): Promise<void> {
+		if (!jwtToken) {
+			throw new Error("Not authenticated");
+		}
+
+		await apiClient.patch(
+			`/api/job-roles/${jobRoleId}/status`,
+			{ status },
+			{ headers: { Authorization: `Bearer ${jwtToken}` } },
+		);
 	}
 
 	async applyForRole(

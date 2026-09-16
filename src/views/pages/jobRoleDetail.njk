@@ -18,8 +18,9 @@
         {% if currentUserRole == 'ADMIN' %}
           <div class="job-role-actions">
             <a href="/job-role-edit/{{ jobRoleId.jobRoleId }}" class="button button-solid">Edit role</a>
-            <form method="post" action="/job-role-list/{{ jobRoleId.jobRoleId }}/delete">
-              <button type="submit" class="button button-danger-solid delete-role-trigger" data-role-id="{{ jobRoleId.jobRoleId }}" data-role-name="{{ jobRoleId.roleName }}">Delete role</button>
+            <form method="post" action="/job-role-list/{{ jobRoleId.jobRoleId }}/status">
+              <input type="hidden" name="status" value="{% if jobRoleId.status == 'open' %}CLOSED{% else %}OPEN{% endif %}">
+              <button type="submit" class="button {% if jobRoleId.status == 'open' %}button-danger-solid{% else %}button-solid{% endif %} delete-role-trigger" data-role-id="{{ jobRoleId.jobRoleId }}" data-role-name="{{ jobRoleId.roleName }}" data-status="{% if jobRoleId.status == 'open' %}CLOSED{% else %}OPEN{% endif %}">{% if jobRoleId.status == 'open' %}Close role{% else %}Reopen role{% endif %}</button>
             </form>
           </div>
         {% endif %}

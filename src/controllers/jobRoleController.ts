@@ -10,6 +10,7 @@ import type {
 	CreateJobRoleInput,
 	JobRole,
 	JobRoleFilters,
+	JobRoleStatus,
 	LocationOption,
 	SchemaError,
 	StatusOption,
@@ -423,6 +424,42 @@ export class JobRoleController {
 				statusCode = error.response?.status ?? 500;
 				if (statusCode === 403) {
 					errorMessage = "You do not have permission to delete this job role.";
+				} else if (statusCode === 404) {
+					errorMessage = "Job role not found.";
+				}
+			} else if (error instanceof Error) {
+				errorMessage = error.message;
+			}
+
+			res.status(statusCode).render("pages/jobRoleList.njk", {
+				jobRoles: [],
+				errorMessage,
+			});
+		}
+	}
+
+	async updateJobRoleStatus(req: Request, res: Response): Promise<void> {
+		const status = req.body.status as JobRoleStatus;
+		try {
+			await this.jobRoleService.updateJobRoleStatus(
+				this.getRoleIdParam(req),
+				status,
+				this.getJwtToken(req),
+			);
+			res.redirect(303, `/job-role-list/${this.getRoleIdParam(req)}`);
+		} catch (error) {
+			if (this.handleUnauthorized(req, res, error)) {
+				return;
+			}
+
+			let errorMessage =
+				"The job role status could not be updated. Please try again.";
+			let statusCode = 500;
+			if (axios.isAxiosError(error)) {
+				statusCode = error.response?.status ?? 500;
+				if (statusCode === 403) {
+					errorMessage =
+						"You do not have permission to change this job role status.";
 				} else if (statusCode === 404) {
 					errorMessage = "Job role not found.";
 				}
