@@ -112,8 +112,8 @@ run "module_security_contract" {
     }
   }
   assert {
-    condition     = azurerm_cdn_frontdoor_profile.frontend[0].sku_name == "Standard_AzureFrontDoor" && azurerm_cdn_frontdoor_origin.frontend[0].certificate_name_check_enabled && azurerm_cdn_frontdoor_origin.frontend[0].origin_host_header == azurerm_container_app.frontend.ingress[0].fqdn
-    error_message = "Standard must preserve TLS hostname validation and Container Apps host routing."
+    condition     = azurerm_cdn_frontdoor_profile.frontend[0].sku_name == "Standard_AzureFrontDoor" && azurerm_cdn_frontdoor_origin.frontend[0].enabled && azurerm_cdn_frontdoor_origin.frontend[0].certificate_name_check_enabled && azurerm_cdn_frontdoor_origin.frontend[0].origin_host_header == azurerm_container_app.frontend.ingress[0].fqdn
+    error_message = "Standard must enable the origin and preserve TLS hostname validation and Container Apps host routing."
   }
   assert {
     condition     = azurerm_cdn_frontdoor_route.frontend[0].forwarding_protocol == "HttpsOnly" && azurerm_cdn_frontdoor_route.frontend[0].https_redirect_enabled && length(azurerm_cdn_frontdoor_route.frontend[0].cache) == 0

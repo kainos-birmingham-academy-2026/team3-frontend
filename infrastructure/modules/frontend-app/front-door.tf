@@ -53,6 +53,7 @@ resource "azurerm_cdn_frontdoor_origin" "frontend" {
   https_port                    = 443
 
   certificate_name_check_enabled = true
+  enabled                        = true
 }
 
 resource "time_sleep" "front_door_origin_ready" {
