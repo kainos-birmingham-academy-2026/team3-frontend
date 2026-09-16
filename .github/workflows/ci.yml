@@ -401,7 +401,7 @@ jobs:
       TF_VAR_environment: ${{ needs.resolve-source.outputs.test_environment }}
       TF_VAR_image_tag: test-${{ needs.resolve-source.outputs.sha }}
       TF_VAR_container_revision_suffix: run-${{ github.run_id }}-${{ github.run_attempt }}
-      TF_VAR_enable_front_door: ${{ needs.resolve-source.outputs.test_environment == 'test3' && vars.TEST3_FRONT_DOOR_ENABLED == 'true' && 'true' || 'false' }}
+      TF_VAR_enable_front_door: "true"
       TF_VAR_enable_private_e2e: ${{ needs.resolve-source.outputs.test_environment == 'test3' && vars.TEST3_PRIVATE_E2E_ENABLED == 'true' && 'true' || 'false' }}
       TF_VAR_e2e_image_tag: test-e2e-${{ needs.resolve-source.outputs.sha }}
       ARM_USE_OIDC: "true"
@@ -461,7 +461,7 @@ jobs:
             exit 1
           fi
           echo "Private E2E execution: $execution_name"
-          for attempt in {1..60}; do
+          for _ in {1..60}; do
             execution_status=$(az containerapp job execution show \
               --name "$job_name" --resource-group "rg-team3-${TF_VAR_environment}" \
               --job-execution-name "$execution_name" \
