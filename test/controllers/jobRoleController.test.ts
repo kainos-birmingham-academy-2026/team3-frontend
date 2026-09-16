@@ -1622,6 +1622,7 @@ describe("JobRoleController", () => {
 		const jobRoles = [
 			{ roleName: "Engineer", location: "Belfast" },
 			{ roleName: "Designer", location: "London" },
+			{ roleName: "Architect", location: "Belfast" },
 		];
 		const applications = [
 			{
@@ -1681,6 +1682,7 @@ describe("JobRoleController", () => {
 			applicationCounts: counts,
 			filters: { search: "", status: "", role: "", location: "" },
 			jobRoles,
+			locationOptions: ["Belfast", "London"],
 			pagination: {
 				items: applications,
 				counts,

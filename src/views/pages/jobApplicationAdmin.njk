@@ -46,10 +46,8 @@
       <label for="location-filter">Location:</label>
       <select id="location-filter" name="location" class="location-filter">
        <option value="">All Locations</option>
-       {% for jobRole in jobRoles %}
-    {% if jobRole.location %}
-         <option value="{{ jobRole.location }}" {% if filters.location == jobRole.location %}selected{% endif %}>{{ jobRole.location }}</option>
-    {% endif %}
+       {% for location in locationOptions %}
+        <option value="{{ location }}" {% if filters.location == location %}selected{% endif %}>{{ location }}</option>
      {% endfor %}
     </select>
    </div>

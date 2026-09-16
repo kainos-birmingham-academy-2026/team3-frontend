@@ -640,6 +640,9 @@ export class JobRoleController {
 			const roleLocations = new Map(
 				jobRoles.map((role) => [role.roleName.toLowerCase(), role.location]),
 			);
+			const locationOptions = [
+				...new Set(jobRoles.map((role) => role.location).filter(Boolean)),
+			];
 			const applicationsWithLocations = applications.map((application) => ({
 				...application,
 				location:
@@ -650,6 +653,7 @@ export class JobRoleController {
 				applicationCounts: applicationPage.counts,
 				filters,
 				jobRoles,
+				locationOptions,
 				pagination: applicationPage,
 			});
 		} catch (error) {

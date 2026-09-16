@@ -29,6 +29,7 @@ describe("jobApplicationAdmin", () => {
 		},
 		filters: { search: "", status: "", role: "", location: "" },
 		jobRoles: [{ roleName: "Engineer", location: "Belfast" }],
+		locationOptions: ["Belfast"],
 	};
 
 	it("renders application workflows as links and forms", () => {
@@ -73,5 +74,20 @@ describe("jobApplicationAdmin", () => {
 		expect(html).not.toContain("function filterApplications");
 		expect(html).not.toContain("function loadApplications");
 		expect(html).not.toContain("/api/job-applications/admin?page=");
+	});
+
+	it("renders each location filter option once", () => {
+		const html = environment.render("pages/jobApplicationAdmin.njk", {
+			...viewData,
+			jobRoles: [
+				{ roleName: "Engineer", location: "Belfast" },
+				{ roleName: "Designer", location: "Belfast" },
+			],
+			locationOptions: ["Belfast"],
+		});
+
+		expect(html.match(/<option value="Belfast"/g)).toHaveLength(1);
+		expect(html.match(/<option value="Engineer"/g)).toHaveLength(1);
+		expect(html.match(/<option value="Designer"/g)).toHaveLength(1);
 	});
 });
