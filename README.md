@@ -270,7 +270,8 @@ Renders the job role page using backend API data.
 
 - Loads job roles for authenticated or unauthenticated visitors
 - Opens a role's detail page when its table row is selected with a mouse, Enter, or Space
-- Keeps Edit and Delete actions off the list to provide a compact, accessible table
+- Keeps Edit and close/reopen actions off the list to provide a compact, accessible table
+- Allows administrators to filter roles by `All roles`, `Open`, or `Closed`
 - Sends the session JWT token to the backend when one is available
 - If backend responds with `401`, redirects to `/login`
 - If backend errors, renders the page with an error state
@@ -280,7 +281,7 @@ Renders the job role page using backend API data.
 Renders the details for a selected job role.
 
 - Loads the role details from the backend
-- Shows Edit and Delete actions at the top of the page for administrators
+- Shows Edit and Close/Reopen actions at the top of the page for administrators
 - If backend responds with `401`, clears the session and redirects to `/login`
 - If the role cannot be loaded, renders an error state
 
@@ -340,13 +341,14 @@ Updates a job role through the backend `PATCH /api/job-roles/:id` endpoint.
 - On insufficient permissions or a missing role: re-renders the form with an appropriate error
 - On an unauthorised backend response: clears the session and redirects to `/login`
 
-### `POST /job-role-list/:id/delete`
+### `POST /job-role-list/:id/status`
 
-Deletes a job role through the backend `DELETE /api/job-roles/:id` endpoint.
+Changes a job role between open and closed through the backend status endpoint.
 
 - Requires an authenticated administrator session
 - Is submitted from the confirmation dialog on the job role detail page
-- On success: redirects to `/job-role-list`
+- Sends `CLOSED` when closing an open role and `OPEN` when reopening a closed role
+- On success: redirects to `/job-role-list/:id`
 - On insufficient permissions or a missing role: renders the job role list with an appropriate error
 - On an unauthorised backend response: clears the session and redirects to `/login`
 
