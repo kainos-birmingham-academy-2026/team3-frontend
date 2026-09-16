@@ -46,7 +46,7 @@ export class AuthController {
 		});
 	}
 
-	showRegisterConfirmation(req: Request, res: Response): void {
+	showRegisterVerification(req: Request, res: Response): void {
 		if (req.session.jwtToken) {
 			res.redirect("/");
 			return;
@@ -56,7 +56,7 @@ export class AuthController {
 			return;
 		}
 
-		res.render("pages/registerConfirmation.njk", {
+		res.render("pages/registerVerification.njk", {
 			formValues: { verificationCode: "" },
 		});
 	}
@@ -71,7 +71,7 @@ export class AuthController {
 		}
 
 		if (!/^\d{5}$/.test(verificationCode)) {
-			res.status(400).render("pages/registerConfirmation.njk", {
+			res.status(400).render("pages/registerVerification.njk", {
 				errorMessage: "Enter a 5-digit code",
 				formValues: { verificationCode },
 			});
@@ -81,19 +81,19 @@ export class AuthController {
 		try {
 			await authApiService.verifyEmail(email, verificationCode);
 			delete req.session.pendingRegistrationEmail;
-			res.redirect("/register/success");
+			res.redirect("/register/confirmation");
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : "Unable to verify your email";
-			res.status(400).render("pages/registerConfirmation.njk", {
+			res.status(400).render("pages/registerVerification.njk", {
 				errorMessage: message,
 				formValues: { verificationCode },
 			});
 		}
 	}
 
-	showAccountCreated(_req: Request, res: Response): void {
-		res.render("pages/accountCreated.njk");
+	showRegisterConfirmation(_req: Request, res: Response): void {
+		res.render("pages/registerConfirmation.njk");
 	}
 
 	showLogoutConfirmation(req: Request, res: Response): void {
@@ -187,7 +187,7 @@ export class AuthController {
 		}
 
 		req.session.pendingRegistrationEmail = email;
-		res.redirect(303, "/register/confirmation");
+		res.redirect(303, "/register/verify");
 	}
 
 	logout(req: Request, res: Response): void {

@@ -23,13 +23,13 @@ describe("register", () => {
 		expect(html).toContain("<noscript>");
 	});
 
-	it("renders a five-digit registration confirmation form", () => {
-		const html = environment.render("pages/registerConfirmation.njk", {
+	it("renders a five-digit registration verification form", () => {
+		const html = environment.render("pages/registerVerification.njk", {
 			formValues: { verificationCode: "" },
-			currentPath: "/register/confirmation",
+			currentPath: "/register/verify",
 		});
 
-		expect(html).toContain('action="/register/confirmation"');
+		expect(html).toContain('action="/register/verify"');
 		expect(html).toContain('name="verificationCode"');
 		expect(html).toContain('pattern="[0-9]{5}"');
 		expect(html).toContain('autocomplete="one-time-code"');

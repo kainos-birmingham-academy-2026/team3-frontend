@@ -107,6 +107,34 @@ describe("authRouter", () => {
 		expect(showRegister).toHaveBeenCalledTimes(1);
 	});
 
+	it("should call showRegisterVerification for GET /register/verify", async () => {
+		const showRegisterVerification = vi
+			.spyOn(AuthController.prototype, "showRegisterVerification")
+			.mockImplementation((_req, res) => {
+				res.status(200).send("register verification");
+			});
+
+		const response = await request(app).get("/register/verify");
+
+		expect(response.status).toBe(200);
+		expect(showRegisterVerification).toHaveBeenCalledTimes(1);
+	});
+
+	it("should call confirmRegistration for POST /register/verify", async () => {
+		const confirmRegistration = vi
+			.spyOn(AuthController.prototype, "confirmRegistration")
+			.mockImplementation((_req, res) => {
+				res.status(200).send("code accepted");
+			});
+
+		const response = await request(app)
+			.post("/register/verify")
+			.send({ verificationCode: "12345" });
+
+		expect(response.status).toBe(200);
+		expect(confirmRegistration).toHaveBeenCalledTimes(1);
+	});
+
 	it("should call showRegisterConfirmation for GET /register/confirmation", async () => {
 		const showRegisterConfirmation = vi
 			.spyOn(AuthController.prototype, "showRegisterConfirmation")
@@ -118,34 +146,6 @@ describe("authRouter", () => {
 
 		expect(response.status).toBe(200);
 		expect(showRegisterConfirmation).toHaveBeenCalledTimes(1);
-	});
-
-	it("should call confirmRegistration for POST /register/confirmation", async () => {
-		const confirmRegistration = vi
-			.spyOn(AuthController.prototype, "confirmRegistration")
-			.mockImplementation((_req, res) => {
-				res.status(200).send("code accepted");
-			});
-
-		const response = await request(app)
-			.post("/register/confirmation")
-			.send({ verificationCode: "12345" });
-
-		expect(response.status).toBe(200);
-		expect(confirmRegistration).toHaveBeenCalledTimes(1);
-	});
-
-	it("should call showAccountCreated for GET /register/success", async () => {
-		const showAccountCreated = vi
-			.spyOn(AuthController.prototype, "showAccountCreated")
-			.mockImplementation((_req, res) => {
-				res.status(200).send("account created");
-			});
-
-		const response = await request(app).get("/register/success");
-
-		expect(response.status).toBe(200);
-		expect(showAccountCreated).toHaveBeenCalledTimes(1);
 	});
 
 	it("should call register for POST /register", async () => {

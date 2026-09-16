@@ -7,14 +7,14 @@ const authController = new AuthController();
 router.get("/login", (req, res) => authController.showLogin(req, res));
 router.post("/login", (req, res) => authController.login(req, res));
 router.get("/register", (req, res) => authController.showRegister(req, res));
-router.get("/register/confirmation", (req, res) =>
-	authController.showRegisterConfirmation(req, res),
+router.get("/register/verify", (req, res) =>
+	authController.showRegisterVerification(req, res),
 );
-router.post("/register/confirmation", (req, res) =>
+router.post("/register/verify", (req, res) =>
 	authController.confirmRegistration(req, res),
 );
-router.get("/register/success", (req, res) =>
-	authController.showAccountCreated(req, res),
+router.get("/register/confirmation", (req, res) =>
+	authController.showRegisterConfirmation(req, res),
 );
 router.post("/register", (req, res) => authController.register(req, res));
 router.get("/unauthorised", (_req, res) => {
