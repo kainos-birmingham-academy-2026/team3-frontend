@@ -4,6 +4,7 @@ import express from "express";
 import session from "express-session";
 import nunjucks from "nunjucks";
 import { features } from "./config/features";
+import { frontDoorGuard } from "./middleware/frontDoor";
 import authRouter from "./routes/authRouter";
 import jobRoleChatRouter from "./routes/jobRoleChatRouter";
 import router from "./routes/jobRoleRouter";
@@ -13,6 +14,11 @@ const port = Number(process.env.PORT ?? 3000);
 const isDev = process.env.NODE_ENV !== "production";
 
 app.set("trust proxy", 1);
+
+app.use(frontDoorGuard(process.env.FRONT_DOOR_ID));
+app.get("/healthz", (_req, res) => {
+	res.status(200).send("OK");
+});
 
 nunjucks.configure(
 	[

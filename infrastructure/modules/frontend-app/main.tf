@@ -81,6 +81,16 @@ resource "azurerm_container_app" "frontend" {
     target_port      = 3000
     transport        = "auto"
 
+    dynamic "ip_security_restriction" {
+      for_each = var.enable_front_door ? toset(data.azurerm_network_service_tags.front_door[0].ipv4_cidrs) : toset([])
+
+      content {
+        name             = "afd-${replace(replace(ip_security_restriction.value, ".", "-"), "/", "-")}"
+        action           = "Allow"
+        ip_address_range = ip_security_restriction.value
+      }
+    }
+
     traffic_weight {
       latest_revision = true
       percentage      = 100
@@ -112,10 +122,26 @@ resource "azurerm_container_app" "frontend" {
         name  = "FEATURE_ADMIN_HIRING_ENABLED"
         value = tostring(var.enable_admin_hiring)
       }
+
+      dynamic "env" {
+        for_each = var.enable_front_door ? [azurerm_cdn_frontdoor_profile.frontend[0].resource_guid] : []
+
+        content {
+          name  = "FRONT_DOOR_ID"
+          value = env.value
+        }
+      }
     }
   }
 
   tags = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = var.enable_front_door ? length(data.azurerm_network_service_tags.front_door[0].ipv4_cidrs) > 0 : true
+      error_message = "Front Door protection requires a non-empty AzureFrontDoor.Backend IPv4 allowlist."
+    }
+  }
 
   depends_on = [
     azurerm_role_assignment.acr_pull,

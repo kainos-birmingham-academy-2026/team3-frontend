@@ -13,6 +13,17 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  terraform-test:
+    name: Test Terraform offline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=infrastructure/environments/test init -backend=false
+      - run: terraform -chdir=infrastructure/environments/test test -filter=tests/front-door.tftest.hcl
+
   resolve-source:
     name: Resolve Source
     runs-on: ubuntu-latest
@@ -339,7 +350,7 @@ jobs:
   terraform-deploy-test:
     name: Deploy test infrastructure
     if: github.event.action == 'backend-test-deployed'
-    needs: [resolve-source, push-test-image]
+    needs: [resolve-source, push-test-image, terraform-test]
     runs-on: ubuntu-latest
     concurrency:
       group: frontend-infrastructure-${{ needs.resolve-source.outputs.test_environment }}

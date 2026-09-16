@@ -1,3 +1,10 @@
+data "azurerm_network_service_tags" "front_door" {
+  count = var.enable_front_door ? 1 : 0
+
+  location = var.location
+  service  = "AzureFrontDoor.Backend"
+}
+
 resource "azurerm_cdn_frontdoor_profile" "frontend" {
   count = var.enable_front_door ? 1 : 0
 
@@ -25,6 +32,13 @@ resource "azurerm_cdn_frontdoor_origin_group" "frontend" {
     additional_latency_in_milliseconds = 0
     sample_size                        = 4
     successful_samples_required        = 3
+  }
+
+  health_probe {
+    interval_in_seconds = 60
+    path                = "/healthz"
+    protocol            = "Https"
+    request_type        = "HEAD"
   }
 }
 
