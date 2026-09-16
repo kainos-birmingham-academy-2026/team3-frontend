@@ -2,7 +2,7 @@ name: Nightly Playwright
 
 on:
   schedule:
-    - cron: "15 2 * * 1-5"
+    - cron: "30 21 * * 0-4"
       timezone: Europe/London
   workflow_dispatch:
 
