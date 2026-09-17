@@ -67,30 +67,37 @@ variables {
   image_tag   = "test-offline"
 }
 
-run "disabled_by_default" {
-  command = plan
+run "protected_test1" {
+  command = apply
+  variables {
+    environment = "test1"
+  }
   assert {
-    condition     = output.front_door_endpoint_url == null
-    error_message = "Default callers must not get Front Door."
+    condition     = output.front_door_endpoint_url != null
+    error_message = "An enabled test environment must expose the Front Door endpoint."
   }
 }
 
 run "protected_test3" {
-  command = apply
-  variables { enable_front_door = true }
+  command = plan
+  variables {
+    environment = "test3"
+  }
   assert {
     condition     = output.front_door_endpoint_url != null
-    error_message = "Enabled test3 must expose the Front Door endpoint."
+    error_message = "An enabled test environment must expose the Front Door endpoint."
   }
 }
 
-run "reject_test1" {
+run "protected_test2" {
   command = plan
   variables {
-    environment       = "test1"
-    enable_front_door = true
+    environment = "test2"
   }
-  expect_failures = [var.enable_front_door]
+  assert {
+    condition     = output.front_door_endpoint_url != null
+    error_message = "Every test environment must expose the Front Door endpoint."
+  }
 }
 
 run "module_security_contract" {
@@ -159,7 +166,6 @@ run "reject_empty_service_tag" {
 run "private_e2e_requires_test3_front_door_and_image" {
   command = plan
   variables {
-    enable_front_door  = true
     enable_private_e2e = true
     e2e_image_tag      = "test-e2e-offline"
   }

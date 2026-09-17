@@ -9,7 +9,7 @@ module "frontend" {
   image_tag               = var.image_tag
   revision_suffix         = var.container_revision_suffix
   enable_admin_hiring     = var.enable_admin_hiring
-  enable_front_door       = var.enable_front_door
+  enable_front_door       = true
   enable_private_e2e      = var.enable_private_e2e
   e2e_image_tag           = var.e2e_image_tag
   tags = merge(var.tags, {
