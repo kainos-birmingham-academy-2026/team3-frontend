@@ -82,11 +82,16 @@
       {% if currentUserRole == 'ADMIN' %}
         <fieldset class="job-role-filter-field status-filter-field">
           <legend>Status</legend>
-          <select id="status" name="status">
-            <option value="">All roles</option>
-            <option value="open" {% if filters.status == 'open' %}selected{% endif %}>Open</option>
-            <option value="closed" {% if filters.status == 'closed' %}selected{% endif %}>Closed</option>
-          </select>
+          <div class="job-role-date-range">
+            <label for="status">
+              Open or closed
+              <select id="status" name="status">
+                <option value="">All roles</option>
+                <option value="open" {% if filters.status == 'open' %}selected{% endif %}>Open</option>
+                <option value="closed" {% if filters.status == 'closed' %}selected{% endif %}>Closed</option>
+              </select>
+            </label>
+          </div>
         </fieldset>
       {% endif %}
     </div>

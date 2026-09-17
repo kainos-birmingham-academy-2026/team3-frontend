@@ -161,7 +161,8 @@
 	font-weight: 600;
 }
 
-.job-role-filter-field > input {
+.job-role-filter-field > input,
+.job-role-filter-field > select {
 	width: 100%;
 	min-height: 2.75rem;
 	box-sizing: border-box;
@@ -196,6 +197,16 @@
 	display: grid;
 	gap: 0.3rem;
 	font-size: 0.9rem;
+}
+
+.job-role-date-range select {
+	width: 100%;
+	min-height: 2.75rem;
+	box-sizing: border-box;
+	padding: 0.55rem 0.65rem;
+	font: inherit;
+	border: 1px solid #7c83a0;
+	background: var(--kainos-white);
 }
 
 .job-role-date-range input {
