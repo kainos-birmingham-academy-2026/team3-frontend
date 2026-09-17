@@ -913,11 +913,11 @@ describe("routes", () => {
 		expect(response.text).toContain("Sign in");
 	});
 
-	it("should return 200 for register confirmation page", async () => {
-		const response = await request(app).get("/register/confirmation");
+	it("should redirect to register when verification session is missing", async () => {
+		const response = await request(app).get("/register/verify");
 
-		expect(response.status).toBe(200);
-		expect(response.text).toContain("Registration successful");
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBe("/register");
 	});
 
 	it("should redirect authenticated users from login page to home", async () => {
@@ -986,7 +986,7 @@ describe("routes", () => {
 		expect(response.headers.location).toBe("/");
 	});
 
-	it("should redirect authenticated users from register confirmation to home", async () => {
+	it("should redirect authenticated users from register verification to home", async () => {
 		const authApp = express();
 
 		nunjucks.configure(path.resolve(process.cwd(), "src/views"), {
@@ -1013,7 +1013,7 @@ describe("routes", () => {
 		authApp.use(authRouter);
 		authApp.use(router);
 
-		const response = await request(authApp).get("/register/confirmation");
+		const response = await request(authApp).get("/register/verify");
 
 		expect(response.status).toBe(302);
 		expect(response.headers.location).toBe("/");

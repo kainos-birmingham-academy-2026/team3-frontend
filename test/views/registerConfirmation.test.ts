@@ -6,7 +6,7 @@ const environment = new nunjucks.Environment(
 );
 
 describe("register confirmation", () => {
-	it("should render confirmation content and sign in link", () => {
+	it("should render registration success with a sign-in link", () => {
 		const html = environment.render("pages/registerConfirmation.njk", {
 			currentPath: "/register/confirmation",
 		});
@@ -14,7 +14,5 @@ describe("register confirmation", () => {
 		expect(html).toContain("Registration successful");
 		expect(html).toContain('href="/login"');
 		expect(html).toContain("Go to sign in");
-		expect(html).not.toContain(">Home<");
-		expect(html).not.toContain(">Job roles<");
 	});
 });

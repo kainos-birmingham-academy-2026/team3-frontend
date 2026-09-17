@@ -46,12 +46,53 @@ export class AuthController {
 		});
 	}
 
-	showRegisterConfirmation(req: Request, res: Response): void {
+	showRegisterVerification(req: Request, res: Response): void {
 		if (req.session.jwtToken) {
 			res.redirect("/");
 			return;
 		}
+		if (!req.session.pendingRegistrationEmail) {
+			res.redirect("/register");
+			return;
+		}
 
+		res.render("pages/registerVerification.njk", {
+			formValues: { verificationCode: "" },
+		});
+	}
+
+	async confirmRegistration(req: Request, res: Response): Promise<void> {
+		const verificationCode = String(req.body.verificationCode ?? "").trim();
+		const email = req.session.pendingRegistrationEmail;
+
+		if (!email) {
+			res.redirect("/register");
+			return;
+		}
+
+		if (!/^\d{5}$/.test(verificationCode)) {
+			res.status(400).render("pages/registerVerification.njk", {
+				errorMessage: "Enter a 5-digit code",
+				formValues: { verificationCode },
+			});
+			return;
+		}
+
+		try {
+			await authApiService.verifyEmail(email, verificationCode);
+			delete req.session.pendingRegistrationEmail;
+			res.redirect("/register/confirmation");
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : "Unable to verify your email";
+			res.status(400).render("pages/registerVerification.njk", {
+				errorMessage: message,
+				formValues: { verificationCode },
+			});
+		}
+	}
+
+	showRegisterConfirmation(_req: Request, res: Response): void {
 		res.render("pages/registerConfirmation.njk");
 	}
 
@@ -145,23 +186,8 @@ export class AuthController {
 			return;
 		}
 
-		try {
-			const jwtToken = await authApiService.login(email, password);
-			const userRole = getUserRoleFromToken(jwtToken);
-
-			if (!userRole) {
-				throw new Error("Sign-in could not be completed. Please try again.");
-			}
-
-			req.session.jwtToken = jwtToken;
-			req.session.userRole = userRole;
-
-			const redirectAfterLogin = req.session.redirectAfterLogin ?? "/";
-			delete req.session.redirectAfterLogin;
-			res.redirect(redirectAfterLogin);
-		} catch {
-			res.redirect("/login?registered=1");
-		}
+		req.session.pendingRegistrationEmail = email;
+		res.redirect(303, "/register/verify");
 	}
 
 	logout(req: Request, res: Response): void {

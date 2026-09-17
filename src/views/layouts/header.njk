@@ -8,7 +8,7 @@
    />
   </a>
 
-  {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' %}
+  {% if currentPath != '/login' and currentPath != '/register' and currentPath != '/register/verify' and currentPath != '/register/confirmation' %}
    <div class="header-menu">
     <input class="header-menu-checkbox" type="checkbox" id="header-menu-toggle" />
     <label class="header-menu-toggle" for="header-menu-toggle">Menu</label>
@@ -35,7 +35,7 @@
  </div>
 </header>
 
-{% if isAuthenticated and currentPath != '/login' and currentPath != '/register' and currentPath != '/register/confirmation' and currentPath != '/logout/confirmation' %}
+{% if isAuthenticated and currentPath != '/login' and currentPath != '/register' and currentPath != '/register/verify' and currentPath != '/register/confirmation' and currentPath != '/logout/confirmation' %}
  <div class="logout-modal-backdrop" id="logout-modal-backdrop" hidden>
   <div class="logout-modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title">
    <h2 id="logout-modal-title">Sign out of your account?</h2>

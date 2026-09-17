@@ -6,21 +6,27 @@ import * as authApiService from "../../src/services/authApiService";
 vi.mock("../../src/services/authApiService", () => ({
 	login: vi.fn(),
 	register: vi.fn(),
+	verifyEmail: vi.fn(),
 }));
 
 type TestSession = {
 	jwtToken?: string;
 	userRole?: "ADMIN" | "USER";
+	pendingRegistrationEmail?: string;
 	redirectAfterLogin?: string;
 	destroy: (callback: () => void) => void;
 };
 
-type MockRequest = Request & {
+type MockRequest = Omit<Request, "body" | "session"> & {
 	body: Record<string, unknown>;
 	session: TestSession;
 };
 
-function createReq(partial: Partial<MockRequest> = {}): MockRequest {
+type ControllerRequest = Request & {
+	session: Request["session"] & TestSession;
+};
+
+function createReq(partial: Partial<MockRequest> = {}): ControllerRequest {
 	return {
 		body: {},
 		session: {
@@ -28,7 +34,7 @@ function createReq(partial: Partial<MockRequest> = {}): MockRequest {
 			destroy: vi.fn((callback: () => void) => callback()),
 		},
 		...partial,
-	} as MockRequest;
+	} as unknown as ControllerRequest;
 }
 
 function createRes(): Response {
@@ -123,13 +129,29 @@ describe("AuthController", () => {
 		expect(res.redirect).toHaveBeenCalledWith("/");
 	});
 
-	it("should render register confirmation page for unauthenticated user", () => {
+	it("should render register verification page for a pending registration", () => {
+		const req = createReq({
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
+		const res = createRes();
+
+		controller.showRegisterVerification(req, res);
+
+		expect(res.render).toHaveBeenCalledWith("pages/registerVerification.njk", {
+			formValues: { verificationCode: "" },
+		});
+	});
+
+	it("should redirect to register when no registration is pending", () => {
 		const req = createReq();
 		const res = createRes();
 
-		controller.showRegisterConfirmation(req, res);
+		controller.showRegisterVerification(req, res);
 
-		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk");
+		expect(res.redirect).toHaveBeenCalledWith("/register");
 	});
 
 	it("should render logout confirmation page for unauthenticated user", () => {
@@ -155,7 +177,7 @@ describe("AuthController", () => {
 		expect(res.redirect).toHaveBeenCalledWith("/");
 	});
 
-	it("should redirect authenticated users away from register confirmation page", () => {
+	it("should redirect authenticated users away from register verification page", () => {
 		const req = createReq({
 			session: {
 				jwtToken: "existing-token",
@@ -164,7 +186,7 @@ describe("AuthController", () => {
 		});
 		const res = createRes();
 
-		controller.showRegisterConfirmation(req, res);
+		controller.showRegisterVerification(req, res);
 
 		expect(res.redirect).toHaveBeenCalledWith("/");
 	});
@@ -472,11 +494,8 @@ describe("AuthController", () => {
 		});
 	});
 
-	it("should sign in and redirect to home after successful registration", async () => {
+	it("should redirect to code confirmation after successful registration", async () => {
 		vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
-		vi.mocked(authApiService.login).mockResolvedValueOnce(
-			createTokenWithRole("USER"),
-		);
 
 		const req = createReq({
 			body: {
@@ -493,33 +512,92 @@ describe("AuthController", () => {
 			"new.user",
 			"Password123!",
 		);
-		expect(authApiService.login).toHaveBeenCalledWith(
-			"new.user",
-			"Password123!",
-		);
-		expect(req.session.jwtToken).toBe(createTokenWithRole("USER"));
-		expect(req.session.userRole).toBe("USER");
-		expect(res.redirect).toHaveBeenCalledWith("/");
+		expect(authApiService.login).not.toHaveBeenCalled();
+		expect(req.session.pendingRegistrationEmail).toBe("new.user");
+		expect(res.redirect).toHaveBeenCalledWith(303, "/register/verify");
 	});
 
-	it("should redirect to login when automatic sign-in fails", async () => {
-		vi.mocked(authApiService.register).mockResolvedValueOnce(undefined);
-		vi.mocked(authApiService.login).mockRejectedValueOnce(
-			new Error("Unable to sign in"),
-		);
-
+	it("should reject an invalid registration confirmation code", async () => {
 		const req = createReq({
-			body: {
-				email: "new.user",
-				password: "Password123!",
-				confirmPassword: "Password123!",
+			body: { verificationCode: "1234" },
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
 			},
 		});
 		const res = createRes();
 
-		await controller.register(req, res);
+		await controller.confirmRegistration(req, res);
 
-		expect(res.redirect).toHaveBeenCalledWith("/login?registered=1");
+		expect(authApiService.verifyEmail).not.toHaveBeenCalled();
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.render).toHaveBeenCalledWith("pages/registerVerification.njk", {
+			errorMessage: "Enter a 5-digit code",
+			formValues: { verificationCode: "1234" },
+		});
+	});
+
+	it("should show account creation success with a verified code", async () => {
+		vi.mocked(authApiService.verifyEmail).mockResolvedValueOnce(undefined);
+		const req = createReq({
+			body: { verificationCode: "12345" },
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
+		const res = createRes();
+
+		await controller.confirmRegistration(req, res);
+
+		expect(authApiService.verifyEmail).toHaveBeenCalledWith(
+			"new.user@example.com",
+			"12345",
+		);
+		expect(req.session.pendingRegistrationEmail).toBeUndefined();
+		expect(res.redirect).toHaveBeenCalledWith("/register/confirmation");
+	});
+
+	it("should render the registration confirmation page", () => {
+		const req = createReq();
+		const res = createRes();
+
+		controller.showRegisterConfirmation(req, res);
+
+		expect(res.render).toHaveBeenCalledWith("pages/registerConfirmation.njk");
+	});
+
+	it("should not verify a code when no registration is pending", async () => {
+		const req = createReq({ body: { verificationCode: "12345" } });
+		const res = createRes();
+
+		await controller.confirmRegistration(req, res);
+
+		expect(authApiService.verifyEmail).not.toHaveBeenCalled();
+		expect(res.redirect).toHaveBeenCalledWith("/register");
+	});
+
+	it("should show backend verification errors", async () => {
+		vi.mocked(authApiService.verifyEmail).mockRejectedValueOnce(
+			new Error("Invalid or expired verification code"),
+		);
+		const req = createReq({
+			body: { verificationCode: "12345" },
+			session: {
+				pendingRegistrationEmail: "new.user@example.com",
+				destroy: vi.fn((callback: () => void) => callback()),
+			},
+		});
+		const res = createRes();
+
+		await controller.confirmRegistration(req, res);
+
+		expect(res.status).toHaveBeenCalledWith(400);
+		expect(res.render).toHaveBeenCalledWith("pages/registerVerification.njk", {
+			errorMessage: "Invalid or expired verification code",
+			formValues: { verificationCode: "12345" },
+		});
+		expect(req.session.pendingRegistrationEmail).toBe("new.user@example.com");
 	});
 
 	it("should render register page with error when registration fails", async () => {
