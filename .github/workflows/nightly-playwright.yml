@@ -47,10 +47,11 @@ jobs:
       - name: Discover Dev endpoints
         id: endpoints
         run: |
-          frontend_fqdn=$(az containerapp show \
+          frontend_fqdn=$(az afd endpoint show \
             --resource-group rg-team3-dev \
-            --name ca-team3-frontend-dev \
-            --query properties.configuration.ingress.fqdn \
+            --profile-name afd-team3-frontend-dev \
+            --endpoint-name afd-team3-frontend-dev \
+            --query hostName \
             --output tsv)
 
           echo "frontend_url=https://${frontend_fqdn}" >> "$GITHUB_OUTPUT"
