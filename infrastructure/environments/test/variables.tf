@@ -50,12 +50,6 @@ variable "enable_admin_hiring" {
   default     = true
 }
 
-variable "enable_front_door" {
-  description = "Whether to create Azure Front Door Standard for this test environment."
-  type        = bool
-  default     = false
-}
-
 variable "enable_private_e2e" {
   description = "Opt in to the private Playwright job for test3 only."
   type        = bool

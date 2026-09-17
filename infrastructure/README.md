@@ -41,18 +41,11 @@ destroying it.
 
 ## Azure Front Door
 
-The dev and reusable test roots accept `enable_front_door`, defaulting to
-`false`. When enabled, the frontend module creates an Azure Front Door Standard
-profile, default-domain endpoint, frontend origin group, enabled frontend
-origin, and HTTPS-only route for the selected environment. Terraform exposes
-the resulting `azurefd.net` URL as `front_door_endpoint_url`.
-
-For test environments, select **Create or update Azure Front Door** when
-running the backend's `deploy_test` workflow. The backend forwards that explicit
-choice to the frontend deployment. For dev, set the frontend repository Actions
-variable `DEV_FRONT_DOOR_ENABLED` to `true` before a deployment. Do not enable
-Front Door in an environment unless its frontend image contains the Front Door
-middleware.
+Dev and every test root require Azure Front Door Standard. The frontend module
+creates a profile, default-domain endpoint, frontend origin group, enabled
+frontend origin, and HTTPS-only route for each environment. Terraform exposes
+the resulting `azurefd.net` URL as `front_door_endpoint_url`. The shared module
+remains configurable so production is unaffected.
 
 Origin protection combines Container Apps ingress Allow rules for the current
 `AzureFrontDoor.Backend` IPv4 CIDRs with frontend middleware that validates
@@ -61,18 +54,16 @@ is sufficient alone. The CIDRs are read from Azure at plan time; an empty list
 fails the plan. Public IPv6 origin connectivity is not enabled by this policy.
 The public hostname still exists, but direct clients should be denied.
 
-CIDRs are not a live service-tag binding. Review and reapply each enabled environment regularly
-(at least weekly) to incorporate Azure range changes; agree an owner for this
-before relying on the pilot. No scheduled refresh is installed by this change.
+CIDRs are not a live service-tag binding. Review and reapply each dev and test
+environment regularly (at least weekly) to incorporate Azure range changes. No
+scheduled refresh is installed by this change.
 Subnet NSGs are not a substitute: public ingress on external workload-profile
 environments bypasses the subnet. See Microsoft's
 [origin security guidance](https://learn.microsoft.com/en-us/azure/frontdoor/origin-security)
 and [Container Apps networking restrictions](https://learn.microsoft.com/en-us/azure/container-apps/firewall-integration).
 
-Initial enablement can cause
-a short interruption while origin restrictions and Front Door propagate.
-Disabling the flag removes the restrictions, profile guard configuration and
-Front Door resources on the next apply, restoring direct public access.
+Initial deployment can cause a short interruption while origin restrictions and
+Front Door propagate. Direct public origin access remains intentionally denied.
 
 The HTTPS HEAD probe uses `/healthz` behind the same profile guard. It checks
 frontend process readiness, not backend/database health. No route cache block
@@ -133,6 +124,8 @@ before planning or applying Terraform.
   `rg-team3-<slot>`. Missing or unsupported slot payloads fail validation.
 - Pull requests run checks and a dev Terraform plan, but do not deploy.
 
+Before the first deployment, tear down and recreate each disposable dev and test
+resource group, including frontend resources in their separate Terraform state.
 Start an isolated test deployment from the backend repository's **CI** workflow
 on `main`. Choose `main` for a ref when that application should use current
 integrated code; choose a feature branch, tag, or SHA only for the application
