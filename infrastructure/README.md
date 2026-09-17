@@ -92,6 +92,21 @@ Offline checks: `terraform -chdir=infrastructure/environments/test test
 -filter=tests/front-door.tftest.hcl` and
 `npx vitest run test/middleware/frontDoor.test.ts`.
 
+## Test3 private E2E runner
+
+Set `TEST3_PRIVATE_E2E_ENABLED` to `true` only after Front Door is enabled for
+test3. The test deployment then creates and runs
+`caj-team3-private-e2e-test3` in the Container Apps environment. Its Playwright
+image reaches the protected frontend through Front Door and reaches the backend
+and PostgreSQL through the private environment.
+
+The job runs the Chromium registration and sign-in journey only. It creates
+unique test users and deletes those users after each test, but explicitly does
+not run `prisma migrate reset`; destructive schema resets remain isolated to
+local or dedicated test databases. The deployment workflow polls the job and
+fails when its execution does not succeed. Inspect Container Apps job logs for
+the execution name reported by CI when diagnosing a failure.
+
 ## Images
 
 Dev deploys `dev-<commit-sha>` and test deploys `test-<commit-sha>`. CI also

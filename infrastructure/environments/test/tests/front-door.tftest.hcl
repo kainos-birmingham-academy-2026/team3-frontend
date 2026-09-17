@@ -17,6 +17,9 @@ mock_provider "azurerm" {
   mock_resource "azurerm_cdn_frontdoor_origin" {
     defaults = { id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-team3-test3/providers/Microsoft.Cdn/profiles/test/originGroups/frontend/origins/frontend" }
   }
+  mock_resource "azurerm_container_app_job" {
+    defaults = { id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg-team3-test3/providers/Microsoft.App/jobs/private-e2e" }
+  }
   mock_data "azurerm_resource_group" {
     defaults = { name = "rg-team3-test3", location = "uksouth" }
   }
@@ -151,4 +154,17 @@ run "reject_empty_service_tag" {
     values = { ipv4_cidrs = [] }
   }
   expect_failures = [azurerm_container_app.frontend]
+}
+
+run "private_e2e_requires_test3_front_door_and_image" {
+  command = plan
+  variables {
+    enable_front_door  = true
+    enable_private_e2e = true
+    e2e_image_tag      = "test-e2e-offline"
+  }
+  assert {
+    condition     = output.private_e2e_job_name != null
+    error_message = "Enabled test3 must create the private Playwright job."
+  }
 }

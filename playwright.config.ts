@@ -19,10 +19,10 @@ const bddTestDir = defineBddConfig({
 	outputDir: "e2e/specs",
 });
 
-// TEMPORARY: CI and backend-free local runs skip the database-backed journeys.
-// Delete this and swap the three "TEMPORARY" blocks below back to their commented-out
-// originals once the backend is deployed remotely.
-const needsDatabase = !process.env.CI && !process.env.E2E_SKIP_BACKEND;
+const needsDatabase =
+	Boolean(process.env.E2E_PRIVATE_RUNNER) ||
+	(!process.env.CI && !process.env.E2E_SKIP_BACKEND);
+const resetDatabase = needsDatabase && !process.env.E2E_SKIP_DATABASE_RESET;
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -32,7 +32,6 @@ export default defineConfig({
 	testMatch: ["**/*.spec.ts", "**/*.spec.js"],
 	// globalSetup: './e2e/globalSetup.ts',
 	// globalTeardown: './e2e/globalTeardown.ts',
-	// TEMPORARY
 	testIgnore: [
 		"**/.bdd-gen/**",
 		...(needsDatabase
@@ -44,7 +43,7 @@ export default defineConfig({
 					"**/e2e/bdd/**",
 				]),
 	],
-	...(needsDatabase
+	...(resetDatabase
 		? {
 				globalSetup: "./e2e/globalSetup.ts",
 				globalTeardown: "./e2e/globalTeardown.ts",
@@ -94,7 +93,6 @@ export default defineConfig({
 		//   stdout: 'pipe',
 		//   stderr: 'pipe',
 		// },
-		// TEMPORARY
 		...(needsDatabase
 			? [
 					{

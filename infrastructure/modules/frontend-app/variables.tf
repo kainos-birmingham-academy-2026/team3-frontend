@@ -45,6 +45,18 @@ variable "enable_front_door" {
   default     = false
 }
 
+variable "enable_private_e2e" {
+  description = "Whether to create the in-VNet Playwright test job."
+  type        = bool
+  default     = false
+}
+
+variable "e2e_image_tag" {
+  description = "Immutable ACR image tag for the Playwright test job."
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags to apply to frontend-owned resources."
   type        = map(string)
