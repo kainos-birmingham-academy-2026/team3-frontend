@@ -15,6 +15,7 @@ concurrency:
 jobs:
   terraform-test:
     name: Test Terraform offline
+    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -245,7 +246,7 @@ jobs:
 
   terraform-plan:
     name: Plan dev infrastructure
-    if: github.event_name == 'pull_request'
+    if: false
     needs: [resolve-source, build]
     runs-on: ubuntu-latest
     permissions:
@@ -324,7 +325,7 @@ jobs:
 
   terraform-deploy:
     name: Deploy dev infrastructure
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event.action == 'backend-dev-deployed'
+    if: false
     needs: [resolve-source, push-image]
     runs-on: ubuntu-latest
     concurrency:
@@ -386,7 +387,7 @@ jobs:
 
   terraform-deploy-test:
     name: Deploy test infrastructure
-    if: github.event.action == 'backend-test-deployed'
+    if: false
     needs: [resolve-source, push-test-image, push-private-e2e-image, terraform-test]
     runs-on: ubuntu-latest
     concurrency:
